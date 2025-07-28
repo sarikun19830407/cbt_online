@@ -1,0 +1,97 @@
+{% if messages %}
+<div class="container">
+    {% for message in messages %}
+    <ul class="list-group list-group-flush mb-2">
+        <li class="btn bg-primary-subtle btn-sm " style="font-size: 8;" {% if message.tags %} class="{{ message.tags }}"
+            {% endif %}>{{ message }}</li>
+    </ul>
+
+
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if failed_rows %}
+<div class="alert alert-danger">
+    <strong>Data gagal diunggah!</strong>
+    <p>Berikut detail kesalahan:</p>
+    <button class="btn btn-info btn-sm mb-3" onclick="downloadErrorCSV()">Download Error</button>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Nama</th>
+                <th>Kelas</th>
+                <th>Error</th>
+            </tr>
+        </thead>
+        <tbody id="duplicateTable">
+            {% for row in failed_rows %}
+            <tr>
+                <td>{{ row.Nama }}</td>
+                <td>{{ row.Kelas }}</td>
+                <td>{{ row.Error }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+
+
+
+
+<!-- Link to download template -->
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("uploadForm");
+        const submitBtn = document.getElementById("submitBtn");
+        const loadingDiv = document.getElementById("loading");
+
+        form.addEventListener("submit", function () {
+            submitBtn.disabled = true;  // Matikan tombol Upload
+            loadingDiv.style.display = "block";  // Tampilkan animasi loading
+        });
+    });
+</script>
+
+<script>
+    function downloadErrorCSV() {
+        const tables = [
+            "duplicateTable",
+            "invalidTable",
+            "duplicateUsersTable",
+            "duplicateNpsnCsvTable",
+            "duplicateNpsnDbTable"
+        ];
+
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "Kategori,Username,NPSN,Madrasah,Error\n";
+
+        tables.forEach(tableId => {
+            const table = document.getElementById(tableId);
+            if (table) {
+                const rows = table.querySelectorAll("tbody tr");
+                rows.forEach(row => {
+                    const cols = row.querySelectorAll("td");
+                    const values = Array.from(cols).map(col => col.innerText.trim());
+                    if (values.length === 3) {
+                        csvContent += `${tableId},${values[0]},${values[1]},${values[2]},\n`;
+                    } else if (values.length === 4) {
+                        csvContent += `${tableId},${values[0]},${values[1]},${values[2]},${values[3]}\n`;
+                    }
+                });
+            }
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "data_error_madrasah.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>

@@ -1,0 +1,96 @@
+<script>
+    // Fungsi untuk "Select All" dan enable/disable tombol aksi
+    document.getElementById('select_all').addEventListener('change', function () {
+        const isChecked = this.checked;
+        document.querySelectorAll('.select_item').forEach(item => {
+            item.checked = isChecked;
+        });
+        toggleActionButtons();
+    });
+
+    document.querySelectorAll('.select_item').forEach(item => {
+        item.addEventListener('change', toggleActionButtons);
+    });
+
+    function toggleActionButtons() {
+        const anyChecked = document.querySelectorAll('.select_item:checked').length > 0;
+
+        document.getElementById('delete_button').disabled = !anyChecked;
+        document.getElementById('activate_button').disabled = !anyChecked;
+        document.getElementById('deactivate_button').disabled = !anyChecked;
+    }
+
+    // Fungsi konfirmasi penghapusan
+    function confirmDeletion(event) {
+        event.preventDefault();
+        const userConfirmed = confirm("Apakah Anda yakin ingin menghapus data yang dipilih? Klik 'Ya' untuk menghapus atau 'Batal' untuk kembali.");
+        if (userConfirmed) {
+            document.getElementById('delete_form').submit();
+        } else {
+            window.location.href = "{% url 'cbt:user_staff' %}";
+        }
+    }
+</script>
+
+
+<nav class="navbar py-2 bg-light rounded">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+        <!-- Dropdown untuk Jumlah Perhalaman -->
+        <form method="get" class="d-flex align-items-center">
+            <input type="hidden" name="cari" value="{{ cari }}">
+            <span class="me-2">Jumlah Perhalaman:</span>
+            <select name="items_per_page" id="items_per_page" class="form-select form-select-sm w-auto"
+                onchange="this.form.submit()">
+                <option value="30" {% if items_per_page == '30' %}selected{% endif %}>30</option>
+                <option value="50" {% if items_per_page == '50' %}selected{% endif %}>50</option>
+                <option value="100" {% if items_per_page == '100' %}selected{% endif %}>100</option>
+                <option value="all" {% if items_per_page == 'all' %}selected{% endif %}>Semua</option>
+            </select>
+        </form>
+
+        <!-- Informasi Total Kabupaten -->
+        <span class="ms-3">Total: <strong>{{ jumlah }}</strong> {{lembaga}}</span>
+
+        <!-- Pagination -->
+        <ul class="pagination mb-0">
+            <!-- Tombol Previous -->
+            {% if Data.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ Data.previous_page_number }}&items_per_page={{ items_per_page }}">Previous</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">Previous</span>
+            </li>
+            {% endif %}
+
+            <!-- Nomor Halaman -->
+            {% for num in Data.paginator.page_range %}
+                {% if num >= Data.number|add:'-2' and num <= Data.number|add:'2' %}
+                <li class="page-item {% if Data.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}&items_per_page={{ items_per_page }}">{{ num }}</a>
+                </li>
+                {% elif num == 1 or num == Data.paginator.num_pages %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}&items_per_page={{ items_per_page }}">{{ num }}</a>
+                </li>
+                {% elif num == Data.number|add:'-3' or num == Data.number|add:'3' %}
+                <li class="page-item disabled">
+                    <span class="page-link">...</span>
+                </li>
+                {% endif %}
+            {% endfor %}
+
+            <!-- Tombol Next -->
+            {% if Data.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ Data.next_page_number }}&items_per_page={{ items_per_page }}">Next</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">Next</span>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>

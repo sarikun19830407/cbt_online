@@ -1,0 +1,151 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imput Kode Ujian</title>
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+    {% include "setting/css.html" %}
+    <style>
+        .login-container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .user-profile-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .exam-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .exam-header {
+            background: linear-gradient(135deg, #3a7bd5 0%, #00d2ff 100%);
+            padding: 1.5rem;
+        }
+
+        .form-control {
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3a7bd5 0%, #00d2ff 100%);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .logout-btn {
+            color: #6c757d;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            color: #0d6efd;
+            transform: translateX(-2px);
+        }
+    </style>
+</head>
+
+<body class="bg-light d-flex align-items-center min-vh-100">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <!-- User Profile Card -->
+                <div class="user-profile-card p-3 mb-4 text-center">
+                    <div class="d-flex justify-content-center align-items-center gap-3">
+                        <div class="bg-white rounded-circle p-2 shadow-sm">
+                            <i class="bi bi-person-circle fs-3 text-primary"></i>
+                        </div>
+                        <div class="text-start">
+                            <h6 class="mb-0 fw-bold">{{ request.user.get_full_name|default:request.user.Nama }}</h6>
+                            <small class="text-muted">
+                                Kelas {{ request.user.get_full_name|default:request.user.Kelas}} .
+                                {{request.user.get_full_name|default:request.user.Rombel }}
+
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exam Code Card -->
+                <div class="exam-card mb-3">
+                    <div class="exam-header text-white text-center">
+                        <h4 class="mb-0 fw-bold"><i class="bi bi-key me-2"></i> Masukkan Kode Ujian</h4>
+                    </div>
+                    <div class="card-body p-4">
+
+                        {% if messages %}
+                        <div class="mb-3">
+                            {% for message in messages %}
+                            <div class="alert alert-info alert-dismissible fade show small mb-2" role="alert">
+                                <i class="bi bi-info-circle me-2 fst-normal fw-bold">&nbsp;&nbsp; {{message|title}}</i>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                    aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <label for="kode_soal" class="form-label fw-medium">Kode Ujian</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="bi bi-key-fill"></i></span>
+                                    <input type="text" class="form-control" id="kode_soal" name="kode_soal"
+                                        placeholder="Masukkan kode ujian yang diberikan pengajar" required>
+                                </div>
+                                <small class="text-muted">Contoh: ABC123-XYZ</small>
+                            </div>
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-primary fw-medium py-2">
+                                    <i class="bi bi-play-circle me-2"></i> Mulai Ujian Sekarang
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Logout Button -->
+                <div class="text-center mt-3">
+                    <form method="post" action="{% url 'cbt:Logaut' %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-link logout-btn">
+                            <i class="bi bi-box-arrow-left me-1"></i> Keluar dari Sistem
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include "setting/js.html" %}
+    
+</body>
+
+</html>

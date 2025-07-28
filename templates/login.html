@@ -1,0 +1,99 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Login</title>
+  {% include "setting/css.html" %}
+</head>
+
+<body class="bg-body-secondary">
+  <div class="container-fluid ">
+    <div class="login">
+      <div class="login-1">
+        <img src="{% static 'img/testing-pana.png' %}" alt="Bootstrap" class="Gambar-login">
+      </div>
+      <div class="login-2">
+        <h1 class="text-center">CBT</h1>
+        <h2 class="text-center">Selamat datang!</h2>
+        <h5 class="text-center ">Silahkan Login Menggunkan Akun Anda</h5>
+        <div class="row py-3">
+          <div class="container">
+            <div class="" style="display: flex; justify-content: center;">
+              <div class="">
+                {% if messages %}
+                {% for message in messages %}
+                <li class="alert alert-danger p-2 fs-6">{{ message }}</li>
+                {% endfor %}
+                {% endif %}
+              </div>
+            </div>
+
+            <form method="POST" id="uploadForm" class="">
+              {% csrf_token %}
+              <div id="loading">
+                <div class="loader"></div>
+                <div class="text-center">Proses sedang berjalan...</div>
+              </div>
+              <div class="container col-md-7 mb-3">
+                <div class="mb-3 ">
+                  <label for="username" class="form-label tex">Pengguna</label>
+                  <input type="text" class="form-control " name="username" id="username">
+                </div>
+                <div class="">
+                  <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" id="password">
+                  </div>
+                  <div>
+                    <input class="form-check-input" type="checkbox" id="show_password_checkbox"
+                      onclick="showPassword()">
+                    <label for="show_password_checkbox">Tampilkan Password</label>
+                  </div>
+
+                </div>
+                <br>
+                <div class="d-grid gap-2 d-md-flex">
+                  <button class="btn btn-primary  me-md-2" id="submitBtn" type="submit">Masuk</button>
+                </div>
+              </div>
+
+              <br>
+            </form>
+            <script>
+              function setPasswordType() {
+                var checkbox = document.getElementById('show_password_checkbox');
+                var passwordField = document.getElementById('password');
+                if (checkbox.checked) {
+                  passwordField.type = 'text';
+                } else {
+                  passwordField.type = 'password';
+                }
+              }
+              document.getElementById('show_password_checkbox').addEventListener('change', setPasswordType);
+            </script>
+            <script>
+              document.addEventListener("DOMContentLoaded", function () {
+                const form = document.getElementById("uploadForm");
+                const submitBtn = document.getElementById("submitBtn");
+                const loadingDiv = document.getElementById("loading");
+
+                form.addEventListener("submit", function () {
+                  submitBtn.disabled = true;  // Matikan tombol Upload
+                  loadingDiv.style.display = "block";  // Tampilkan animasi loading
+                });
+              });
+            </script>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulir Pendaftaran -->
+
+</body>
+
+</html>

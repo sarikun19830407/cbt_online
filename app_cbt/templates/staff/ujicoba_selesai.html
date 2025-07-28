@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Hasil Ujicoba</title>
+    {% include "setting/css.html" %}
+</head>
+
+<body>
+    <div class="container mt-5">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">Hasil Ujicoba - {{ setting.Kode_Soal }}</h4>
+            </div>
+            <div class="card-body">
+                <p><strong>Jumlah Soal:</strong> {{ total }}</p>
+                <p><strong>Jawaban Benar:</strong> {{ benar }}</p>
+                <p><strong>Skor:</strong> <span class="text-primary fs-4">{{ skor }}%</span></p>
+
+                <a href="{% url 'cbt:ujicoba_soal' setting.id %}" class="btn btn-primary">Ulangi Ujicoba</a>
+                <a href="{% url 'cbt:setting_soal' %}" class="btn btn-outline-secondary ms-2">Kembali ke SetingSoal</a>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

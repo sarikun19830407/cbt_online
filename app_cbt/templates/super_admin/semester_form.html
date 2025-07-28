@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block konten %}
+<body>
+    <div class="container-fluid">
+        <div class="col-lg-5">
+            <h2>Pilih Semester</h2>
+            <form class="form-control" method="post"> 
+                {% csrf_token %}
+                <div class="d-flex flex-column">
+                    <div class="mb-3 form-check">
+                        <input class="form-check-input" type="radio" name="semester" value="Genap" 
+                            {% if current_choice == 'Genap' %}checked{% endif %}>
+                        <label class="form-check-label">Genap</label>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input class="form-check-input" type="radio" name="semester" value="Ganjil" 
+                            {% if current_choice == 'Ganjil' %}checked{% endif %}>
+                        <label class="form-check-label">Ganjil</label>
+                    </div>
+                </div>
+                <button class="btn btn-success btn-sm bi bi-floppy" type="submit">&nbsp;&nbsp;Simpan</button>
+            </form>
+        </div>
+    </div>
+</body>
+{% endblock %}

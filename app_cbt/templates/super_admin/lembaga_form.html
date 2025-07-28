@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block konten %}
+<div class="container-fluid">
+    <div>
+        {% include "menu_lembaga.html" %}
+    </div>
+    <div class="col-lg-5 mt-4 m-auto">
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- Nama Lembaga -->
+            <div class="mb-3">
+                <label for="nama_lembaga" class="form-label">Nama Lembaga</label>
+                <input type="text" class="form-control" id="nama_lembaga" name="nama_lembaga" value="{{ nama_lembaga }}"
+                    required>
+            </div>
+
+            <!-- Ketua Panitia -->
+            <div class="mb-3">
+                <label for="ketua_panitia" class="form-label">Ketua Panitia</label>
+                <input type="text" class="form-control" id="ketua_panitia" name="ketua_panitia"
+                    value="{{ ketua_panitia }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="nip" class="form-label">NIP</label>
+                <input type="text" class="form-control" id="nip" name="nip" value="{{ nip }}" required>
+            </div>
+
+            <!-- NPSN -->
+            <div class="mb-3">
+                <label for="npsn" class="form-label">NPSN</label>
+                <input type="text" class="form-control" id="npsn" name="npsn" value="{{ npsn }}" maxlength="8" required>
+                <div class="form-text">Nomor Pokok Sekolah Nasional (8 digit)</div>
+            </div>
+
+            <!-- Alamat -->
+            <div class="mb-3">
+                <label for="alamat" class="form-label">Alamat</label>
+                <textarea class="form-control" id="alamat" name="alamat" rows="3" required>{{ alamat }}</textarea>
+            </div>
+
+            <!-- Tingkat Satuan Lembaga -->
+            <div class="mb-3">
+                <label for="tingkat" class="form-label">Tingkat Satuan Lembaga</label>
+                <select class="form-select" id="tingkat" name="tingkat" required>
+                    <option value="SD/MI" {% if tingkat == 'SD/MI' %}selected{% endif %}>SD/MI</option>
+                    <option value="SMP/MTS" {% if tingkat == 'SMP/MTS' %}selected{% endif %}>SMP/MTS</option>
+                    <option value="SMA/MA" {% if tingkat == 'SMA/MA' %}selected{% endif %}>SMA/MA</option>
+                </select>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary bi bi-floppy">&nbsp;Simpan</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

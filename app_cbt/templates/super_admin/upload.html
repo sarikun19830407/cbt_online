@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+<body>
+    {% block konten %}
+    <div class="container-fluid ">
+        <section class=" ">
+            <div class="container">
+                <h2 class="text-center mb-4">{{NamaForm}}</h2>
+                <hr>
+                <div class="text-center">
+                    <p class="m-0">Sebelum Upload Silahkan Download Template Terlebih Dahulu</p>
+
+                    {% if success_count %}
+                    <p class="text-success">Total data berhasil diunggah: {{ success_count }} </p>
+                    {% endif %}
+
+
+                </div>
+                <div class="row justify-content-center mt-3">
+                    <div class="col-md-6">
+
+                        <ul>
+                            <li class="text-center">
+                                <a class="btn btn-info" href="{{download}}">Download Template CSV</a>
+                            </li>
+                        </ul>
+                        <form id="uploadForm" method="POST" action="" enctype="multipart/form-data">
+                            <div id="loading">
+                                <div class="loader"></div>
+                                <div class="text-center">Proses sedang berjalan...</div>
+                            </div>
+                            {% csrf_token %}
+                            <div class="d-grid gap-2 d-md-block">
+                                <div class="col-auto ">
+                                    <p>{{ form }}</p>
+                                </div>
+                            </div>
+
+                            <br>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button class="btn btn-primary me-md-2" id="submitBtn" type="submit">Simpan</button>
+                                <a class="btn btn-secondary" href="{{link}}">Batal</a>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+                <br>
+                {% include "setting/pesan1.html" %}
+            </div>
+        </section>
+    </div>
+    {% endblock %}
+</body>

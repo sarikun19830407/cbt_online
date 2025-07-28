@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+<body>
+    {% block konten %}
+    <div class="container-fluid">
+        <section class="py-5">
+            <div class="container">
+                <h2 class="text-center mb-4">{{NamaForm}}</h2>
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                            {% if messages %}
+                            {% for message in messages %}
+                            <li class="alert alert-danger ">{{ message }}</li>
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+                        <form method="POST" class="">
+                            {% csrf_token %}
+                            <div class="form-group ">
+                                {{form}}
+                            </div>
+                            <br>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button class="btn btn-primary me-md-2 bi bi-floppy"
+                                    type="submit">&nbsp;&nbsp;Simpan</button>
+                                <a class="btn btn-secondary bi bi-arrow-counterclockwise"
+                                    href="{{link}}">&nbsp;&nbsp;Batal</a>
+                            </div>
+                        </form>
+                        <br>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    {% endblock %}
+</body>

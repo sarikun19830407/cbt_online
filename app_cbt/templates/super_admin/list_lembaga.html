@@ -1,0 +1,58 @@
+{% extends 'base.html' %} <!-- Assuming you have a base template -->
+
+{% block konten %}
+
+<body>
+    <div class="container-fluid">
+        <div class="d-flex flex-row gap-2 mb-1">
+
+            <div class="">
+                <a class="btn btn-success btn-sm bi bi-plus" style="font-size: 8;"
+                    href="{% url 'cbt:tambah_tahun_pelajaran' %}">&nbsp;Tambah</a>
+            </div>
+            <div class="d-grid d-md-flex justify-content-md-start">
+                {% if messages %}
+                {% for message in messages %}
+                <li class="btn bg-primary-subtle btn-sm" style="font-size: 8;" {% if message.tags %}
+                    class="{{ message.tags }}" {%endif%}>
+                    {{ message }}</li>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="overflow-auto">
+
+            <table class="table table-striped table-bordered border-info table-hover" style="font-size: small;">
+                <thead class="text-center">
+                    <tr class="">
+                        <th class="" scope="col">No</th>
+                        <th class="" scope="col">Nama Lembaga</th>
+                        <th class="" scope="col">Ketua Panitia</th>
+                        <th class="" scope="col">status</th>
+                        <th class="" scope="col">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in Data %}
+                    <tr class="Tabel">
+                        <td class="align-middle text-center">{{ forloop.counter }}</td>
+                        <td class="align-middle">{{data.Tahun_Pelajaran}}</td>
+                        <td class="align-middle">{{data.Tikatan_Satuan_Lembaga}}</td>
+                        <td class="align-middle">{{data.status|yesno:"Active,Tidak Active"}}</td>
+                        <td class="align-middle text-center">
+                            <div class="btn-group" role="group" aria-label="Basic mixed styles example">
+                                <a class="btn btn-warning btn-sm bi bi-pencil-square" style="font-size: 8;"
+                                    href="{% url 'cbt:Ubah_Tahun_Pelajaran' data.id %}">&nbsp;Ubah</a>
+                                <a class="btn btn-danger btn-sm bi bi-trash" style="font-size: 8;"
+                                    href="{% url 'cbt:Hapus_Tahun_Pelajaran' data.id %}">&nbsp;Hapus</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+{% endblock %}

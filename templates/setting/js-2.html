@@ -1,0 +1,55 @@
+<style>
+    .status {
+        font-weight: bold;
+        padding: 8px;
+        border-radius: 10px;
+        display: inline-block;
+        font-size: 12px;
+    }
+    .status-pengajuan { 
+        background-color: rgb(212, 212, 55) !important; 
+        color: black !important; }
+    .status-ditolak { 
+        background-color: red !important; 
+        color: white !important; }
+    .status-disetujui { 
+        background-color: green !important; 
+        color: white !important; }
+    .status-dibatalkan { 
+        background-color: rgb(64, 101, 158) !important; 
+        color: white !important; }
+
+
+</style>
+
+<!-- JavaScript untuk menyembunyikan tombol dan mengubah warna status -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("[id^='status-']").forEach(function (statusElement) {
+        let statusText = statusElement.textContent.trim(); // Tidak pakai .toLowerCase()
+        let id = statusElement.id.split("-")[1]; 
+        let btnTerima = document.getElementById("btn-terima-" + id);
+
+        // Hapus semua class lama dulu
+        statusElement.classList.remove("status-pengajuan", "status-ditolak", "status-disetujui","status-dibatalkan");
+
+        // Menyesuaikan warna berdasarkan status dari model
+        if (statusText === "Pengajuan") {
+            statusElement.classList.add("status-pengajuan");
+        } else if (statusText === "Ditolak") {
+            statusElement.classList.add("status-ditolak");
+            if (btnTerima) btnTerima.style.display = "none";
+        } else if (statusText === "Disetujui") {
+            statusElement.classList.add("status-disetujui");
+            if (btnTerima) btnTerima.style.display = "none";
+        }else if (statusText === "Dibatalkan") {
+            statusElement.classList.add("status-dibatalkan");
+            if (btnTerima) btnTerima.style.display = "none";
+        }
+    });
+});
+
+</script>
+
+
+

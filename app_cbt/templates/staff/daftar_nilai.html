@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block konten %}
+<div class="container-fluid mt-4">
+    <table class="table table-striped table-bordered border-info table-hover" style="font-size: 12px;">
+        <thead>
+            <tr>
+                <th scope="col" class="text-center">No</th>
+                <th scope="col" class="text-center">Nama Siswa</th>
+                <th scope="col" class="text-center">Jumlah Benar</th>
+                <th scope="col" class="text-center">Persentase</th>
+                <th scope="col" class="text-center">Skor Akhir (100)</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for siswa in nilai_siswa %}
+            <tr class="Tabel">
+                <td class="align-middle text-center">{{ forloop.counter }}</td>
+                <td class="align-middle">{{ siswa.nama }}</td>
+                <td class="align-middle text-center">{{ siswa.total_benar }}</td>
+                <td class="align-middle text-center">{{ siswa.persentase|floatformat:1 }}%</td>
+                <td class="align-middle text-center"><strong>{{ siswa.nilai_akhir|floatformat:2 }}</strong></td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">Belum ada data jawaban.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% load static %}
+
+<script src="{% static 'poper.js' %}"></script>
+<script src="{% static 'jquery.js' %}"></script>
+<script src="{% static 'ckeditor/ckeditor-init.js' %}"></script>
+<script src="{% static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
+
+
+
+
+
+
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        function setActiveMenu(menuClass, storageKey) {
+            let menuItems = document.querySelectorAll(menuClass);
+
+            menuItems.forEach(item => {
+                item.addEventListener("click", function () {
+                    // Hapus kelas 'active' dari semua item dalam grup ini
+                    menuItems.forEach(menu => menu.classList.remove("active"));
+
+                    // Tambahkan kelas 'active' ke item yang diklik
+                    this.classList.add("active");
+
+                    // Simpan state menu aktif ke localStorage jika ada href
+                    let href = this.getAttribute("href");
+                    if (href) {
+                        localStorage.setItem(storageKey, href);
+                    }
+                });
+            });
+
+            // Saat halaman dimuat ulang, set menu yang terakhir aktif
+            let activeMenu = localStorage.getItem(storageKey);
+            if (activeMenu) {
+                let currentItem = document.querySelector(`${menuClass}[href='${activeMenu}']`);
+                if (currentItem) {
+                    currentItem.classList.add("active");
+                }
+            }
+        }
+
+        // Atur active state untuk masing-masing menu
+        setActiveMenu(".menu-1", "activeMenuUtama");
+        setActiveMenu(".menu_active", "activeMenuMutasi");
+        setActiveMenu(".Tabel", "activeMenuTabel");
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const menuItems = document.querySelectorAll('#sidebarMenu .nav-link');
+
+        menuItems.forEach(item => {
+            item.addEventListener('click', function (e) {
+                // Hapus class active dari semua menu
+                menuItems.forEach(link => link.classList.remove('active'));
+
+                // Tambahkan class active ke menu yang diklik
+                this.classList.add('active');
+
+                // Simpan menu aktif di localStorage
+                localStorage.setItem('activeMenu', this.getAttribute('href'));
+            });
+
+            // Cek localStorage saat halaman dimuat
+            const activeMenu = localStorage.getItem('activeMenu');
+            if (activeMenu && item.getAttribute('href') === activeMenu) {
+                item.classList.add('active');
+            }
+        });
+
+        // Set menu pertama sebagai aktif default jika belum ada yang aktif
+        if (!localStorage.getItem('activeMenu') && menuItems.length > 0) {
+            menuItems[0].classList.add('active');
+            localStorage.setItem('activeMenu', menuItems[0].getAttribute('href'));
+        }
+    });
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("uploadForm");
+        const submitBtn = document.getElementById("submitBtn");
+        const loadingDiv = document.getElementById("loading");
+
+        form.addEventListener("submit", function () {
+            submitBtn.disabled = true;  // Matikan tombol Upload
+            loadingDiv.style.display = "block";  // Tampilkan animasi loading
+        });
+    });
+</script>

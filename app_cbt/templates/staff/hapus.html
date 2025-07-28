@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block konten %}
+<div class="container my-5">
+    <div class="card shadow-lg">
+        <div class="card-body">
+
+            <!-- Alert messages -->
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <!-- Delete confirmation -->
+            <section class="py-4 bg-light rounded shadow-sm">
+                <div class="container">
+                    <h3 class="text-center mb-4">Apakah kamu yakin ingin menghapus <strong>{{ Data }}</strong> ?</h3>
+
+                    <div class="row justify-content-center">
+                        <div class="col-md-6">
+                            <form method="POST">
+                                {% csrf_token %}
+                                <div class="d-flex justify-content-center gap-3">
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="bi bi-trash"></i>&nbsp; Ya
+                                    </button>
+                                    <a href="{{ link }}" class="btn btn-secondary">
+                                        <i class="bi bi-arrow-counterclockwise"></i>&nbsp; Batal
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

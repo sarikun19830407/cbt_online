@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Ujicoba Soal</title>
+    {% include "setting/css.html" %}
+</head>
+
+<body class="bg-body-secondary">
+    <div class="container p-3">
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="col-lg-3">
+                    <table class="table table-borderless p-0 m-0 ">
+                        <tr>
+                            <td>Mata Pelajaran</td>
+                            <td>:</td>
+                            <td>{{ setting.Mapel }}</td>
+                        </tr>
+                        <tr>
+                            <td>Kelas</td>
+                            <td>:</td>
+                            <td>{{ setting.Kelas }}</td>
+                        </tr>
+                        <tr>
+                            <td>Semester</td>
+                            <td>:</td>
+                            <td>{{ setting.Semester }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            {% for soal in soal_list %}
+            <div class="card mb-3">
+                <div class="card-header bg-light">
+                    <strong>Nomor {{ soal.Nomor }}</strong>
+                </div>
+                <div class="container-fluid p-3">
+                    <div class="container-fluid">{{ soal.Soal|safe }}</div>
+                    <table class="table table-borderless">
+                        <tr class="">
+                            <td class="" style="width: 40px;">
+                                <input class="form-check-input" type="radio" name="jawaban_{{ soal.id }}" value="A"
+                                    id="a{{ soal.id }}">
+                            </td>
+                            <td class="" style="width: 40px;">A.</td>
+                            <td class="">{{ soal.A|safe }}</td>
+                        </tr>
+                        <tr>
+                            <td class="" style="width: 40px;">
+                                <input class="form-check-input" type="radio" name="jawaban_{{ soal.id }}" value="B"
+                                    id="b{{ soal.id }}">
+                            </td>
+                            <td class="" style="width: 40px;">B.</td>
+                            <td class="">{{ soal.B|safe }}</td>
+                        </tr>
+                        <tr>
+                            <td class="" style="width: 40px;">
+                                <input class="form-check-input" type="radio" name="jawaban_{{ soal.id }}" value="C"
+                                    id="c{{ soal.id }}">
+                            </td>
+                            <td class="" style="width: 30px;">C.</td>
+                            <td class="">{{ soal.C|safe }}</td>
+                        </tr>
+                        <tr>
+                            <td class=" " style="width: 40px;">
+                                <input class="form-check-input" type="radio" name="jawaban_{{ soal.id }}" value="D"
+                                    id="d{{ soal.id }}">
+                            </td>
+                            <td class=" " style="width: 40px;">D.</td>
+                            <td class="">{{ soal.D|safe }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button type="submit" class="btn btn-success">Selesai Ujicoba</button>
+                <a href="{% url 'cbt:setting_soal' %}" class="btn btn-secondary">Tutup Ujicoba</a>
+            </div>
+
+        </form>
+    </div>
+</body>
+{% include "setting/js.html" %}
+
+</html>

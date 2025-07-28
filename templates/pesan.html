@@ -1,0 +1,31 @@
+<ul class="navbar-nav mb-2 mt-2 me-auto">
+    <form class="d-flex" action="" method="POST" role="search">
+        {% csrf_token %}
+        <input class="form-control btn-sm col-lg-7 me-2" id="searchInput" style="font-size: 12px;" name="cari"
+            type="search" placeholder="{{placeholder}}" aria-label="Search" value="{{cari}}">
+        <button class="btn btn-sm btn-success" id="searchButton" type="submit" style="font-size: 12px;"
+            disabled>Cari</button>
+    </form>
+</ul>
+<div class="d-grid d-md-flex justify-content-md-start mb-2">
+    {% if messages %}
+    {% for message in messages %}
+    <li class="btn bg-primary-subtle " style="font-size: 8;" {% if message.tags %} class="{{ message.tags }}" {%endif%}>
+        {{ message }}</li>
+    {% endfor %}
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let searchInput = document.getElementById("searchInput");
+        let searchButton = document.getElementById("searchButton");
+
+        function toggleButton() {
+            searchButton.disabled = searchInput.value.trim() === "";
+        }
+
+        searchInput.addEventListener("input", toggleButton);
+        toggleButton(); // Panggil fungsi saat halaman dimuat
+    });
+</script>

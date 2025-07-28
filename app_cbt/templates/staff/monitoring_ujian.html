@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load dict_utils %}
+
+{% block konten %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Monitoring Ujian Online</h1>
+
+    <form method="get" class="form-inline mb-3">
+        <select name="lembaga" class="form-control mr-2">
+            <option value="">Semua Lembaga</option>
+            {% for lembaga in lembaga_list %}
+                <option value="{{ lembaga.id }}" {% if selected_lembaga == lembaga.id %}selected{% endif %}>
+                    {{ lembaga.Nama }}
+                </option>
+            {% endfor %}
+        </select>
+        <select name="status" class="form-control mr-2">
+            <option value="">Semua Status</option>
+            <option value="login" {% if selected_status == 'login' %}selected{% endif %}>Login</option>
+            <option value="mulai" {% if selected_status == 'mulai' %}selected{% endif %}>Mengerjakan</option>
+            <option value="selesai" {% if selected_status == 'selesai' %}selected{% endif %}>Selesai</option>
+        </select>
+        <button class="btn btn-primary">Filter</button>
+        <a href="{% url 'cbt:monitoring_ujian' %}" class="btn btn-secondary ml-2">Reset</a>
+    </form>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="card border-left-primary p-3">Total Siswa: <strong>{{ total_siswa }}</strong></div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-left-warning p-3">Sedang Mengerjakan: <strong>{{ sedang_mengerjakan }}</strong></div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-left-success p-3">Selesai: <strong>{{ sudah_selesai }}</strong></div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="thead-dark">
+                <tr>
+                    <th>No</th>
+                    <th>Lembaga</th>
+                    <th>Nama</th>
+                    <th>Kelas</th>
+                    <th>Mapel</th>
+                    <th>Status</th>
+                    <th>Waktu Tersisa</th>
+                    <th>Terakhir Update</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for siswa in siswa_list %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ siswa.lembaga.Nama|default:"-" }}</td>
+                    <td>{{ siswa.siswa.Nama }}</td>
+                    <td>
+                        {% if siswa.siswa.Kelas %}
+                            {{ siswa.siswa.Kelas.Nama }}/{{ siswa.siswa.Rombel.Nama }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if siswa.kode_soal %}
+                            {{ siswa.kode_soal.Mapel.Nama }} ({{ siswa.kode_soal.Kode_Soal }})
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if siswa.status == 'selesai' %}
+                            <span class="badge badge-success">Selesai</span>
+                        {% elif siswa.status == 'mulai' %}
+                            <span class="badge badge-warning text-dark">Mengerjakan</span>
+                        {% else %}
+                            <span class="badge badge-info">Login</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if siswa.status == 'mulai' and siswa.sisa_waktu %}
+                            <div class="progress">
+                                <div class="progress-bar 
+                                    {% if siswa.sisa_waktu.total_seconds < 300 %}
+                                        bg-danger
+                                    {% else %}
+                                        bg-success
+                                    {% endif %}"
+                                    role="progressbar"
+                                    style="width: {{ siswa.sisa_waktu|percentage:siswa.kode_soal.durasi_menit }}%;">
+                                    {{ siswa.sisa_waktu|stringformat:"H:i:s" }}
+                                </div>
+                            </div>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {{ siswa.terakhir_diupdate|timesince }} lalu
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center">Tidak ada data</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

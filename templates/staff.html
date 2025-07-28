@@ -1,0 +1,73 @@
+{% load static %}
+
+<div class="offcanvas offcanvas-start bg-body-secondary text-dark" data-bs-scroll="true" data-bs-backdrop="false"
+    tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel">
+
+    <!-- HEADER -->
+    <div class="offcanvas-header bg-body-tertiary">
+        <div class="p-3 text-center w-100">
+            <h3 class="mb-0 fw-bold">CBT</h3>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+
+    <!-- BODY / NAVIGATION -->
+    <div class="offcanvas-body">
+        <ul class="nav flex-column px-2 pt-3" id="sidebarMenu">
+            <li class="nav-item">
+                <a class="nav-link menu-1" href="{% url 'cbt:staff' %}">
+                    <i class="bi bi-house-fill fst-normal">&nbsp;&nbsp;&nbsp; Beranda</i>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link menu-1" href="{% url 'cbt:setting_soal' %}">
+                    <i class="bi bi-gear fst-normal">&nbsp;&nbsp;&nbsp; Seting Soal</i>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link menu-1" href="{% url 'cbt:daftar_nilai' %}">
+                    <i class="bi bi-card-list fst-normal">&nbsp;&nbsp;&nbsp; Daftar Nilai</i>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link menu-1" href="{% url 'cbt:arsip_soal' %}">
+                    <i class="bi bi-hdd fst-normal">&nbsp;&nbsp;&nbsp; Arsip Soal</i>
+                </a>
+            </li>
+
+        </ul>
+    </div>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar bg-body-secondary fw-bold" id="sidebar">
+    <div class="p-3 text-center bg-danger-subtle">
+        <h3 class="mb-0 fw-bold">CBT</h3>
+    </div>
+
+    <ul class="nav flex-column px-2 pt-3" id="sidebarMenu">
+        <li class="nav-item">
+            <a class="nav-link menu-1" href="{% url 'cbt:staff' %}">
+                <i class="bi bi-house-fill fst-normal">&nbsp;&nbsp;&nbsp; Beranda</i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link menu-1" href="{% url 'cbt:setting_soal' %}">
+                <i class="bi bi-gear fst-normal">&nbsp;&nbsp;&nbsp; Seting Soal</i>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a class="nav-link menu-1" href="{% url 'cbt:daftar_nilai' %}">
+                <i class="bi bi-card-list fst-normal">&nbsp;&nbsp;&nbsp; Daftar Nilai</i>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link menu-1" href="{% url 'cbt:arsip_soal' %}">
+                <i class="bi bi-hdd fst-normal">&nbsp;&nbsp;&nbsp; Arsip Soal</i>
+            </a>
+        </li>
+
+    </ul>
+</div>

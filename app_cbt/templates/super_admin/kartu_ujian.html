@@ -1,0 +1,141 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 1cm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            page-break-after: always;
+        }
+
+        .kartu {
+            border: 2px solid #000;
+            width: 48%;
+            height: 200px;
+            box-sizing: border-box;
+            padding: 10px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+
+        }
+
+        .header h2 {
+            margin: 3px 0;
+            font-size: 14px;
+
+        }
+
+        .header h3 {
+            margin: 3px 0;
+            font-size: 12px;
+            font-weight: normal;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+
+        .info-table td {
+            padding: 2px 5px;
+            vertical-align: top;
+        }
+
+        .info-table td:first-child {
+            width: 20%;
+            white-space: nowrap;
+        }
+
+        .signature {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            text-align: left;
+            font-size: 9px;
+            width: 40%;
+        }
+
+        .nomor-box {
+            display: inline-block;
+            border: 1px solid #000;
+            width: 15px;
+            height: 20px;
+            text-align: center;
+            margin-right: 2px;
+            line-height: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    {% for group in pages %}
+    <div class="page">
+        {% for user in group %}
+        <div class="kartu">
+            <div class="header" style="display: flex; align-items: center; gap: 10px;">
+                <div style="flex-shrink: 0;">
+                    <img src="{{ logo_kemenag }}" alt="Logo Kemenag" style="height: 45px;">
+                </div>
+                <div style="text-align: center; flex: 1;">
+                    <h2 style="margin: 2px; font-size: 11px;">KARTU PESERTA UJIAN SEMESTER {{ semester.Semester|upper }}</h2>
+                    <h3 style="margin: 2px; font-size: 10px;">{{ lembaga.Nama_Lembaga|upper }}</h3>
+                    <h4 style="margin: 2px; font-size: 9px;">TP. {{ tahun_pelajaran.Tahun_Pelajaran }}</h4>
+                </div>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #000;  ">
+            <div>
+                <table class="info-table">
+                    <tr>
+                        <td>No Peserta</td>
+                        <td>: {{user.nomor_peserta}}</td>
+                    </tr>
+                    <tr>
+                        <td>Username</td>
+                        <td>: {{user.username}}</td>
+                    </tr>
+                    <tr>
+                        <td>Nama</td>
+                        <td>: {{ user.Nama }}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Kelas</td>
+                        <td>: {{ user.Kelas }}/{{user.Rombel}}</td>
+                    </tr>
+                </table>
+            </div>
+            <br>
+            <div class="signature">
+                Palas, {{ tanggal_cetak|date:"j F Y" }}<br>
+                Ketua Panitia<br><br><br>
+                {{ user.Nama_Lembaga.Ketua_panitia|default:"-" }} <br>
+                NIP.{{ lembaga.NIP|default:"-" }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</body>
+
+</html>
