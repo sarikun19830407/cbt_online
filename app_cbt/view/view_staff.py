@@ -714,10 +714,10 @@ def download_template_soal(request):
     # Contoh baris isi
     ws.append([
         '1',
-        '<p>Contoh soal:</p><br><img src="/media/upload_soal/gambar1.jpg">',
-        '<p>Opsi A</p>', '<p>Opsi B</p>', '<p>Opsi C</p>', '<p>Opsi D</p>',
-        'A',
-        10
+        'contoh soal',
+        'opsi 1', 'opsi 2', 'opsi 3', 'opsi 4',
+        'A',"Nilai 1-10"
+        
     ])
 
     # Border untuk isi
