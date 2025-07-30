@@ -1488,7 +1488,7 @@ def export_jawaban_siswa_pdf(request, id_daftarnilai):
         })
 
     html_string = render_to_string("staff/Jawaban_siswa_pdf.html", {
-        "data": f"Analisis : {mapel} Kelas : {kelas}/{rombel}",
+        "data": f"Mapel : {mapel} Kelas : {kelas}/{rombel}",
         "judul": "CBT-Analisis soal",
         'daftar_nilai': daftar_nilai,
         'seting_soal': seting_soal,
