@@ -1503,7 +1503,7 @@ def export_jawaban_siswa_pdf(request, id_daftarnilai):
 
 
     response = HttpResponse(content_type='application/pdf')
-    filename = f"Daftar_Nilai_{mapel}_{kelas}_{rombel}.pdf"
+    filename = f"Analisis_{mapel}_{kelas}_{rombel}.pdf"
     response['Content-Disposition'] = f'filename="{filename}"'
 
     # Konversi cm ke points (1 cm = 28.35 points)
