@@ -1,132 +1,170 @@
 {% load dict_utils %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Analisis Jawaban Siswa</title>
     <style>
-    body {
-        font-family: Arial, sans-serif;
-        font-size: 7px;
-        margin: 0;
-        padding: 10px;
-        color: #333;
-    }
-    
-    .container {
-        width: 100%;
-        max-width: 100%;
-        margin: 0 auto;
-        box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-    
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 5px;
-        table-layout: fixed;
-    }
-    
-    th, td {
-        border: 1px solid #222121;
-        padding: 5px;
-        text-align: center;
-        vertical-align: middle;
-    }
-    
-    th {
-        background-color: #f5f5f5;
-        font-weight: bold;
-        position: sticky;
-        top: 0;
-        width: 15px;
-    }
-    
-    tfoot tr {
-        background-color: #f5f5f5;
-        font-weight: bold;
-    }
-    
-    .text-center {
-        text-align: center;
-    }
-    
-    .text-end {
-        text-align: right;
-    }
-    
-    .align-middle {
-        vertical-align: middle;
-    }
-    
-    .border-dark {
-        border-color: #212529;
-    }
-    
-    .bg-primary {
-        background-color: #007bff;
-        color: white;
-    }
-    
-    .bg-light {
-        background-color: #f8f9fa;
-    }
-    
-    .fw-bold {
-        font-weight: bold;
-    }
-    
-    .text-muted {
-        color: #6c757d;
-        font-size: 0.8em;
-    }
-    
-    .footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px;
-        font-size: 0.9em;
-        border-top: 1px solid #dee2e6;
-        margin-top: 5px;
-    }
-    
-    /* Fixed column widths */
-    th:nth-child(1) { width: 20px; }  /* No */
-    th:nth-child(2) { width: 100px; } /* Nama Siswa */
-    
-    /* Responsive adjustments */
-    @media print {
-        @page {
-            size: 8.5cm 13cm landscape;
-            margin: 0.5cm;
-        }
-        
         body {
+            font-family: Arial, sans-serif;
             font-size: 7px;
-            padding: 0 1px; /* 2px padding left and right */
+            margin: 0;
+            padding: 10px;
+            color: #333;
         }
-        
+
         .container {
-            padding: 0 1px; /* 2px padding left and right */
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
-        
-        th, td {
-            padding: 2px 3px; /* 2px top/bottom, 3px left/right */
-        }
-        
-        /* Adjust table width to account for padding */
+
         table {
-            width: calc(100% - 4px);
-            margin-left: 0px;
-            margin-right: 2px;
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 5px;
+            table-layout: fixed;
         }
-    }
-</style>
+
+        th,
+        td {
+            border: 1px solid #222121;
+            padding: 5px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            width: 15px;
+        }
+
+        tfoot tr {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-end {
+            text-align: right;
+        }
+
+        .align-middle {
+            vertical-align: middle;
+        }
+
+        .border-dark {
+            border-color: #212529;
+        }
+
+        .bg-primary {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .bg-light {
+            background-color: #f8f9fa;
+        }
+
+        .fw-bold {
+            font-weight: bold;
+        }
+
+        .text-muted {
+            color: #6c757d;
+            font-size: 0.8em;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            font-size: 0.9em;
+            border-top: 1px solid #dee2e6;
+            margin-top: 5px;
+        }
+
+        /* Fixed column widths */
+        th:nth-child(1) {
+            width: 20px;
+        }
+
+        /* No */
+        th:nth-child(2) {
+            width: 100px;
+        }
+
+        .judul {
+            font-size: 12px;
+            margin: 0;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .subjudul {
+            font-size: 11px;
+            margin: 0;
+            font-weight: normal;
+            text-align: center;
+        }
+
+
+        /* Nama Siswa */
+
+        /* Responsive adjustments */
+        @media print {
+            @page {
+                size: legal landscape;
+                margin: 0.5cm;
+
+            }
+
+            body {
+                font-size: 7px;
+                padding: 0 1px;
+                /* 2px padding left and right */
+            }
+
+            .container {
+                padding: 0 1px;
+                /* 2px padding left and right */
+            }
+
+            th,
+            td {
+                padding: 2px 3px;
+                /* 2px top/bottom, 3px left/right */
+            }
+
+            /* Adjust table width to account for padding */
+            table {
+                width: calc(100% - 4px);
+                margin-left: 0px;
+                margin-right: 2px;
+            }
+        }
+    </style>
 </head>
+
 <body>
     <div class="container">
+        <h2 class="judul">ANALISIS JAWABAN SISWA</h2>
+        <h2 class="subjudul">{{lembaga}}</h2>
+        <h2 class="subjudul">TP. {{tahun_pelajaran}}</h2>
+        <div class="subjudul">{{data}}</div>
+
+        <br>
         <table>
             <thead>
                 <tr>
@@ -183,7 +221,7 @@
                 </tr>
             </tfoot>
         </table>
-        
+
         <div class="footer">
             <div>
                 <span>Warna biru = jawaban benar</span>
@@ -194,4 +232,5 @@
         </div>
     </div>
 </body>
+
 </html>

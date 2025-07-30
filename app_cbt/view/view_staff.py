@@ -1495,7 +1495,10 @@ def export_jawaban_siswa_pdf(request, id_daftarnilai):
         'soal_list': soal_list,
         'jawaban_siswa': sorted(jawaban_siswa.values(), key=lambda x: x['nama']),
         'statistik_soal': statistik_soal,
-        'total_nilai_maksimal': total_nilai_maksimal
+        'total_nilai_maksimal': total_nilai_maksimal,
+        "lembaga":lembaga,
+        "tahun_pelajaran":tahun_pelajaran,
+        
     })
 
 
@@ -1508,7 +1511,7 @@ def export_jawaban_siswa_pdf(request, id_daftarnilai):
     height = 13 * 28.35   # Tinggi 13 cm
 
     pdf_options = {
-        'page-size': 'A4',  # Default, akan di-override oleh page-width dan page-height
+        'page-size': 'legal',  # Default, akan di-override oleh page-width dan page-height
         'page-width': f'{width}pt',
         'page-height': f'{height}pt',
         'orientation': 'Landscape',
@@ -2006,6 +2009,7 @@ def export_daftar_nilai_pdf(request, id_daftarnilai):
         "rombel": rombel,
         "nilai_siswa": sorted(nilai_siswa.values(), key=lambda x: x["nama"]),
     })
+
 
 
     response = HttpResponse(content_type='application/pdf')
