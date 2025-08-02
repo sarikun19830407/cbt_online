@@ -143,6 +143,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 AUTH_USER_MODEL = "app_cbt.Pengguna"
+LOGIN_URL = '/app_cbt'
+
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 360000
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
