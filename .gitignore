@@ -1,12 +1,10 @@
-env/
-# Python
+# Python bytecode
 __pycache__/
 *.py[cod]
 *$py.class
 
 # Distribution / packaging
 build/
-develop-eggs/
 dist/
 downloads/
 eggs/
@@ -15,18 +13,17 @@ lib/
 lib64/
 parts/
 sdist/
-var/
 *.egg-info/
 .installed.cfg
 *.egg
 
-# Django
+# Django files
 *.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
 
-# Environments
+# Python virtual environments
 .env
 .venv
 env/
@@ -35,13 +32,10 @@ ENV/
 env.bak/
 venv.bak/
 
-# VSCode
+# VSCode config
 .vscode/
 
-# PyCharm
-.idea/
-
-# mypy
+# Mypy
 .mypy_cache/
 .dmypy.json
 dmypy.json
@@ -49,23 +43,21 @@ dmypy.json
 # Pytest
 .cache/
 
-# Coverage reports
+# Coverage
 htmlcov/
 .coverage
 .coverage.*
 
-# Backup files
+# Backup/swap files
 *.bak
 *.swp
 *.swo
 *.orig
 
-# Media / uploads (optional - jika media disimpan lokal dan tidak ingin masuk Git)
+# Media (jika disimpan lokal)
 media/
 
 # Celery
 celerybeat-schedule
 celerybeat.pid
 
-# Gunicorn
-gunicorn.pid
