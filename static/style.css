@@ -45,7 +45,6 @@ body {
 
 .login-2{
     width: 100%;
-    
     justify-content: center;
     align-content: center;
 }
@@ -287,9 +286,13 @@ body {
     }
 
     .Gambar-login{
-        width: 0;
-        height: 0;
+        display: none;
     }
-    
+    .login-1{
+        display: none;
+    }
+    .login-2{
+        width: 100%;
+    }
     
 }
