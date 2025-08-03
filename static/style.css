@@ -102,11 +102,18 @@ body {
         
 .sidebar {
     width: 250px;
-    min-height: 100vh;
+    /* min-height: 100vh; */
     /* color: rgb(0, 0, 0); */
     transition: all 0.3s;
     position: fixed;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
 }
+
+/* .sidebar {
+        
+    } */
 
 .sidebar .nav-link {
     /* color: rgba(0, 0, 0, 0.8); */
