@@ -110,6 +110,9 @@ urlpatterns =[
     path('salin_setingsoal/<int:pk>/', view_staff.salin_setingsoal, name='salin_setingsoal'),
     path('lihat_arsip_soal_siswa/<pk>/', view_staff.lihat_arsip_soal_siswa, name='lihat_arsip_soal_siswa'),
     path('arsip_daftar_nilai/<int:pk>/', view_staff.arsip_daftar_nilai, name='arsip_daftar_nilai'),
+    path('hapus_arsip_daftar_nilai', view_staff.hapus_arsip_daftar_nilai, name='hapus_arsip_daftar_nilai'),
+    path('arsip_jawaban_siswa/<int:pk>/', view_staff.arsip_jawaban_siswa, name='arsip_jawaban_siswa'),
+    path('arsip_daftar_nilai_view/<int:pk>/', view_staff.arsip_daftar_nilai_view, name='arsip_daftar_nilai_view'),
 
 
 

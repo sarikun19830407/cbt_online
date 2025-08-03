@@ -16,7 +16,7 @@
                 </button>
                 <div class="collapse navbar-collapse gap-2" id="navbarSupportedContent">
                     {% include "pesan.html" %}
-                    <form method="POST" action="{% url 'cbt:hapus_daftar_nilai' %}" id="delete_form">
+                    <form method="POST" action="{% url 'cbt:hapus_arsip_daftar_nilai' %}" id="delete_form">
                         {% csrf_token %}
                         <div class="btn-group mb-2" role="group" aria-label="Basic mixed styles example">
                             </a>
@@ -54,9 +54,9 @@
                         <td class="align-middle text-center">
                             <div class="btn-group" role="group" aria-label="Basic mixed styles example">
                                 <a class="btn btn-info btn-sm bi bi-graph-up" style="font-size: 11px;"
-                                    href="{% url 'cbt:jawaban_siswa' data.id %}">&nbsp; Analisis</a>
+                                    href="{% url 'cbt:arsip_jawaban_siswa' data.id %}">&nbsp; Analisis</a>
                                 <a class="btn btn-secondary btn-sm bi bi-card-list" style="font-size: 11px;"
-                                    href="{% url 'cbt:daftar_nilai_view' data.id %}">&nbsp; Nilai</a>
+                                    href="{% url 'cbt:arsip_jawaban_siswa' data.id %}">&nbsp; Nilai</a>
                                 <a href="{% url 'cbt:export_jawaban_siswa' data.id %}"
                                     class="btn btn-success btn-sm bi bi-file-earmark-excel"
                                     style="font-size: 11px;">&nbsp;Analisis</a>

@@ -1252,7 +1252,9 @@ def jawaban_siswa(request, id_daftarnilai):
         'soal_list': soal_list,
         'jawaban_siswa': sorted(jawaban_siswa.values(), key=lambda x: x['nama']),
         'statistik_soal': statistik_soal,
-        'total_nilai_maksimal': total_nilai_maksimal
+        'total_nilai_maksimal': total_nilai_maksimal,
+        "link":reverse("cbt:daftar_nilai"),
+        'kembali':"Daftar nilai"
     }
     return render(request, 'staff/jawaban_siswa.html', context)
 
@@ -1636,6 +1638,7 @@ def daftar_nilai(request):
         "placeholder": "Kelas",
         "icon": "bi bi-list-ul",
         "link": reverse("cbt:setting_soal"),
+
     }
 
     return render(request, 'staff/list_daftar_nilai.html', context)
@@ -1845,6 +1848,8 @@ def daftar_nilai_view(request, id_daftarnilai):
         "seting_soal": seting_soal,
         "total_nilai_maksimal": total_nilai_maksimal,
         "nilai_siswa": sorted(nilai_siswa.values(), key=lambda x: x["nama"]),
+        "link":reverse("cbt:daftar_nilai"),
+        "kembali":"Daftar nilai"
     }
 
     return render(request, "staff/daftar_nilai.html", context)
@@ -2201,9 +2206,14 @@ def arsip_daftar_nilai(request, pk):
             items_per_page = 30
 
     # Ambil tahun pelajaran berdasarkan pk
-    tahun_aktif = get_object_or_404(models.TahunPelajaran, id=pk)
-
-    # Ambil semester dari relasi tahun pelajaran
+    
+    try:
+        tahun_aktif = get_object_or_404(models.TahunPelajaran, id=pk)
+    except Http404:
+        messages.error(request, "Data soal tidak ditemukan.")
+        return redirect(reverse("cbt:arsip_soal"))
+    
+    
     semester_obj = tahun_aktif.semester
     
 
@@ -2250,6 +2260,279 @@ def arsip_daftar_nilai(request, pk):
     }
 
     return render(request, 'staff/arsip_daftar_nilai.html', context)
+
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+@csrf_protect
+def hapus_arsip_daftar_nilai(request):
+    if request.method == "POST":
+        selected_ids = request.POST.getlist('selected_ids')
+
+        if not selected_ids:
+            messages.warning(request, 'Tidak ada data yang dipilih untuk dihapus.')
+            return redirect("cbt:arsip_soal")  # pastikan URL name ini sesuai
+
+        data_queryset = models.DaftarNilai.objects.filter(id__in=selected_ids)
+
+        if not data_queryset.exists():
+            raise Http404("Data Daftar Nilai tidak ditemukan.")
+
+        # Cek hak akses user
+        for item in data_queryset:
+            if item.Nama_User != request.user:
+                messages.error(request, "Anda tidak memiliki hak akses untuk menghapus data ini.")
+                return redirect("cbt:arsip_daftar_nilai", pk=item.Tahun_Pelajaran.pk)
+
+        # Simpan pk untuk redirect setelah delete
+        tahun_pelajaran_pk = data_queryset.first().Tahun_Pelajaran.pk
+
+        # Jika sudah dikonfirmasi hapus
+        if 'confirm' in request.POST:
+            data_queryset.delete()
+            messages.success(request, 'Data telah berhasil dihapus.')
+            return redirect("cbt:arsip_daftar_nilai", pk=tahun_pelajaran_pk)
+
+        # Tampilkan halaman konfirmasi
+        context = {
+            "data": f"Hapus {data_queryset.count()} Daftar Nilai",
+            "NamaForm": "Konfirmasi Hapus Data Nilai",
+            "judul": "Hapus Daftar Nilai",
+            "link": reverse("cbt:arsip_daftar_nilai", kwargs={"pk": tahun_pelajaran_pk}),
+            "hapus": reverse('cbt:hapus_arsip_daftar_nilai'),
+            "Data": data_queryset,
+            "Hapus": f"{data_queryset.count()} Daftar Nilai",
+            "ket": "Daftar Nilai",
+            "icon": "bi bi-trash3"
+        }
+        return render(request, 'super_admin/hapu_data.html', context)
+
+    return redirect("cbt:daftar_nilai")
+
+
+
+
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+@csrf_protect
+def arsip_jawaban_siswa(request, pk):
+    try:
+        daftar_nilai = get_object_or_404(models.DaftarNilai, id=pk)
+    except Http404:
+        messages.error(request, "Analisis tidak ditemukan.")
+        return redirect(reverse('cbt:daftar_nilai'))  
+    
+    kelas = daftar_nilai.Kelas
+    rombel = daftar_nilai.Rombel
+    mapel = daftar_nilai.Mapel
+    semester = daftar_nilai.Semester
+    tahun_pelajaran = daftar_nilai.Tahun_Pelajaran
+    lembaga = daftar_nilai.Nama_Lembaga
+
+    # Ambil seting soal sesuai kriteria
+    seting_soal = models.SetingSoal.objects.filter(
+        Nama_Lembaga=lembaga,
+        Kelas=kelas,
+        Mapel=mapel,
+        Semester=semester,
+        Tahun_Pelajaran=tahun_pelajaran
+    ).first()
+
+    if not seting_soal:
+        messages.warning(request, "Seting Soal tidak ditemukan.")
+        return redirect(reverse('cbt:daftar_nilai'))
+
+    # Ambil semua soal untuk seting soal ini
+    soal_list = models.Soal_Siswa.objects.filter(
+        Kode_Soal=seting_soal
+    ).order_by('Nomor')
+    total_soal = soal_list.count()
+    total_nilai_maksimal = sum(soal.Nilai for soal in soal_list if soal.Nilai)
+
+    # Ambil semua siswa (user.id) dari DaftarNilai sesuai kelas & rombel
+    siswa_list = models.Answer.objects.filter(
+        Kode_Soal=seting_soal,
+        Kelas=kelas,
+        Rombel=rombel
+    ).select_related("Nama_User", "Nomor_Soal")
+
+    jawaban_siswa = {}
+    for siswa in siswa_list:
+        user = siswa.Nama_User
+        nama_siswa = user.get_full_name() or getattr(user, 'Nama', None) or user.username
+        
+        jawaban_siswa[user.id] = {
+            'nama': nama_siswa,
+            'jawaban': {},
+            'total_nilai': 0,
+            'total_benar': 0
+        }
+
+    # Ambil semua jawaban dari siswa-siswa tsb
+    answers = models.Answer.objects.filter(
+        Kode_Soal=seting_soal,
+        Kelas=kelas,
+        Rombel=rombel
+    ).select_related('Nama_User', 'Nomor_Soal')
+
+    for answer in answers:
+        user_id = answer.Nama_User.id
+        if user_id in jawaban_siswa:
+            jawaban_siswa[user_id]['jawaban'][answer.Nomor_Soal.Nomor] = {
+                'huruf': answer.Jawaban,
+                'benar': answer.Jawaban_Benar,
+                'nilai': answer.Nilai_Siswa or 0
+            }
+
+            if answer.Jawaban_Benar:
+                jawaban_siswa[user_id]['total_nilai'] += answer.Nilai_Siswa or 0
+                jawaban_siswa[user_id]['total_benar'] += 1
+
+    # Hitung persentase
+    for user_data in jawaban_siswa.values():
+        user_data['persentase'] = (user_data['total_benar'] / total_soal) * 100 if total_soal > 0 else 0
+
+    # Statistik soal
+    statistik_soal = []
+    for soal in soal_list:
+        total_jawaban = models.Answer.objects.filter(
+            Nomor_Soal=soal,
+            Kelas=kelas,
+            Rombel=rombel
+        ).count()
+        
+        benar = models.Answer.objects.filter(
+            Nomor_Soal=soal,
+            Jawaban_Benar=True,
+            Kelas=kelas,
+            Rombel=rombel
+        ).count()
+        
+        persentase = (benar / total_jawaban) * 100 if total_jawaban > 0 else 0
+
+        statistik_soal.append({
+            'nomor': soal.Nomor,
+            'kunci': soal.Kunci_Jawaban,
+            'benar': benar,
+            'total': total_jawaban,
+            'persentase': round(persentase, 1),
+            'nilai_soal': soal.Nilai or 0
+        })
+
+    context = {
+        "data": f"Analisis : {mapel} Kelas : {kelas}/{rombel}",
+        "judul": "CBT-Analisis soal",
+        'daftar_nilai': daftar_nilai,
+        'seting_soal': seting_soal,
+        'soal_list': soal_list,
+        'jawaban_siswa': sorted(jawaban_siswa.values(), key=lambda x: x['nama']),
+        'statistik_soal': statistik_soal,
+        'total_nilai_maksimal': total_nilai_maksimal,
+        "link": reverse("cbt:arsip_daftar_nilai", kwargs={"pk": tahun_pelajaran.id}),
+        "kembali":"Arsip daftar nilai"
+    }
+    return render(request, 'staff/jawaban_siswa.html', context)
+
+
+
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+@csrf_protect
+def arsip_daftar_nilai_view(request, pk):
+    try:
+        daftar_nilai = get_object_or_404(models.DaftarNilai, id=pk)
+    except Http404:
+        messages.error(request, "Daftar nilai tidak ditemukan.")
+        return redirect(reverse('cbt:daftar_nilai'))
+
+    # Hanya user yang membuat data yang bisa mengakses
+    if request.user.is_staff and daftar_nilai.Nama_User != request.user:
+        messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
+        return redirect(reverse('cbt:daftar_nilai'))
+
+    # Ambil data dasar
+    kelas = daftar_nilai.Kelas
+    rombel = daftar_nilai.Rombel
+    mapel = daftar_nilai.Mapel
+    lembaga = daftar_nilai.Nama_Lembaga
+    semester = daftar_nilai.Semester
+    tahun_pelajaran = daftar_nilai.Tahun_Pelajaran
+
+    # Ambil data SetingSoal berdasarkan semua parameter penting
+    seting_soal = models.SetingSoal.objects.filter(
+        Nama_Lembaga=lembaga,
+        Kelas=kelas,
+        Mapel=mapel,
+        Semester=semester,
+        Tahun_Pelajaran=tahun_pelajaran
+    ).first()
+
+    if not seting_soal:
+        messages.error(request, "Seting Soal tidak ditemukan.")
+        return redirect("cbt:daftar_nilai")
+
+    # Hitung total nilai maksimal
+    soal_list = models.Soal_Siswa.objects.filter(Kode_Soal=seting_soal)
+    total_nilai_maksimal = sum(soal.Nilai or 0 for soal in soal_list)
+
+    # Ambil jawaban siswa berdasarkan soal dan filter
+    jawaban = models.Answer.objects.filter(
+        Kode_Soal=seting_soal,
+        Kelas=kelas,
+        Rombel=rombel
+    ).select_related("Nama_User", "Nomor_Soal")
+
+    nilai_siswa = {}
+    for ans in jawaban:
+        user = ans.Nama_User
+        if user.id not in nilai_siswa:
+            nama = user.get_full_name() or getattr(user, 'Nama', None) or user.username
+            nilai_siswa[user.id] = {
+                "nama": nama,
+                "total_nilai": 0,
+                "total_benar": 0,
+                "total_soal": 0
+            }
+
+        # Jika ada jawaban, tambah total soal
+        if ans.Jawaban is not None:
+            nilai_siswa[user.id]["total_soal"] += 1
+
+        # Jika benar, tambah nilai sesuai bobot soal
+        if ans.Jawaban_Benar:
+            nilai_soal = ans.Nomor_Soal.Nilai or 0
+            nilai_siswa[user.id]["total_nilai"] += nilai_soal
+            nilai_siswa[user.id]["total_benar"] += 1
+
+    # Hitung persentase dan nilai akhir
+    for data in nilai_siswa.values():
+        total_soal = data['total_soal']
+        data["persentase"] = round((data["total_benar"] / total_soal) * 100, 2) if total_soal > 0 else 0
+        data["nilai_akhir"] = round((data["total_nilai"] / total_nilai_maksimal) * 100, 2) if total_nilai_maksimal > 0 else 0
+
+    # Kirim ke template
+    context = {
+        "judul": "CBT - Daftar Nilai",
+        "data": f"Daftar Nilai: {mapel} {kelas} / {rombel}",
+        "NamaForm": "Form Tambah Daftar Nilai",
+        "seting_soal": seting_soal,
+        "total_nilai_maksimal": total_nilai_maksimal,
+        "nilai_siswa": sorted(nilai_siswa.values(), key=lambda x: x["nama"]),
+        "link": reverse("cbt:arsip_daftar_nilai", kwargs={"pk": tahun_pelajaran.id}),
+        "kembali":"Arsip daftar nilai"
+    }
+
+    return render(request, "staff/daftar_nilai.html", context)
+
+
 
 
 
