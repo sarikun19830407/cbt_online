@@ -183,7 +183,7 @@ def setting_soal(request):
     # Ambil data SetingSoal berdasarkan semester dan tahun pelajaran
     if semester_obj and tahun_aktif:
         data_list = models.SetingSoal.objects.filter(
-            Semester=semester_obj.Semester,
+            Semester=semester_obj,
             Tahun_Pelajaran=tahun_aktif
         )
     else:
@@ -260,6 +260,8 @@ def aktifkan_soal(request, kode_soal):
 
 
 
+
+
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
 @csrf_protect
@@ -267,28 +269,65 @@ def buat_seting_soal(request):
     form = forms_staff.SetingSoalForm(request.POST or None)
     if request.method == "POST":
         if form.is_valid():
-            form.instance.Nama_User = request.user
-            form.instance.Nama_Lembaga = request.user.Nama_Lembaga
-            form.instance.arsip_soal = True
+            user = request.user
+            lembaga = user.Nama_Lembaga
             semester_instance = get_object_or_404(models.SEMESTER, status=True)
-            form.instance.Semester = semester_instance
             tahun_aktif = get_object_or_404(models.TahunPelajaran, status=True)
+
+            # Set nilai otomatis
+            form.instance.Nama_User = user
+            form.instance.Nama_Lembaga = lembaga
+            form.instance.arsip_soal = True
+            form.instance.Semester = semester_instance
             form.instance.Tahun_Pelajaran = tahun_aktif
-            form.save()
-            messages.add_message(request, messages.INFO, 'Data telah berhasil Tambahkan')
+
+            seting_soal = form.save()
+
+            # 🚀 Buat entri DaftarNilai otomatis berdasarkan rombel yang sesuai
+            rombel_list = models.Rombel_kelas.objects.filter(
+                Kelas=seting_soal.Kelas,
+                Nama_Lembaga=lembaga
+            )
+
+            for rombel in rombel_list:
+                sudah_ada = models.DaftarNilai.objects.filter(
+                    Nama_User=user,
+                    Nama_Lembaga=lembaga,
+                    Kelas=seting_soal.Kelas,
+                    Rombel=rombel,
+                    Mapel=seting_soal.Mapel,
+                    Semester=semester_instance,
+                    Tahun_Pelajaran=tahun_aktif,
+                    
+                ).exists()
+
+                if not sudah_ada:
+                    models.DaftarNilai.objects.create(
+                        Nama_User=user,
+                        Nama_Lembaga=lembaga,
+                        Kelas=seting_soal.Kelas,
+                        Rombel=rombel,
+                        Mapel=seting_soal.Mapel,
+                        Semester=semester_instance,
+                        Tahun_Pelajaran=tahun_aktif,
+                        status = True
+                    )
+
+            messages.add_message(request, messages.INFO, 'Data telah berhasil ditambahkan.')
             return redirect(reverse('cbt:setting_soal'))
         else:
-            messages.error(request, 'Data Masih Salah.')
+            messages.error(request, 'Data masih salah.')
+
     context = {
-        "data" : "Tambah Setting Soal",
+        "data": "Tambah Setting Soal",
         "NamaForm": "Form Setting Soal",
-        "judul":"CBT-Setting",
-        "link":reverse("cbt:setting_soal"),
-        "form":form,
-        'icon':'bi bi-file-plus'
-        
-        }
-    return render (request, 'staff/form.html', context)
+        "judul": "CBT-Setting",
+        "link": reverse("cbt:setting_soal"),
+        "form": form,
+        'icon': 'bi bi-file-plus'
+    }
+    return render(request, 'staff/form.html', context)
+
 
 
 
@@ -1552,16 +1591,17 @@ def daftar_nilai(request):
 
     # ✅ Ambil semester aktif pertama (status=True)
     semester_obj = models.SEMESTER.objects.filter(status=True).first()
-    semester = semester_obj.Semester if semester_obj else None
+    # semester = semester_obj.Semester if semester_obj else None
 
     # ✅ Ambil tahun pelajaran aktif
     tahun_aktif = models.TahunPelajaran.objects.filter(status=True).first()
 
     if semester_obj and tahun_aktif:
         data_list = models.DaftarNilai.objects.filter(
-            Semester=semester_obj.Semester,
+            Semester=semester_obj,
             Tahun_Pelajaran=tahun_aktif
-        )
+        ).order_by('Kelas__Kelas', 'Rombel__Rombel', 'Mapel__Nama_Mapel')
+
     else:
         data_list = models.DaftarNilai.objects.none()
 
@@ -1585,12 +1625,12 @@ def daftar_nilai(request):
     jumlah = data_list.count()
     
     context = {
-        "data": f"Daftar Nilai Semester {semester if semester else '-'} TP {tahun_aktif if tahun_aktif else '-'}",
+        "data": f"Daftar Nilai Semester {semester_obj if semester_obj else '-'} TP {tahun_aktif if tahun_aktif else '-'}",
         "judul": "Daftar Nilai",
         "Data": Data,
         "jumlah": jumlah,
         "cari": cari,
-        "semester":  semester,
+        "semester":  semester_obj,
         "items_per_page": semua,
         "lembaga": "Daftar Nilai",
         "placeholder": "Kelas",
@@ -1698,13 +1738,13 @@ def hapus_daftar_nilai(request):
             return redirect(reverse('cbt:daftar_nilai')) 
         
         context = {
-            "data" : f"Hapus {Data.count()} siswa",
+            "data" : f"Hapus {Data.count()} Daftar Nilai",
             "NamaForm": "Form Hapus Madrsah",
             "judul":"PPDB Hapus Madrsah",
             "link":reverse("cbt:daftar_nilai"),
             "hapus": reverse('cbt:hapus_daftar_nilai'),
             "Data": Data,
-            "Hapus":f"{Data.count()} siswa",
+            "Hapus":f"{Data.count()} Daftar Nilai",
             "ket":"Madrasah",
             "icon":"bi bi-trash3"
         }
@@ -2099,11 +2139,11 @@ def setting_soal_arsip(request, pk):
 
     # Ambil semester dari relasi tahun pelajaran
     semester_obj = tahun_aktif.semester
-    semester = semester_obj.Semester if semester_obj else None
+    
 
-    if semester and tahun_aktif:
+    if semester_obj and tahun_aktif:
         data_list = models.SetingSoal.objects.filter(
-            Semester=semester,  # Ini string, sesuai model SetingSoal
+            Semester=semester_obj,  # Ini string, sesuai model SetingSoal
             Tahun_Pelajaran=tahun_aktif
         )
     else:
@@ -2127,11 +2167,11 @@ def setting_soal_arsip(request, pk):
     jumlah = data_list.count()
 
     context = {
-        "data": f"Soal Semester {semester} TP.{tahun_aktif.Tahun_Pelajaran}",
+        "data": f"Soal Semester {semester_obj} TP.{tahun_aktif.Tahun_Pelajaran}",
         "judul": "CBT-Setting",
         "Data": Data,
         "icon": "bi bi-database-check",
-        "semester": semester,
+        "semester": semester_obj,
         "jumlah": jumlah,
         "cari": cari,
         "items_per_page": str(items_per_page) if items_per_page != 1000000 else 'all',
@@ -2145,6 +2185,131 @@ def setting_soal_arsip(request, pk):
 
 
 
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+@csrf_protect
+def arsip_daftar_nilai(request, pk):
+    cari = request.POST.get('cari', request.GET.get('cari', ''))
+    items_per_page = request.GET.get('items_per_page', '30')
+
+    if items_per_page == 'all':
+        items_per_page = 1000000
+    else:
+        try:
+            items_per_page = int(items_per_page)
+        except (ValueError, TypeError):
+            items_per_page = 30
+
+    # Ambil tahun pelajaran berdasarkan pk
+    tahun_aktif = get_object_or_404(models.TahunPelajaran, id=pk)
+
+    # Ambil semester dari relasi tahun pelajaran
+    semester_obj = tahun_aktif.semester
+    
+
+    if semester_obj and tahun_aktif:
+        data_list = models.DaftarNilai.objects.filter(
+            Semester=semester_obj,  # Ini string, sesuai model SetingSoal
+            Tahun_Pelajaran=tahun_aktif
+        )
+    else:
+        data_list = models.DaftarNilai.objects.none()
+
+    if cari:
+        data_list = data_list.filter(Mapel__Nama_Mapel__icontains=cari)
+
+
+    if cari:
+        data_list = data_list.filter(Mapel__Nama_Mapel__icontains=cari)
+
+    # Pagination
+    paginator = Paginator(data_list, items_per_page)
+    page_number = request.GET.get('page', 1)
+
+    try:
+        Data = paginator.page(page_number)
+    except PageNotAnInteger:
+        Data = paginator.page(1)
+    except EmptyPage:
+        Data = paginator.page(paginator.num_pages)
+
+    Data.start_index = (Data.start_index() - 1)
+    jumlah = data_list.count()
+
+    context = {
+        "data": f"Arsip Daftar Nilai Semester {semester_obj} TP.{tahun_aktif.Tahun_Pelajaran}",
+        "judul": "CBT-Setting",
+        "Data": Data,
+        "icon": "bi bi-database-check",
+        "semester": semester_obj,
+        "jumlah": jumlah,
+        "cari": cari,
+        "items_per_page": str(items_per_page) if items_per_page != 1000000 else 'all',
+        "lembaga": "Mapel Kelas",
+        "placeholder": "Mapel",
+    }
+
+    return render(request, 'staff/arsip_daftar_nilai.html', context)
+
+
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+@csrf_protect
+def lihat_arsip_soal_siswa(request, pk):
+    Data = get_object_or_404(models.SetingSoal, pk=pk)
+    
+    cari = request.POST.get('cari', request.GET.get('cari', ''))
+    items_per_page = request.GET.get('items_per_page', '30')
+    
+    if items_per_page == 'all':
+        items_per_page = 1000000
+    else:
+        try:
+            items_per_page = int(items_per_page)
+        except (ValueError, TypeError):
+            items_per_page = 30
+    
+    # Filter berdasarkan Data soal
+    data_list = models.Soal_Siswa.objects.filter(Kode_Soal=Data).order_by('Nomor')
+    tahun_pelajaran_pk = Data.Tahun_Pelajaran.pk
+
+    if cari:
+        data_list = data_list.filter(Soal__icontains=cari)  # cari di isi soal
+
+    paginator = Paginator(data_list, items_per_page)
+    page_number = request.GET.get('page', 1)
+
+    try:
+        Data = paginator.page(page_number)
+    except PageNotAnInteger:
+        Data = paginator.page(1)
+    except EmptyPage:
+        Data = paginator.page(paginator.num_pages)
+
+    semua = str(items_per_page) if items_per_page != 1000000 else 'all'
+    jumlah = data_list.count()
+    
+    
+    context = {
+        "data": "Lihat Soal",
+        "judul": f"Soal untuk: ",
+        "Data": Data,
+        "jumlah": jumlah,
+        "cari": cari,
+        "items_per_page": semua,
+        "lembaga": "Soal Siswa",
+        "placeholder": "Nomor",
+        "icon": "bi bi-list-ul",
+        "Data": Data,
+        "link": reverse("cbt:setting_soal_arsip", kwargs={"pk": tahun_pelajaran_pk}),
+
+    }
+
+    return render(request, 'staff/list_arsip_soal_siswa.html', context)
+
 
 
 
@@ -2152,11 +2317,8 @@ def setting_soal_arsip(request, pk):
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
 @csrf_protect
 def salin_setingsoal(request, pk):
-    # Ambil SetingSoal lama
     soal_lama = get_object_or_404(models.SetingSoal, pk=pk)
-
-    # Ambil semester dan tahun pelajaran aktif
-    semester_aktif = models.SEMESTER.objects.filter( status=True).first()
+    semester_aktif = models.SEMESTER.objects.filter(status=True).first()
     tahun_aktif = models.TahunPelajaran.objects.filter(status=True).first()
     tahun_tidak_Active = models.TahunPelajaran.objects.filter(status=False).first()
 
@@ -2170,48 +2332,73 @@ def salin_setingsoal(request, pk):
 
     try:
         with transaction.atomic():
-            # Salin SetingSoal baru dengan kode soal baru
             soal_baru = models.SetingSoal.objects.create(
                 Nama_User=request.user,
                 Nama_Lembaga=soal_lama.Nama_Lembaga,
                 Kelas=soal_lama.Kelas,
                 Mapel=soal_lama.Mapel,
-                Semester=semester_aktif.Semester,
+                Semester=semester_aktif,
                 Tahun_Pelajaran=tahun_aktif,
                 durasi_menit=soal_lama.durasi_menit,
                 aktif=False,
                 arsip_soal=False,
-                # Kode_Soal otomatis dibuat dari default=buat_nomor_baru
             )
 
-            # Salin semua Soal_Siswa dan hubungkan dengan soal_baru
             soal_siswa_lama = models.Soal_Siswa.objects.filter(Kode_Soal=soal_lama)
             for s in soal_siswa_lama:
                 models.Soal_Siswa.objects.create(
                     Nama_User=request.user,
                     Kode_Soal=soal_baru,
-                    Mapel = s.Mapel,
-                    Kelas = s.Kelas,
-                    Nomor = s.Nomor,
+                    Mapel=s.Mapel,
+                    Kelas=s.Kelas,
+                    Nomor=s.Nomor,
                     Soal=s.Soal,
                     A=s.A,
                     B=s.B,
                     C=s.C,
                     D=s.D,
                     Kunci_Jawaban=s.Kunci_Jawaban,
-                    Nilai = s.Nilai
-                    # Tambahkan field lain jika ada
+                    Nilai=s.Nilai
                 )
+
+            # Tambahkan pembuatan entri DaftarNilai otomatis
+            rombel_list = models.Rombel_kelas.objects.filter(
+                Kelas=soal_baru.Kelas,
+                Nama_Lembaga=soal_baru.Nama_Lembaga
+            )
+            for rombel in rombel_list:
+                sudah_ada = models.DaftarNilai.objects.filter(
+                    Nama_User=request.user,
+                    Nama_Lembaga=soal_baru.Nama_Lembaga,
+                    Kelas=soal_baru.Kelas,
+                    Rombel=rombel,
+                    Mapel=soal_baru.Mapel,
+                    Semester=semester_aktif,
+                    Tahun_Pelajaran=tahun_aktif
+                ).exists()
+                if not sudah_ada:
+                    models.DaftarNilai.objects.create(
+                        Nama_User=request.user,
+                        Nama_Lembaga=soal_baru.Nama_Lembaga,
+                        Kelas=soal_baru.Kelas,
+                        Rombel=rombel,
+                        Mapel=soal_baru.Mapel,
+                        Semester=semester_aktif,
+                        Tahun_Pelajaran=tahun_aktif,
+                        status=True
+                    )
 
             messages.success(
                 request,
-                f"Berhasil menyalin soal {soal_lama.Mapel} kode sola :{soal_lama.Kode_Soal} Menjadi '{soal_baru.Kode_Soal}"
+                f"Berhasil menyalin soal {soal_lama.Mapel} kode soal: {soal_lama.Kode_Soal} "
+                f"Menjadi '{soal_baru.Kode_Soal}' dan membuat entri nilai"
             )
 
     except Exception as e:
         messages.error(request, f"Gagal menyalin soal: {str(e)}")
 
     return redirect(reverse('cbt:setting_soal_arsip', kwargs={'pk': tahun_tidak_Active.pk}))
+
     
 
 

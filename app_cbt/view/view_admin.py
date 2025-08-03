@@ -362,31 +362,36 @@ def tambah_tahun_pelajaran(request):
         if form.is_valid():
             tahun_pelajaran = form.save(commit=False)
             tahun_pelajaran.Nama_User = request.user
-            tahun_pelajaran.status = True  # Typo: sebelumnya kamu tulis 'satatus'
+            tahun_pelajaran.status = True
             
-            # ✅ Cek dan ambil semester aktif
+            # ✅ Cek semester aktif
             semester_aktif = models.SEMESTER.objects.filter(status=True).first()
             if not semester_aktif:
                 messages.error(request, "Tidak ada semester aktif. Silakan tetapkan satu semester terlebih dahulu.")
             else:
                 tahun_pelajaran.semester = semester_aktif
                 try:
+                    # ✅ Nonaktifkan semua DaftarNilai sebelumnya
+                    models.DaftarNilai.objects.filter(status=True).update(status=False)
+
                     tahun_pelajaran.save()
-                    messages.success(request, "Tahun Pelajaran berhasil ditambahkan.")
+                    messages.success(request, "Tahun Pelajaran berhasil ditambahkan. Semua DaftarNilai sebelumnya dinonaktifkan.")
                     return redirect(reverse('cbt:tahun_pelajaran'))
                 except ValidationError as e:
                     messages.error(request, f"Validasi gagal: {e.messages}")
         else:
             messages.error(request, "Form tidak valid. Periksa kembali data yang dimasukkan.")
+
     context = {
-        "data" : "Tambah Tahun Pelajaran",
+        "data": "Tambah Tahun Pelajaran",
         "NamaForm": "Form Tambah Tahun Pelajran",
-        "judul":"CBT",
-        "link":reverse("cbt:tahun_pelajaran"),
-        "form":form,
-        "icon":"bi bi-plus-circle"
-        }
-    return render (request, 'super_admin/form.html', context)
+        "judul": "CBT",
+        "link": reverse("cbt:tahun_pelajaran"),
+        "form": form,
+        "icon": "bi bi-plus-circle"
+    }
+    return render(request, 'super_admin/form.html', context)
+
 
 
 @login_required(login_url=settings.LOGIN_URL)

@@ -6,9 +6,12 @@ class AppCbtConfig(AppConfig):
     name = 'app_cbt'
 
 
-class app_cbt_AppConfig(AppConfig):
+class app_cbt_AppConfig(AppCbtConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'app_cbt'
 
     def ready(self):
         import app_cbt.signals  # Pastikan path-nya benar
+
+
+

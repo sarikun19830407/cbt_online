@@ -19,9 +19,6 @@
                     <form method="POST" action="{% url 'cbt:hapus_daftar_nilai' %}" id="delete_form">
                         {% csrf_token %}
                         <div class="btn-group mb-2" role="group" aria-label="Basic mixed styles example">
-                            <a class="btn btn-success btn-sm" style="font-size: 12px;"
-                                href="{% url 'cbt:tambah_daftar_nilai' %}">
-                                <i class="bi bi-plus fst-normal">&nbsp;&nbsp;Tambah</i>
                             </a>
                             <button class="btn btn-danger btn-sm bi bi-trash" style="font-size: 12px;" type="submit"
                                 id="delete_button" disabled>&nbsp; Hapus</button>
@@ -56,9 +53,6 @@
                         <td class="align-middle ">{{data.Mapel}}</td>
                         <td class="align-middle text-center">
                             <div class="btn-group" role="group" aria-label="Basic mixed styles example">
-                                <a class="btn btn-warning btn-sm bi bi-pencil-square" style="font-size: 11px;"
-                                    export_daftar_nilai_pdf href="{% url 'cbt:ubah_daftar_nilai' data.id %}">&nbsp;
-                                    Ubah</a>
                                 <a class="btn btn-info btn-sm bi bi-graph-up" style="font-size: 11px;"
                                     href="{% url 'cbt:jawaban_siswa' data.id %}">&nbsp; Analisis</a>
                                 <a class="btn btn-secondary btn-sm bi bi-card-list" style="font-size: 11px;"

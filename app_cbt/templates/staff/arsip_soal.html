@@ -53,8 +53,11 @@
                         <td class="align-middle text-center">
                             <div class="btn-group" role="group" aria-label="Basic mixed styles example">
                                 <a class="btn btn-warning btn-sm bi bi-pencil-square" style="font-size: 8;"
-                                    href="{% url 'cbt:setting_soal_arsip' data.id %}">&nbsp; Arsip Soal</a>
+                                    href="{% url 'cbt:setting_soal_arsip' data.id %}">&nbsp; Soal</a>
+                                <a class="btn btn-secondary btn-sm bi bi-list" style="font-size: 8;"
+                                    href="{% url 'cbt:arsip_daftar_nilai' data.id %}">&nbsp; Daftar nilai</a>
                             </div>
+
                         </td>
                     </tr>
                     {% endfor %}

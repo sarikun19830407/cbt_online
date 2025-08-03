@@ -197,11 +197,7 @@ class SetingSoal(models.Model):
     )
     Kelas = models.ForeignKey(Kelas,on_delete = models.CASCADE)
     Mapel = models.ForeignKey(Matapelajaran,on_delete = models.CASCADE)
-    Semester = models.CharField(
-        choices = sm,
-        default = '',
-        max_length=30
-        )
+    Semester = models.ForeignKey(SEMESTER, on_delete=models.CASCADE)
     Tahun_Pelajaran = models.ForeignKey(TahunPelajaran, on_delete = models.CASCADE)
     aktif = models.BooleanField(default=False)  
     waktu_aktif = models.DateTimeField(blank=True, null=True)
@@ -236,7 +232,7 @@ class SetingSoal(models.Model):
             if not SetingSoal.objects.filter(token=token).exists():  # Cek apakah token sudah ada di database
                 return token
 
-
+    
 
 
 class DaftarNilai (models.Model):
@@ -245,15 +241,16 @@ class DaftarNilai (models.Model):
     Kelas = models.ForeignKey(Kelas,on_delete = models.CASCADE,)
     Rombel = models.ForeignKey(Rombel_kelas,on_delete = models.CASCADE,)
     Mapel = models.ForeignKey(Matapelajaran,on_delete = models.CASCADE,)
-    Semester = models.CharField(
-        choices = sm,
-        default = '',
-        max_length=30
-        )
+    Semester = models.ForeignKey(SEMESTER, on_delete=models.CASCADE)
     Tahun_Pelajaran = models.ForeignKey(TahunPelajaran, on_delete = models.CASCADE)
+    status = models.BooleanField(default=False)
 
     def __str__(self):
         return self.Mapel
+    
+    # def __str__(self):
+    #     return f"{self.Mapel.Nama_Mapel} - {self.Kelas} - {self.Rombel}"
+
 
 
     

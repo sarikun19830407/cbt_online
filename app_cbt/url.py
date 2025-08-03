@@ -106,8 +106,10 @@ urlpatterns =[
 
 
     path('arsip_soal', view_staff.arsip_soal, name='arsip_soal'),
-    path('setting_soal_arsip/<pk>/', view_staff.setting_soal_arsip, name='setting_soal_arsip'),
+    path('setting_soal_arsip/<int:pk>/', view_staff.setting_soal_arsip, name='setting_soal_arsip'),
     path('salin_setingsoal/<int:pk>/', view_staff.salin_setingsoal, name='salin_setingsoal'),
+    path('lihat_arsip_soal_siswa/<pk>/', view_staff.lihat_arsip_soal_siswa, name='lihat_arsip_soal_siswa'),
+    path('arsip_daftar_nilai/<int:pk>/', view_staff.arsip_daftar_nilai, name='arsip_daftar_nilai'),
 
 
 
