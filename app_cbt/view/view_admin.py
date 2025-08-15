@@ -1126,7 +1126,9 @@ def active_user_siswa(request, pk):
 
 
 
-@login_required(login_url=settings.LOGIN_URL)
+import random
+import string
+
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
 @csrf_protect
 def tambah_user_siswa(request):
@@ -1137,21 +1139,40 @@ def tambah_user_siswa(request):
             lembaga_aktif = get_object_or_404(models.Lembaga, status=True)
             form.instance.Nama_Lembaga = lembaga_aktif
             form.instance.is_siswa = True
+
+            # 🔹 Karakter allowed (tanpa O, I, 0, 1)
+            allowed_chars = ''.join([
+                ch for ch in (string.ascii_uppercase + string.digits)
+                if ch not in ['O', 'I', '0', '1']
+            ])
+
+            # 🔹 Generate password random
+            auto_password = ''.join(random.choice(allowed_chars) for _ in range(8))
+
+            # 🔹 Simpan password plain untuk ditampilkan
+            form.instance.auto_password = auto_password
+
+            # 🔹 Set password Django (hash)
+            form.instance.set_password(auto_password)
+
+            # 🔹 Simpan user
             form.save()
-            messages.add_message(request, messages.INFO, 'Data telah berhasil Tambahkan')
+
+            messages.success(request, f"User siswa berhasil dibuat. Password: {auto_password}")
             return redirect(reverse('cbt:user_siswa'))
         else:
             messages.error(request, 'Data Masih Salah.')
+
     context = {
-        "data" : "Tambah User Siswa",
+        "data": "Tambah User Siswa",
         "NamaForm": "Form Tambah User Siswa",
-        "judul":"CBT-User Siswa",
-        "link":reverse("cbt:user_siswa"),
-        "form":form,
-        "icon":"bi bi-plus-circle"
-        
-        }
-    return render (request, 'super_admin/form_user.html', context)
+        "judul": "CBT-User Siswa",
+        "link": reverse("cbt:user_siswa"),
+        "form": form,
+        "icon": "bi bi-plus-circle"
+    }
+    return render(request, 'super_admin/form.html', context)
+
 
 
 
@@ -1255,6 +1276,9 @@ def clear_upload_session_data(request):
 
 
 
+import random
+import string
+
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
 @csrf_protect
@@ -1277,7 +1301,6 @@ def uploadUserSiswa(request):
                     "failed_rows": failed_rows,
                 })
 
-            # Ambil lembaga aktif sekali saja
             lembaga_aktif = models.Lembaga.objects.filter(status=True).first()
             if not lembaga_aktif:
                 messages.error(request, "Tidak ada lembaga dengan status=True di database.")
@@ -1290,11 +1313,11 @@ def uploadUserSiswa(request):
                 decoded_file = csv_file.read().decode("utf-8").splitlines()
                 reader = csv.reader(decoded_file)
 
-                # Cek apakah file punya header
+                # Cek header
                 try:
                     header = next(reader)
-                    if len(header) < 5:
-                        messages.error(request, "Format header CSV tidak sesuai (minimal 5 kolom).")
+                    if len(header) < 4:  # sekarang tanpa kolom password
+                        messages.error(request, "Format header CSV tidak sesuai (minimal 4 kolom: username, nama, kelas, rombel).")
                         return render(request, "super_admin/upload.html", {
                             "form": form,
                             "failed_rows": failed_rows,
@@ -1308,7 +1331,7 @@ def uploadUserSiswa(request):
 
                 # Proses setiap baris CSV
                 for row in reader:
-                    if len(row) < 5:
+                    if len(row) < 4:
                         failed_rows.append({
                             'Nama': '',
                             'Kelas': '',
@@ -1317,21 +1340,20 @@ def uploadUserSiswa(request):
                         continue
 
                     username = row[0].strip()
-                    password = row[1].strip()
-                    nama = row[2].strip()
-                    kelas_nama = row[3].strip()
-                    rombel_nama = row[4].strip()
+                    nama = row[1].strip()
+                    kelas_nama = row[2].strip()
+                    rombel_nama = row[3].strip()
 
-                    # Validasi username
+                    # Validasi username (NISN 16 digit)
                     if not (username.isdigit() and len(username) == 16):
                         failed_rows.append({
                             'Nama': nama,
                             'Kelas': kelas_nama,
-                            'Error': 'NIK harus 16 digit angka'
+                            'Error': 'NISN harus 16 digit angka'
                         })
                         continue
 
-                    # Cek duplikat di CSV
+                    # Cek duplikat di file
                     if username in processed_usernames:
                         failed_rows.append({
                             'Nama': nama,
@@ -1375,17 +1397,25 @@ def uploadUserSiswa(request):
                         })
                         continue
 
-                    # Buat user baru
+                    # 🔹 Generate password otomatis
+                    allowed_chars = ''.join([
+                        ch for ch in (string.ascii_uppercase + string.digits)
+                        if ch not in ['O', 'I', '0', '1']
+                    ])
+                    auto_password = ''.join(random.choice(allowed_chars) for _ in range(8))
+
+                    # 🔹 Buat user baru
                     try:
-                        models.Pengguna.objects.create_user(
+                        user_obj = models.Pengguna.objects.create_user(
                             username=username,
-                            password=password,
+                            password=auto_password,  # diset hash otomatis
                             Nama_User=request.user,
                             Nama=nama,
                             Kelas=kelas,
                             Rombel=rombel_obj,
                             Nama_Lembaga=lembaga_aktif,
                             is_siswa=True,
+                            auto_password=auto_password  # simpan plain untuk referensi
                         )
                         success_count += 1
                     except Exception as e:
@@ -1431,6 +1461,7 @@ def uploadUserSiswa(request):
 
 
 
+
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
 @csrf_protect
@@ -1441,7 +1472,7 @@ def downloadtempUserSiswa(request):
     writer = csv.writer(response)
 
     # Header kolom
-    writer.writerow(['NIK', 'Password', 'Nama Siswa', 'Kelas', 'Rombel'])
+    writer.writerow(['NIK',  'Nama Siswa', 'Kelas', 'Rombel'])
 
     # Ambil semua Rombel_kelas
     rombel_list = models.Rombel_kelas.objects.select_related('Kelas').all().order_by('Kelas__Kelas', 'Rombel')
@@ -1466,14 +1497,17 @@ def downloadtempUserSiswa(request):
 def cetak_semua_kartu_pdf(request):
     user = request.user
 
-    # Ambil semua siswa dan urutkan sesuai kebutuhan
-    semua_siswa = list(models.Pengguna.objects.filter(is_siswa=True).order_by(
-        'Kelas__Kelas', 'Rombel__Rombel', 'Nama'
-    ))
+    # Ambil semua siswa, sertakan auto_password
+    semua_siswa = list(
+        models.Pengguna.objects.filter(is_siswa=True)
+        .order_by('Kelas__Kelas', 'Rombel__Rombel', 'Nama')
+        .only('username', 'Nama', 'Kelas__Kelas', 'Rombel__Rombel', 'auto_password')
+    )
 
     # Tambahkan nomor peserta: mulai dari 0001 dan seterusnya
     for i, siswa in enumerate(semua_siswa, start=1):
-        siswa.nomor_peserta = f"{i:04d}"  # 4 digit angka, misalnya 0001, 0002, dst
+        siswa.nomor_peserta = f"{i:04d}"  # contoh: 0001
+        # auto_password sudah ada di field siswa.auto_password
 
     # Ambil data pendukung
     semester = models.SEMESTER.objects.filter(Nama_User=user).last()
@@ -1487,27 +1521,14 @@ def cetak_semua_kartu_pdf(request):
             yield lst[i:i + size]
     pages = list(chunk_siswa(semua_siswa, 10))
 
-    # # Ambil static dir dari STATICFILES_DIRS
-    # static_dir = settings.STATICFILES_DIRS[0]  # karena STATIC_ROOT belum digunakan di dev
-
-    # # Gabungkan path file logo
-    # logo_path = os.path.join(static_dir, 'logo/img/KEMENAG.png')
-
-    # # Pastikan file benar-benar ada
-    # if not os.path.exists(logo_path):
-    #     raise Exception(f"Logo tidak ditemukan di path: {logo_path}")
-
-    # # Buat URL file:// agar bisa dibaca WeasyPrint
-    # logo_url = f'file://{logo_path}'
-
-    # Ambil static dir (STATIC_ROOT jika dikompilasi, atau STATICFILES_DIRS di dev)
+    # Ambil logo
     static_dir = settings.STATIC_ROOT or settings.STATICFILES_DIRS[0]
     logo_path = os.path.join(static_dir, 'logo/img/KEMENAG.png')
     logo_url = f'file://{logo_path}'
 
-    # Siapkan context untuk template
+    # Kirim auto_password ke template bersama siswa
     context = {
-        'pages': pages,
+        'pages': pages,  # setiap siswa di pages punya .auto_password
         'semester': semester,
         'lembaga': lembaga,
         'tahun_pelajaran': tahun_pelajaran,
@@ -1515,16 +1536,16 @@ def cetak_semua_kartu_pdf(request):
         'logo_kemenag': logo_url,
     }
 
-    # Render HTML ke PDF menggunakan WeasyPrint
+    # Render HTML ke PDF
     html_string = render_to_string("super_admin/kartu_ujian.html", context)
     html = HTML(string=html_string, base_url=request.build_absolute_uri('/'))
 
-    # Siapkan response PDF
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'inline; filename="Kartu_ujian.pdf"'
     html.write_pdf(response)
 
     return response
+
 
 
 

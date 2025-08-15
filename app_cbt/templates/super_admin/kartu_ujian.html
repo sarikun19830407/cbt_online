@@ -98,7 +98,8 @@
                     <img src="{{ logo_kemenag }}" alt="Logo Kemenag" style="height: 45px;">
                 </div>
                 <div style="text-align: center; flex: 1;">
-                    <h2 style="margin: 2px; font-size: 11px;">KARTU PESERTA UJIAN SEMESTER {{ semester.Semester|upper }}</h2>
+                    <h2 style="margin: 2px; font-size: 11px;">KARTU PESERTA UJIAN SEMESTER {{ semester.Semester|upper }}
+                    </h2>
                     <h3 style="margin: 2px; font-size: 10px;">{{ lembaga.Nama_Lembaga|upper }}</h3>
                     <h4 style="margin: 2px; font-size: 9px;">TP. {{ tahun_pelajaran.Tahun_Pelajaran }}</h4>
                 </div>
@@ -115,8 +116,12 @@
                         <td>: {{user.username}}</td>
                     </tr>
                     <tr>
+                        <td>Password</td>
+                        <td>: {{user.auto_password}}</td>
+                    </tr>
+                    <tr>
                         <td>Nama</td>
-                        <td>: {{ user.Nama }}</td>
+                        <td>: {{ user.Nama|title }}</td>
                     </tr>
 
                     <tr>

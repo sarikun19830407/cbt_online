@@ -509,27 +509,27 @@ class Form_Ubah_Staff (forms.ModelForm):
 
 
 
-class Form_siswa (UserCreationForm):
-    password1 = forms.CharField(
-        label= ("Password"),
-        widget=forms.PasswordInput(attrs={'class': 'form-control mb-3',
-                                            'type': 'password',
-                                            'required': 'true',
-                                            "id":"password1",
-                                            'placeholder': 'password minimal 8 karakter, minimal 1 huruf kapital dan 1 angka'
-        }),
+class Form_siswa (forms.ModelForm):
+    # password1 = forms.CharField(
+    #     label= ("Password"),
+    #     widget=forms.PasswordInput(attrs={'class': 'form-control mb-3',
+    #                                         'type': 'password',
+    #                                         'required': 'true',
+    #                                         "id":"password1",
+    #                                         'placeholder': 'password minimal 8 karakter, minimal 1 huruf kapital dan 1 angka'
+    #     }),
         
-    )
-    password2 = forms.CharField(
-        label= ("Konfirmasi Password"),
-        widget=forms.PasswordInput(attrs={'class': 'form-control mb-3',
-                                            'type': 'password',
-                                            'required': 'true',
-                                            "id":"password2",
-                                            'placeholder': 'password minimal 8 karakter, minimal 1 huruf kapital dan 1 angka'
-        }),
+    # )
+    # password2 = forms.CharField(
+    #     label= ("Konfirmasi Password"),
+    #     widget=forms.PasswordInput(attrs={'class': 'form-control mb-3',
+    #                                         'type': 'password',
+    #                                         'required': 'true',
+    #                                         "id":"password2",
+    #                                         'placeholder': 'password minimal 8 karakter, minimal 1 huruf kapital dan 1 angka'
+    #     }),
         
-    )
+    # )
     
     class Meta :
         model = models.Pengguna
@@ -538,10 +538,11 @@ class Form_siswa (UserCreationForm):
                 "Nama",
                 "Kelas",
                 "Rombel",
-                "password1",
-                "password2",
+                # "password1",
+                # "password2",
                 
             ]
+        exclude = ['password']
         help_texts = {
             'username': None,
             # "password1": None,
@@ -595,11 +596,11 @@ class Form_siswa (UserCreationForm):
 
         
         if not username.isdigit():
-            raise ValidationError("Username (NISN) hanya boleh berisi angka.")
+            raise ValidationError("Username (NIK) hanya boleh berisi angka.")
 
         username_length = len(username)
         if len(username) != 16:
-            raise ValidationError(f"Username (NISN) harus memiliki 16 karakter, tetapi Anda memasukkan {username_length} karakter.")
+            raise ValidationError(f"Username (NIK) harus memiliki 16 karakter, tetapi Anda memasukkan {username_length} karakter.")
 
         return username
 
