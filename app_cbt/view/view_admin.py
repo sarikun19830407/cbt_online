@@ -1240,7 +1240,7 @@ def Ubah_user_siswa(request, pk):
         if Data.Nama_User != request.user:
             messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
             return redirect(reverse('cbt:user_siswa'))
-    form = forms.Form_Ubah_siswa(request.POST or None, instance=Data)
+    form = forms.Form_siswa(request.POST or None, instance=Data)
     if request.method == "POST":
         if form.is_valid():
             form.save()
@@ -1257,7 +1257,7 @@ def Ubah_user_siswa(request, pk):
         "icon":"bi bi-pencil"
         
         }
-    return render (request, 'super_admin/form_user.html', context)
+    return render (request, 'super_admin/form.html', context)
 
 
 
