@@ -4,7 +4,7 @@
 {% block konten %}
 
 <body>
-    <div class="">
+    <div class="container-fluid">
         <div class="row mt-4">
             <div class="col-md-4 mb-3">
                 <div class="card bg-primary text-white">
@@ -33,11 +33,28 @@
                 </div>
             </div>
         </div>
-    </div>
-    <hr>
-    <div>
+        <hr>
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Membersihkan Sampah</h5>
+                <p class="card-text text-muted">Hapus file sementara (temp) yang tidak digunakan lagi.</p>
+                <a class="btn btn-warning" href="{% url 'cbt:bersihkan_file_temp' %}">
+                    <i class="bi bi-trash"></i> Hapus Sampah
+                </a>
+            </div>
+        </div>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show small" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+        {% endif %}
 
     </div>
+
 </body>
 {% endblock %}
 

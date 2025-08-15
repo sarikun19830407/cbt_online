@@ -11,6 +11,7 @@ app_name = "cbt"
 urlpatterns =[
 
     path('home', view_admin.home, name='home'),
+    path('bersihkan_file_temp', view_admin.bersihkan_file_temp, name='bersihkan_file_temp'),
     path('update_userlogin', view_admin.update_userlogin, name='update_userlogin'),
     path('update_userlogin_Sataff', view_staff.update_userlogin_Sataff, name='update_userlogin_Sataff'),
     path('user_staff', view_admin.user_staff, name='user_staff'),

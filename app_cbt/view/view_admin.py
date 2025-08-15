@@ -88,6 +88,27 @@ def home (request):
     return render (request, 'super_admin/home.html', contex)
 
 
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
+@csrf_protect
+def bersihkan_file_temp(request):
+    folder_temp = os.path.join(settings.MEDIA_ROOT, 'temp')
+    count = 0
+    for filename in os.listdir(folder_temp):
+        file_path = os.path.join(folder_temp, filename)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+            count += 1
+    messages.success(request, f"{count} file dihapus dari folder temp.")
+    return redirect(reverse('cbt:home'))
+
+
+
+
+
+
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
 @csrf_protect
