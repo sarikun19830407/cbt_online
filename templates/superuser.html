@@ -13,40 +13,45 @@
 
     <!-- BODY / NAVIGATION -->
     <div class="offcanvas-body">
-        <ul class="nav flex-column px-2 pt-3 ">
+        <ul class="nav flex-column px-2 pt-3" id="sidebarMenu">
             <li class="nav-item">
-                <a class="nav-link link-dark menu-1" href="{% url 'cbt:home' %}"><i
-                        class="bi bi-house-fill fw-bold fst-normal">&nbsp;&nbsp;&nbsp; Beranda</i>
+                <a class="nav-link menu-1" href="{% url 'cbt:home' %}">
+                    <i class="bi bi-house-fill fst-normal">&nbsp;&nbsp;&nbsp; Beranda</i>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link link-dark menu-1" href="{% url 'cbt:semester' %}">
-                    <i class="bi bi-journal-check fw-bold fst-normal">&nbsp;&nbsp;&nbsp;Semester</i>
+                <a class="nav-link menu-1" href="{% url 'cbt:kurikulum_lembaga' %}"><i
+                        class="bi bi-bookmarks fst-normal">&nbsp;&nbsp;&nbsp;Kurikulum</i></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link menu-1" href="{% url 'cbt:semester' %}">
+                    <i class="bi bi-journal-check fst-normal">&nbsp;&nbsp;&nbsp;Semester</i>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link link-dark menu-1" href="{% url 'cbt:tahun_pelajaran' %}">
-                    <i class="bi bi-calendar-date fw-bold fst-normal">&nbsp;&nbsp;&nbsp;Tahun pelajaran</i>
+                <a class="nav-link menu-1" href="{% url 'cbt:tahun_pelajaran' %}">
+                    <i class="bi bi-calendar-date fst-normal">&nbsp;&nbsp;&nbsp;Tahun pelajaran</i>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link menu-1" href="{% url 'cbt:lembaga' %}">
+                    <i class="bi bi-bank2 fst-normal">&nbsp;&nbsp;&nbsp;Lembaga</i>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link link-dark text-dark  menu-1" href="{% url 'cbt:lembaga' %}"><i
-                        class="bi bi-bank2 fw-bold fst-normal">&nbsp;&nbsp;&nbsp;Lembaga</i>
+                <a class="nav-link menu-1" href="{% url 'cbt:Kelas' %}">
+                    <i class="bi bi-bar-chart-steps fst-normal">&nbsp;&nbsp;&nbsp;Kelas</i>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link link-dark menu-1" href="{% url 'cbt:Kelas' %}">
-                    <i class="bi bi-bar-chart-steps fw-bold fst-normal">&nbsp;&nbsp;&nbsp;Kelas</i>
+                <a class="nav-link menu-1" href="{% url 'cbt:user_staff' %}">
+                    <i class="bi bi-person fst-normal">&nbsp;&nbsp;&nbsp;Staff</i>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link link-dark menu-1" href="{% url 'cbt:user_staff' %}"><i
-                        class="bi bi-person fw-bold fst-normal">&nbsp;&nbsp;&nbsp;Staff</i>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link link-dark menu-1" href="{% url 'cbt:user_siswa' %}"><i
-                        class="bi bi-person-check fw-bold fst-normal">&nbsp;&nbsp;&nbsp;Siswa</i>
+                <a class="nav-link menu-1" href="{% url 'cbt:user_siswa' %}">
+                    <i class="bi bi-person-check fst-normal">&nbsp;&nbsp;&nbsp;Siswa</i>
                 </a>
             </li>
         </ul>
@@ -69,15 +74,20 @@
             </a>
         </li>
         <li class="nav-item">
+            <a class="nav-link menu-1" href="{% url 'cbt:kurikulum_lembaga' %}"><i
+                    class="bi bi-bookmarks fst-normal">&nbsp;&nbsp;&nbsp;Kurikulum</i></a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link menu-1" href="{% url 'cbt:semester' %}">
                 <i class="bi bi-journal-check fst-normal">&nbsp;&nbsp;&nbsp;Semester</i>
             </a>
+        </li>
         <li class="nav-item">
             <a class="nav-link menu-1" href="{% url 'cbt:tahun_pelajaran' %}">
                 <i class="bi bi-calendar-date fst-normal">&nbsp;&nbsp;&nbsp;Tahun pelajaran</i>
             </a>
         </li>
-        </li>
+
         <li class="nav-item">
             <a class="nav-link menu-1" href="{% url 'cbt:lembaga' %}">
                 <i class="bi bi-bank2 fst-normal">&nbsp;&nbsp;&nbsp;Lembaga</i>

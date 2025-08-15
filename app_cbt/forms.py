@@ -38,7 +38,6 @@ class FormUpdateSuperAdmin (ModelForm):
             "username",
             "Nama",
             "Tikatan_Satuan_Lembaga",
-            "Nama_Lembaga",
             "password1",
             "password2",
             
@@ -66,12 +65,7 @@ class FormUpdateSuperAdmin (ModelForm):
                     'placeholder':"Nama Anda",
                 }
             ),
-            "Nama_Lembaga": forms.Select(
-                attrs = {
-                    'class':'form-select mb-3',
-                    'placeholder':"Nama Anda",
-                }
-            ),
+            
             "Tikatan_Satuan_Lembaga": forms.Select(
                 attrs = {
                     'class':'form-select mb-3',
@@ -129,10 +123,37 @@ class FormUpdateSuperAdmin (ModelForm):
 
 
 
+class Form_kurikulum(forms.ModelForm):
+    class Meta :
+        model = models.KurikulumLembaga
+        fields = ["Kurikulum"]
+        widgets = {
+            "Kurikulum":forms.TextInput(
+                attrs={'class': 'form-control mb-3'}
+            ),
+        }
 
 
-
-
+class Form_lembaga(forms.ModelForm):
+    class Meta :
+        model = models.Lembaga
+        fields = [
+            "Nama_Lembaga",
+            "Ketua_panitia",
+            "NIP",
+            "NPSN",
+            "Alamat",
+            "Tikatan_Satuan_Lembaga",
+            "kurikulum_lebaga"
+        ]
+        widgets = {
+            "Tikatan_Satuan_Lembaga":forms.Select(
+                attrs={'class': 'form-select mb-3'}
+            ),
+            "kurikulum_lebaga":forms.Select(
+                attrs={'class': 'form-select mb-3'}
+            ),
+        }
 
 
 

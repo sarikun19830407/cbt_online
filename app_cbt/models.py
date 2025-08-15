@@ -54,6 +54,15 @@ ROMBEL_CHOICES = [
         ('N', 'N'),
     ]
 
+
+
+
+
+
+
+
+
+
 def buat_nomor_baru():
     alphabet = string.ascii_letters + string.digits  # Kombinasi huruf besar, kecil, dan angka
     alphabet = string.ascii_uppercase + string.digits
@@ -62,6 +71,15 @@ def buat_nomor_baru():
 
 
 # ..........................................##################################.......................................................................
+
+
+class KurikulumLembaga (models.Model):
+    Nama_User = models.ForeignKey(settings.AUTH_USER_MODEL, editable=False,  on_delete = models.CASCADE)
+    Kurikulum = models.CharField(max_length=300)
+    status = models.BooleanField(default=False)
+    def __str__(self):
+        return self.Kurikulum
+
 
 
 class SEMESTER (models.Model):
@@ -118,7 +136,8 @@ class Lembaga (models.Model):
         default = '',
         max_length=30
         ) 
-    satatus = models.BooleanField(default=True)
+    kurikulum_lebaga = models.ForeignKey(KurikulumLembaga, on_delete = models.CASCADE)
+    status = models.BooleanField(default=True)
 
     def __str__(self):
         return str(self.Nama_Lembaga)
@@ -161,17 +180,7 @@ class Pengguna (AbstractUser):
         return self.Nama
 
     
-class KurikulumLembaga (models.Model):
-    Nama_User = models.ForeignKey(settings.AUTH_USER_MODEL, editable=False,  on_delete = models.CASCADE)
-    semster = models.ForeignKey(SEMESTER,on_delete = models.CASCADE)
-    Tahun_pelajaran = models.ForeignKey(TahunPelajaran,on_delete = models.CASCADE)
-    Kurikulum = models.CharField(choices = KURIKULUM,
-        default = '',
-        max_length=30
-        )
-
-    def __str__(self):
-        return self.Kurikulum    
+    
 
 class Matapelajaran(models.Model):
     Nama_User= models.ForeignKey(settings.AUTH_USER_MODEL,  editable=False,  on_delete = models.CASCADE)

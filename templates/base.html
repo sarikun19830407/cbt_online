@@ -38,7 +38,12 @@
                         </button>
                     </div>
                     <div class="mt-1">
+
+                        {% if user.is_superuser %}
+                        <h4>Super User</h4>
+                        {% elif user.is_staff %}
                         <i class="bi bi-bank fst-normal">&nbsp;&nbsp;&nbsp;{{user.Nama_Lembaga}}</i></h3>
+                        {% endif %}
                     </div>
                 </div>
                 <!-- Spacer untuk mendorong username ke kanan -->
@@ -78,7 +83,7 @@
         </nav>
 
         <div class="container-fluid mt-3">
-            <i class="{{icon}}  fst-normal fs-4">&nbsp;&nbsp;{{data|title}}</i>
+            <i class="{{icon}}  fst-normal fs-4">&nbsp;&nbsp;{{data}}</i>
             <hr>
         </div>
         <!-- Scrollable Content -->

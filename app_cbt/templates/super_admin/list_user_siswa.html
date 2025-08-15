@@ -64,8 +64,9 @@
                             <div class="btn-group" role="group" aria-label="Basic mixed styles example">
                                 <a class="btn btn-warning btn-sm bi bi-pencil-square" style="font-size: 12px;"
                                     href="{% url 'cbt:Ubah_user_siswa' data.id %}">&nbsp;Ubah</a>
-                                <a class="btn btn-info btn-sm bi bi-person-check" style="font-size: 12px;"
-                                    href="{% url 'cbt:active_user_siswa' data.id %}">&nbsp;Kaectivan</a>
+                                <a class="btn btn-sm bi bi-person-check {% if data.is_active %}btn-info{% else %}btn-success{% endif %}"
+                                    style="font-size: 12px;" href="{% url 'cbt:active_user_siswa' data.id %}">
+                                    &nbsp;{% if data.is_active %}Nonaktifkan{% else %}Aktifkan{% endif %}</a>
                             </div>
                         </td>
                     </tr>

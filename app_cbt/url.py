@@ -31,7 +31,17 @@ urlpatterns =[
 
 
     path('lembaga', view_admin.lembaga, name='lembaga'),
+    path('tambah_lembaga', view_admin.tambah_lembaga, name='tambah_lembaga'),
+    path('Hapus_lembaga/<pk>/', view_admin.Hapus_lembaga, name='Hapus_lembaga'),
+    path('Ubah_lembaga/<pk>/', view_admin.Ubah_lembaga, name='Ubah_lembaga'),
+
     path('kurikulum_lembaga', view_admin.kurikulum_lembaga, name='kurikulum_lembaga'),
+    path('tambah_kurikulum', view_admin.tambah_kurikulum, name='tambah_kurikulum'),
+    path('Hapus_kurikulum/<pk>/', view_admin.Hapus_kurikulum, name='Hapus_kurikulum'),
+    path('Ubah_kurikulum/<pk>/', view_admin.Ubah_kurikulum, name='Ubah_kurikulum'),
+
+
+
     path('Hapus_mapel/<pk>/', view_admin. Hapus_mapel, name=' Hapus_mapel'),
     path('Ubah_Mata_Pelajaran/<pk>/', view_admin.Ubah_Mata_Pelajaran, name='Ubah_Mata_Pelajaran'),
 

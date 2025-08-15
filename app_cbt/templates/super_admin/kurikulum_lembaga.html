@@ -4,15 +4,12 @@
 {% block konten %}
 
 <body>
-    <div>
-        {% include "menu_lembaga.html" %}
-    </div>
-    <div class="container-fluid mt-4">
+    <div class="container-fluid">
         <div class="d-flex flex-row gap-2 mb-1">
 
             <div class="">
                 <a class="btn btn-success btn-sm bi bi-plus" style="font-size: 8;"
-                    href="{% url 'cbt:tambah_pelajaran' %}">&nbsp;Tambah</a>
+                    href="{% url 'cbt:tambah_kurikulum' %}">&nbsp;Tambah</a>
             </div>
             <div class="d-grid d-md-flex justify-content-md-start">
                 {% if messages %}
@@ -31,7 +28,8 @@
                 <thead class="text-center">
                     <tr class="">
                         <th class="" scope="col">No</th>
-                        <th class="" scope="col">Nama Mapel</th>
+                        <th class="" scope="col">Kurikulum</th>
+                        <th class="" scope="col">Status</th>
                         <th class="" scope="col">Aksi</th>
                     </tr>
                 </thead>
@@ -39,13 +37,14 @@
                     {% for data in Data %}
                     <tr class="Tabel">
                         <td class="align-middle text-center">{{ forloop.counter }}</td>
-                        <td class="align-middle">{{data.Nama_Mapel}}</td>
+                        <td class="align-middle">{{data.Kurikulum}}</td>
+                        <td class="align-middle text-center">{{data.status|yesno:"Active,Tidak Active"}}</td>
                         <td class="align-middle text-center">
                             <div class="btn-group" role="group" aria-label="Basic mixed styles example">
                                 <a class="btn btn-warning btn-sm bi bi-pencil-square" style="font-size: 8;"
-                                    href="{% url 'cbt:Ubah_Mata_Pelajaran' data.id %}">&nbsp;Ubah</a>
+                                    href="{% url 'cbt:Ubah_kurikulum' data.id %}">&nbsp;Ubah</a>
                                 <a class="btn btn-danger btn-sm bi bi-trash" style="font-size: 8;"
-                                    href="{% url 'cbt: Hapus_mapel' data.id %}">&nbsp;Hapus</a>
+                                    href="{% url 'cbt:Hapus_kurikulum' data.id %}">&nbsp;Hapus</a>
                             </div>
                         </td>
                     </tr>
