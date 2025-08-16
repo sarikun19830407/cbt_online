@@ -628,3 +628,9 @@ class Form_siswa (forms.ModelForm):
 
 
 
+class UploadForm(forms.Form):
+    file = forms.FileField(
+        label="Upload File CSV",
+        widget=forms.FileInput(attrs={'class': 'form-control mt-2'}),
+        required=True
+    )

@@ -586,19 +586,20 @@ def get_text_content(element):
 
 
 
+
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
 @csrf_protect
 @login_required
 def upload_soal_excel(request, pk):
     setting = get_object_or_404(models.SetingSoal, pk=pk)
-    form = forms.UploadFormSoal(request.POST or None, request.FILES or None)
+    form = forms_staff.UploadForm(request.POST or None, request.FILES or None)
 
     success_count = 0
     invalid_rows = []
 
     if request.method == 'POST' and form.is_valid():
-        excel_file = form.cleaned_data['file_excel']
+        excel_file = form.cleaned_data['file']
         file_name = excel_file.name.lower()
 
         # Simpan file sementara

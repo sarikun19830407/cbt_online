@@ -34,6 +34,8 @@ from weasyprint import HTML
 from django.templatetags.static import static
 from django.utils import timezone
 from django.db.models import Q
+import random
+import string
 
 
 @csrf_protect
@@ -1148,8 +1150,7 @@ def active_user_siswa(request, pk):
 
 
 
-import random
-import string
+
 
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
 @csrf_protect
@@ -1298,8 +1299,6 @@ def clear_upload_session_data(request):
 
 
 
-import random
-import string
 
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)

@@ -132,3 +132,12 @@ class Daftar_nilai(forms.ModelForm):
             ),
         }
     
+
+
+
+class UploadForm(forms.Form):
+    file = forms.FileField(
+        label="file_excel",
+        widget=forms.FileInput(attrs={'class': 'form-control mt-2'}),
+        required=True
+    )
