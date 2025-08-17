@@ -1502,7 +1502,7 @@ def downloadtempUserSiswa(request):
     for rombel in rombel_list:
         kelas_nama = rombel.Kelas.Kelas
         rombel_nama = rombel.Rombel
-        writer.writerow(['', '', '', kelas_nama, rombel_nama])  # Kosongkan NIK, Password, Nama
+        writer.writerow(['', '',kelas_nama, rombel_nama])  # Kosongkan NIK, Password, Nama
 
     return response
 
