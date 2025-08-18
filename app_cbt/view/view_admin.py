@@ -1151,7 +1151,7 @@ def active_user_siswa(request, pk):
 
 
 
-
+@login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
 @csrf_protect
 def tambah_user_siswa(request):
@@ -1462,7 +1462,7 @@ def uploadUserSiswa(request):
         form = forms.UploadForm()
 
     context = {
-        "data": "Upload User Siswa",
+        "data": "Upload Data Siswa",
         "NamaForm": "Form Upload User Siswa",
         "judul": "PPDB Upload Siswa",
         "link": reverse("cbt:user_siswa"),

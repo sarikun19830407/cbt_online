@@ -111,9 +111,10 @@ def staff(request):
     return render(request, 'super_admin/DasboardSuperuser.html', contex)
 
 
-@csrf_protect
+
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda u: u.is_staff, login_url=settings.LOGIN_URL)
+@csrf_protect
 def reset_login(request):
     if request.method == 'POST':
         user_ids = request.POST.getlist('user_ids')  # bisa lebih dari satu
@@ -229,6 +230,7 @@ def setting_soal(request):
 
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+@csrf_protect
 def aktifkan_soal(request, kode_soal):
     soal = get_object_or_404(models.SetingSoal, Kode_Soal=kode_soal)
 
@@ -590,7 +592,7 @@ def get_text_content(element):
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
 @csrf_protect
-@login_required
+@transaction.atomic
 def upload_soal_excel(request, pk):
     setting = get_object_or_404(models.SetingSoal, pk=pk)
     form = forms_staff.UploadForm(request.POST or None, request.FILES or None)
@@ -850,6 +852,7 @@ def nilai_setingsoal(request, kode_soal):
 
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+@csrf_protect
 def export_nilai_excel_setting(request, kode_soal):
     seting_soal = get_object_or_404(models.SetingSoal, Kode_Soal=kode_soal)
 

@@ -91,7 +91,7 @@ def siswa(request):
 
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_siswa, login_url=settings.LOGIN_URL)
-@login_required
+@csrf_protect
 def mulai_ujian(request, kode_soal):
     # Ambil data ujian
     seting_soal = get_object_or_404(models.SetingSoal, Kode_Soal=kode_soal)
@@ -253,6 +253,7 @@ def mulai_ujian(request, kode_soal):
 
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_siswa, login_url=settings.LOGIN_URL)
+@csrf_protect
 def selesai_ujian(request, kode_soal):
     # Ambil setting soal
     seting_soal = get_object_or_404(models.SetingSoal, Kode_Soal=kode_soal)
