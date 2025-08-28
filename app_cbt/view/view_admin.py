@@ -587,26 +587,31 @@ def tambah_kelas(request):
     form = forms.FormKelas(request.POST or None)
     if request.method == "POST":
         if form.is_valid():
-            form.instance.Nama_User = request.user
+            # cek lembaga aktif
             lembaga_aktif = models.Lembaga.objects.filter(status=True).first()
             if not lembaga_aktif:
-                messages.error(request, "Belum ada Lembaga dengan status aktif. Silakan setting lebaga dulu !!!.")
+                messages.error(request, "Belum ada Lembaga dengan status aktif. Silakan set dulu.")
                 return redirect(reverse("cbt:tambah_kelas"))  # balik ke halaman form
+
+            form.instance.Nama_User = request.user
+            form.instance.Nama_Lembaga = lembaga_aktif
             form.instance.satatus = True
             form.save()
-            messages.add_message(request, messages.INFO, 'Data telah berhasil Tambahkan')
+            messages.add_message(request, messages.INFO, 'Data telah berhasil ditambahkan')
             return redirect(reverse('cbt:Kelas'))
         else:
-            messages.error(request, 'Data Masih Salah.')
+            messages.error(request, 'Data masih salah.')
+
     context = {
-        "data" : "Tambah Kelas",
+        "data": "Tambah Kelas",
         "NamaForm": "Form Tambah Kelas",
-        "judul":"CBT-Kelas",
-        "link":reverse("cbt:Kelas"),
-        "form":form,
-        "icon":"bi bi-plus-circle"
-        }
-    return render (request, 'super_admin/form.html', context)
+        "judul": "CBT-Kelas",
+        "link": reverse("cbt:Kelas"),
+        "form": form,
+        "icon": "bi bi-plus-circle"
+    }
+    return render(request, 'super_admin/form.html', context)
+
 
 
 @login_required(login_url=settings.LOGIN_URL)
