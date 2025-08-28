@@ -588,8 +588,10 @@ def tambah_kelas(request):
     if request.method == "POST":
         if form.is_valid():
             form.instance.Nama_User = request.user
-            lembaga_aktif = get_object_or_404(models.Lembaga, status=True)
-            form.instance.Nama_Lembaga = lembaga_aktif
+            lembaga_aktif = models.Lembaga.objects.filter(status=True).first()
+            if not lembaga_aktif:
+                messages.error(request, "Belum ada Lembaga dengan status aktif. Silakan setting lebaga dulu !!!.")
+                return redirect(reverse("cbt:tambah_kelas"))  # balik ke halaman form
             form.instance.satatus = True
             form.save()
             messages.add_message(request, messages.INFO, 'Data telah berhasil Tambahkan')
