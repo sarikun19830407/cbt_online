@@ -36,8 +36,17 @@
     <!-- Bersihkan Sampah -->
     <div class="card shadow-sm mb-3">
         <div class="card-body">
-            <h5 class="card-title"><i class="bi bi-trash"></i> Membersihkan Sampah</h5>
-            <p class="card-text text-muted">Hapus file sementara (temp) yang tidak digunakan lagi.</p>
+            <h5 class="card-title py-3"><i class="bi bi-trash"></i> Membersihkan Sampah</h5>
+            <div class="d-grid d-md-flex justify-content-md-start">
+                {% if messages %}
+                {% for message in messages %}
+                <li class="btn bg-primary-subtle btn-sm" style="font-size: 8;" {% if message.tags %}
+                    class="{{ message.tags }}" {%endif%}>
+                    {{ message }}</li>
+                {% endfor %}
+                {% endif %}
+            </div>
+            <p class="card-text text-muted py-3">Hapus file sementara (temp) yang tidak digunakan lagi.</p>
             <a class="btn btn-warning" href="{% url 'cbt:bersihkan_file_temp' %}">
                 Hapus Sampah
             </a>

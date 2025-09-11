@@ -79,9 +79,9 @@ def app_cbt (request):
 @csrf_protect
 def home (request):
     lembaga = models.Lembaga.objects.filter(status=True).first()
-    Data = models.TahunPelajaran.objects.filter(status=True, Nama_User=request.user)
-    Siswa = models.Pengguna.objects.filter(is_siswa=True, Nama_User=request.user, Nama_Lembaga=lembaga)
-    rombel = models.Rombel_kelas.objects.filter(Nama_User=request.user, Nama_Lembaga=lembaga)
+    Data = models.TahunPelajaran.objects.filter(status=True)
+    Siswa = models.Pengguna.objects.filter(is_siswa=True, Nama_Lembaga=lembaga)
+    rombel = models.Rombel_kelas.objects.filter(Nama_Lembaga=lembaga)
     contex={
         "data":"Home",
         "judul":"CBT",
