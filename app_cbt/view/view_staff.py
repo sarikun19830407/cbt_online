@@ -68,7 +68,7 @@ def get_logged_in_users():
 @csrf_protect
 def staff(request):
     cari = request.POST.get('cari', request.GET.get('cari', '')) 
-    items_per_page = int(request.GET.get('items_per_page', 10))
+    items_per_page = request.GET.get('items_per_page', '10')
 
     users = get_logged_in_users()
     user_data = []
@@ -78,7 +78,10 @@ def staff(request):
         kode_soal = models.SetingSoal.objects.filter(Nama_User=user).first()
         if kode_soal:
             total_soal = models.Soal_Siswa.objects.filter(Kode_Soal=kode_soal).count()
-            total_jawab = models.Answer.objects.filter(Nama_User=user, Kode_Soal=kode_soal).exclude(Jawaban__isnull=True).count()
+            total_jawab = models.Answer.objects.filter(
+                Nama_User=user,
+                Kode_Soal=kode_soal
+            ).exclude(Jawaban__isnull=True).count()
             selesai = total_soal > 0 and total_jawab >= total_soal
 
         user_data.append({
@@ -87,13 +90,24 @@ def staff(request):
         })
 
     if cari:
-        user_data = [u for u in user_data if cari.lower() in u['user'].username.lower() or cari.lower() in u['user'].Nama.lower()]
+        user_data = [
+            u for u in user_data 
+            if cari.lower() in u['user'].username.lower() or cari.lower() in u['user'].Nama.lower()
+        ]
 
-    paginator = Paginator(user_data, items_per_page)
-    page_number = request.GET.get('page', 1)  
-    Data = paginator.get_page(page_number)
     jumlah = len(user_data)
-    Data.start_index = (paginator.page(page_number).start_index() - 1)
+
+    # ✅ Tangani kasus 'all'
+    if items_per_page == 'all':
+        Data = user_data  # tanpa paginator
+        page_number = 1
+        start_index = 0
+    else:
+        items_per_page = int(items_per_page)
+        paginator = Paginator(user_data, items_per_page)
+        page_number = request.GET.get('page', 1)  
+        Data = paginator.get_page(page_number)
+        start_index = paginator.page(page_number).start_index() - 1
 
     contex = {
         "data": "Home",
@@ -106,9 +120,11 @@ def staff(request):
         "items_per_page": items_per_page,
         "lembaga": "User telah Login",
         "placeholder": "Nama/User Name",
+        "start_index": start_index,
     }
 
-    return render(request, 'super_admin/DasboardSuperuser.html', contex)
+    return render(request, 'staff/DasboardSuperuser.html', contex)
+
 
 
 
