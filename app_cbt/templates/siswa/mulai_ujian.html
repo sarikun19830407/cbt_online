@@ -16,14 +16,17 @@
             max-height: calc(100vh - 300px);
             overflow-y: auto;
         }
+
         .question-card {
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
         }
+
         .card-header {
             border-radius: 10px 10px 0 0 !important;
         }
+
         .nav-btn {
             width: 40px;
             height: 40px;
@@ -33,9 +36,11 @@
             margin: 3px;
             transition: all 0.3s ease;
         }
+
         .nav-btn:hover {
             transform: scale(1.05);
         }
+
         .timer-container {
             background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
             color: white;
@@ -47,42 +52,50 @@
             top: 10px;
             z-index: 1000;
         }
+
         .timer-container h4 {
             font-size: 1.5rem;
             font-weight: bold;
             margin: 0;
             font-family: 'Courier New', monospace;
         }
+
         .option-label {
             transition: background-color 0.2s;
         }
+
         .option-label:hover {
             background-color: #f8f9fa;
         }
-        
+
         /* Mobile Styles */
         @media (max-width: 992px) {
             .mobile-accordion .accordion-button {
                 padding: 1rem;
                 font-weight: 500;
             }
+
             .mobile-accordion .accordion-button:not(.collapsed) {
                 background-color: #0d6efd;
                 color: white;
             }
+
             .mobile-accordion .accordion-body {
                 padding: 1rem;
             }
+
             .mobile-accordion .nav-btn {
                 width: 36px;
                 height: 36px;
                 margin: 2px;
                 font-size: 0.9rem;
             }
+
             .timer-container {
                 padding: 8px;
                 margin-bottom: 10px;
             }
+
             .timer-container h4 {
                 font-size: 1.2rem;
             }
@@ -95,11 +108,12 @@
         <div class="">
             {% for message in messages %}
             <ul class="list-group list-group-flush mb-2">
-                <li class="btn bg-primary-subtle btn-sm fs-3 fw-bold" style="font-size: 8;" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                <li class="btn bg-primary-subtle btn-sm fs-3 fw-bold" style="font-size: 8;" {% if message.tags %}
+                    class="{{ message.tags }}" {% endif %}>{{ message }}</li>
             </ul>
             {% endfor %}
         </div>
-        
+
         <div class="row g-3">
             <!-- Sidebar Desktop -->
             <div class="col-lg-3 d-none d-lg-block">
@@ -110,7 +124,7 @@
                     <div class="card-body question-nav p-3">
                         <div class="d-flex flex-wrap">
                             {% for soal in soal_list %}
-                            <a href="?nomor={{ soal.Nomor }}" 
+                            <a href="?nomor={{ soal.Nomor }}"
                                 class="btn nav-btn menu_active
                                 {% if soal.id in jawaban_dict and jawaban_dict|dict_get:soal.id %}btn-success{% else %}btn-outline-primary{% endif %}">
                                 {{ soal.Nomor }}
@@ -129,7 +143,7 @@
                             <h6 class="mb-1">Waktu Tersisa</h6>
                             <h4 id="timer">{{ durasi_menit|stringformat:"02d" }}:00:00</h4>
                         </div>
-                        
+
                         <ul class="list-group list-group-flush mb-3">
                             <li class="list-group-item d-flex justify-content-between align-items-center py-2">
                                 <span><i class="bi bi-person me-2"></i>Nama Siswa</span>
@@ -148,20 +162,14 @@
                                 <span class="fw-bold text-end">{{ seting_soal.Kode_Soal }}</span>
                             </li>
                         </ul>
-                        
+
                         <div class="d-grid gap-2">
-                            <a href="{% url 'cbt:selesai_ujian' seting_soal.Kode_Soal %}" 
-                                class="btn btn-danger w-100"
+                            <a href="{% url 'cbt:selesai_ujian' seting_soal.Kode_Soal %}" class="btn btn-danger w-100"
                                 onclick="return confirm('Yakin ingin menyelesaikan ujian? Pastikan semua soal telah terjawab!')">
                                 <i class="bi bi-check-circle me-1"></i> Selesai Ujian
                             </a>
 
-                            <form method="post" action="{% url 'cbt:Logaut' %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-outline-dark w-100">
-                                    <i class="bi bi-box-arrow-left me-1"></i> Keluar
-                                </button>
-                            </form>
+
                         </div>
                     </div>
                 </div>
@@ -174,18 +182,18 @@
                     <div class="accordion" id="mobileAccordion">
                         <div class="accordion-item shadow-sm mb-3">
                             <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" 
-                                        data-bs-toggle="collapse" data-bs-target="#mobileNavCollapse"
-                                        aria-expanded="false" aria-controls="mobileNavCollapse">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#mobileNavCollapse" aria-expanded="false"
+                                    aria-controls="mobileNavCollapse">
                                     <i class="bi bi-list-check me-2"></i> Navigasi Soal
                                 </button>
                             </h2>
-                            <div id="mobileNavCollapse" class="accordion-collapse collapse" 
+                            <div id="mobileNavCollapse" class="accordion-collapse collapse"
                                 aria-labelledby="mobileNavHeader" data-bs-parent="#mobileAccordion">
                                 <div class="accordion-body p-2">
                                     <div class="d-flex flex-wrap">
                                         {% for soal in soal_list %}
-                                        <a href="?nomor={{ soal.Nomor }}" 
+                                        <a href="?nomor={{ soal.Nomor }}"
                                             class="btn nav-btn menu-1
                                             {% if soal.id in jawaban_dict and jawaban_dict|dict_get:soal.id %}btn-success{% else %}btn-outline-primary{% endif %}">
                                             {{ soal.Nomor }}
@@ -195,55 +203,54 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="accordion-item shadow-sm">
                             <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" 
-                                        data-bs-toggle="collapse" data-bs-target="#mobileInfoCollapse"
-                                        aria-expanded="false" aria-controls="mobileInfoCollapse">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#mobileInfoCollapse" aria-expanded="false"
+                                    aria-controls="mobileInfoCollapse">
                                     <i class="bi bi-info-circle me-2"></i> Informasi Ujian
                                 </button>
                             </h2>
-                            <div id="mobileInfoCollapse" class="accordion-collapse collapse" 
+                            <div id="mobileInfoCollapse" class="accordion-collapse collapse"
                                 aria-labelledby="mobileInfoHeader" data-bs-parent="#mobileAccordion">
                                 <div class="accordion-body p-2">
                                     <div class="timer-container">
                                         <h6 class="mb-1">Waktu Tersisa</h6>
                                         <h4 id="mobile-timer">{{ durasi_menit|stringformat:"02d" }}:00:00</h4>
                                     </div>
-                                    
+
                                     <ul class="list-group list-group-flush mb-3">
-                                        <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-0">
+                                        <li
+                                            class="list-group-item d-flex justify-content-between align-items-center py-2 px-0">
                                             <span><i class="bi bi-person me-2"></i>Nama Siswa</span>
                                             <span class="fw-bold">{{ user }}</span>
                                         </li>
-                                        <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-0">
+                                        <li
+                                            class="list-group-item d-flex justify-content-between align-items-center py-2 px-0">
                                             <span><i class="bi bi-book me-2"></i>Mata Pelajaran</span>
                                             <span class="fw-bold">{{ seting_soal.Mapel }}</span>
                                         </li>
-                                        <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-0">
+                                        <li
+                                            class="list-group-item d-flex justify-content-between align-items-center py-2 px-0">
                                             <span><i class="bi bi-people me-2"></i>Kelas</span>
                                             <span class="fw-bold">{{ seting_soal.Kelas }}</span>
                                         </li>
-                                        <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-0">
+                                        <li
+                                            class="list-group-item d-flex justify-content-between align-items-center py-2 px-0">
                                             <span><i class="bi bi-key me-2"></i>Kode Ujian</span>
                                             <span class="fw-bold">{{ seting_soal.Kode_Soal }}</span>
                                         </li>
                                     </ul>
-                                    
+
                                     <div class="d-grid gap-2">
-                                        <a href="{% url 'cbt:selesai_ujian' seting_soal.Kode_Soal %}" 
+                                        <a href="{% url 'cbt:selesai_ujian' seting_soal.Kode_Soal %}"
                                             class="btn btn-danger w-100"
                                             onclick="return confirm('Yakin ingin menyelesaikan ujian? Pastikan semua soal telah terjawab!')">
                                             <i class="bi bi-check-circle me-1"></i> Selesai Ujian
                                         </a>
 
-                                        <form method="post" action="{% url 'cbt:Logaut' %}">
-                                            {% csrf_token %}
-                                            <button type="submit" class="btn btn-outline-dark w-100">
-                                                <i class="bi bi-box-arrow-left me-1"></i> Keluar
-                                            </button>
-                                        </form>
+
                                     </div>
                                 </div>
                             </div>
@@ -254,8 +261,10 @@
                 <!-- Question Card -->
                 <div class="card question-card">
                     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="bi bi-question-circle me-2"></i>Soal Nomor {{ current_soal.Nomor }}</h5>
-                        <span class="badge bg-light text-primary">Soal {{ current_soal.Nomor }} dari {{ total_soal }}</span>
+                        <h5 class="mb-0"><i class="bi bi-question-circle me-2"></i>Soal Nomor {{ current_soal.Nomor }}
+                        </h5>
+                        <span class="badge bg-light text-primary">Soal {{ current_soal.Nomor }} dari {{ total_soal
+                            }}</span>
                     </div>
                     <div class="card-body">
                         <form method="post">
@@ -266,39 +275,39 @@
                                     <tr>
                                         <td colspan="3" class="pb-4">{{ current_soal.Soal|safe }}</td>
                                     </tr>
-                                    
+
                                     <!-- Options -->
                                     <tr class="align-middle">
                                         <td style="width: 40px; vertical-align: top;">
-                                            <input class="form-check-input" type="radio" name="jawaban" value="A" id="jawabanA"
-                                                {% if jawaban.Jawaban == 'A' %}checked{% endif %}>
+                                            <input class="form-check-input" type="radio" name="jawaban" value="A"
+                                                id="jawabanA" {% if jawaban.Jawaban == 'A' %}checked{% endif %}>
                                         </td>
                                         <td style="width: 30px; vertical-align: top;"><strong>A.</strong></td>
                                         <td style="vertical-align: top;">{{ current_soal.A|safe }}</td>
                                     </tr>
-                                    
+
                                     <tr class="align-middle">
                                         <td style="width: 40px; vertical-align: top;">
-                                            <input class="form-check-input" type="radio" name="jawaban" value="B" id="jawabanB"
-                                                {% if jawaban.Jawaban == 'B' %}checked{% endif %}>
+                                            <input class="form-check-input" type="radio" name="jawaban" value="B"
+                                                id="jawabanB" {% if jawaban.Jawaban == 'B' %}checked{% endif %}>
                                         </td>
                                         <td style="width: 30px; vertical-align: top;"><strong>B.</strong></td>
                                         <td style="vertical-align: top;">{{ current_soal.B|safe }}</td>
                                     </tr>
-                                    
+
                                     <tr class="align-middle">
                                         <td style="width: 40px; vertical-align: top;">
-                                            <input class="form-check-input" type="radio" name="jawaban" value="C" id="jawabanC"
-                                                {% if jawaban.Jawaban == 'C' %}checked{% endif %}>
+                                            <input class="form-check-input" type="radio" name="jawaban" value="C"
+                                                id="jawabanC" {% if jawaban.Jawaban == 'C' %}checked{% endif %}>
                                         </td>
                                         <td style="width: 30px; vertical-align: top;"><strong>C.</strong></td>
                                         <td style="vertical-align: top;">{{ current_soal.C|safe }}</td>
                                     </tr>
-                                    
+
                                     <tr class="align-middle">
                                         <td style="width: 40px; vertical-align: top;">
-                                            <input class="form-check-input" type="radio" name="jawaban" value="D" id="jawabanD"
-                                                {% if jawaban.Jawaban == 'D' %}checked{% endif %}>
+                                            <input class="form-check-input" type="radio" name="jawaban" value="D"
+                                                id="jawabanD" {% if jawaban.Jawaban == 'D' %}checked{% endif %}>
                                         </td>
                                         <td style="width: 30px; vertical-align: top;"><strong>D.</strong></td>
                                         <td style="vertical-align: top;">{{ current_soal.D|safe }}</td>
@@ -315,15 +324,15 @@
                                 <div></div>
                                 {% endif %}
 
-                                {% if current_soal.Nomor < total_soal %}
-                                <button type="submit" name="next" class="btn btn-primary px-4">
+                                {% if current_soal.Nomor < total_soal %} <button type="submit" name="next"
+                                    class="btn btn-primary px-4">
                                     Selanjutnya <i class="fas fa-arrow-right ms-2"></i>
-                                </button>
-                                {% else %}
-                                <button type="submit" class="btn btn-success px-4">
-                                    <i class="bi bi-save me-2"></i>Simpan Jawaban
-                                </button>
-                                {% endif %}
+                                    </button>
+                                    {% else %}
+                                    <button type="submit" class="btn btn-success px-4">
+                                        <i class="bi bi-save me-2"></i>Simpan Jawaban
+                                    </button>
+                                    {% endif %}
                             </div>
                         </form>
                     </div>
@@ -334,89 +343,90 @@
 
     {% include "setting/js-2.html" %}
     {% include "setting/js.html" %}
-    
+
     <script>
-    // Timer Ujian Lengkap dengan Auto Logout
-            document.addEventListener('DOMContentLoaded', function() {
-                // Elemen UI
-                const timerElement = document.getElementById('timer');
-                const mobileTimerElement = document.getElementById('mobile-timer') || timerElement;
-                const examForm = document.querySelector('form[method="post"]');
-                
-                // Konfigurasi Ujian
-                const examCode = '{{ seting_soal.Kode_Soal }}';
-                const totalSeconds = {{ total_detik }};
-                const endTime = new Date('{{ waktu_berakhir }}');
-                const logoutUrl = "{% url 'cbt:app_cbt' %}";
-                const submitUrl = "{% url 'cbt:selesai_ujian' kode_soal=seting_soal.Kode_Soal %}";
-                
-                // State Timer
-                let remainingSeconds = totalSeconds;
-                let timerInterval;
-                let isExamFinished = false;
+        // Timer Ujian Lengkap dengan Auto Logout
+        document.addEventListener('DOMContentLoaded', function () {
+            // Elemen UI
+            const timerElement = document.getElementById('timer');
+            const mobileTimerElement = document.getElementById('mobile-timer') || timerElement;
+            const examForm = document.querySelector('form[method="post"]');
 
-                // Format waktu HH:MM:SS
-                function formatTime(seconds) {
-                    const hours = Math.floor(seconds / 3600);
-                    const minutes = Math.floor((seconds % 3600) / 60);
-                    const secs = seconds % 60;
-                    return [
-                        hours.toString().padStart(2, '0'),
-                        minutes.toString().padStart(2, '0'),
-                        secs.toString().padStart(2, '0')
-                    ].join(':');
+            // Konfigurasi Ujian
+            const examCode = '{{ seting_soal.Kode_Soal }}';
+            const totalSeconds = {{ total_detik }
+        };
+        const endTime = new Date('{{ waktu_berakhir }}');
+        const logoutUrl = "{% url 'cbt:app_cbt' %}";
+        const submitUrl = "{% url 'cbt:selesai_ujian' kode_soal=seting_soal.Kode_Soal %}";
+
+        // State Timer
+        let remainingSeconds = totalSeconds;
+        let timerInterval;
+        let isExamFinished = false;
+
+        // Format waktu HH:MM:SS
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return [
+                hours.toString().padStart(2, '0'),
+                minutes.toString().padStart(2, '0'),
+                secs.toString().padStart(2, '0')
+            ].join(':');
+        }
+
+        // Update tampilan timer
+        function updateTimerDisplay(seconds) {
+            const timeString = formatTime(seconds);
+            timerElement.textContent = timeString;
+            if (mobileTimerElement) {
+                mobileTimerElement.textContent = timeString;
+            }
+
+            // Ubah warna saat waktu hampir habis
+            if (seconds < 300) { // 5 menit terakhir
+                timerElement.classList.add('text-danger', 'fw-bold');
+                if (mobileTimerElement) {
+                    mobileTimerElement.classList.add('text-danger', 'fw-bold');
                 }
 
-                // Update tampilan timer
-                function updateTimerDisplay(seconds) {
-                    const timeString = formatTime(seconds);
-                    timerElement.textContent = timeString;
-                    if (mobileTimerElement) {
-                        mobileTimerElement.textContent = timeString;
-                    }
-                    
-                    // Ubah warna saat waktu hampir habis
-                    if (seconds < 300) { // 5 menit terakhir
-                        timerElement.classList.add('text-danger', 'fw-bold');
-                        if (mobileTimerElement) {
-                            mobileTimerElement.classList.add('text-danger', 'fw-bold');
-                        }
-                        
-                        // Peringatan 1 menit terakhir
-                        if (seconds === 60) {
-                            showAlert('Waktu tersisa 1 menit!');
-                        }
-                    }
+                // Peringatan 1 menit terakhir
+                if (seconds === 60) {
+                    showAlert('Waktu tersisa 1 menit!');
                 }
+            }
+        }
 
-                // Tampilkan modal peringatan
-                function showAlert(message) {
-                    const alertHtml = `
+        // Tampilkan modal peringatan
+        function showAlert(message) {
+            const alertHtml = `
                     <div class="position-fixed top-0 start-0 w-100 alert alert-danger alert-dismissible fade show" role="alert" style="z-index: 9999">
                         <strong>Peringatan!</strong> ${message}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                     `;
-                    document.body.insertAdjacentHTML('afterbegin', alertHtml);
-                }
+            document.body.insertAdjacentHTML('afterbegin', alertHtml);
+        }
 
-                // Handle waktu habis
-                function handleTimeExpired() {
-                    if (isExamFinished) return;
-                    isExamFinished = true;
-                    
-                    clearInterval(timerInterval);
-                    updateTimerDisplay(0);
-                    
-                    // Nonaktifkan form
-                    if (examForm) {
-                        examForm.querySelectorAll('input, button').forEach(el => {
-                            el.disabled = true;
-                        });
-                    }
-                    
-                    // Tampilkan modal fullscreen
-                    const modalHtml = `
+        // Handle waktu habis
+        function handleTimeExpired() {
+            if (isExamFinished) return;
+            isExamFinished = true;
+
+            clearInterval(timerInterval);
+            updateTimerDisplay(0);
+
+            // Nonaktifkan form
+            if (examForm) {
+                examForm.querySelectorAll('input, button').forEach(el => {
+                    el.disabled = true;
+                });
+            }
+
+            // Tampilkan modal fullscreen
+            const modalHtml = `
                     <div class="modal fade" id="timeoutModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
                         <div class="modal-dialog modal-dialog-centered">
                             <div class="modal-content">
@@ -437,158 +447,159 @@
                         </div>
                     </div>
                     `;
-                    
-                    document.body.insertAdjacentHTML('beforeend', modalHtml);
-                    const modal = new bootstrap.Modal(document.getElementById('timeoutModal'));
-                    modal.show();
-                    
-                    // Auto submit jawaban dan logout
-                    setTimeout(() => {
-                        if (examForm) {
-                            // Buat hidden input untuk trigger submit
-                            const finishInput = document.createElement('input');
-                            finishInput.type = 'hidden';
-                            finishInput.name = 'finish';
-                            examForm.appendChild(finishInput);
-                            examForm.submit();
-                        }
-                        
-                        // Redirect ke logout setelah 3 detik
-                        setTimeout(() => {
-                            localStorage.removeItem(`ujian_timer_${examCode}`);
-                            window.location.href = logoutUrl;
-                        }, 3000);
-                    }, 5000);
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            const modal = new bootstrap.Modal(document.getElementById('timeoutModal'));
+            modal.show();
+
+            // Auto submit jawaban dan logout
+            setTimeout(() => {
+                if (examForm) {
+                    // Buat hidden input untuk trigger submit
+                    const finishInput = document.createElement('input');
+                    finishInput.type = 'hidden';
+                    finishInput.name = 'finish';
+                    examForm.appendChild(finishInput);
+                    examForm.submit();
                 }
 
-                // Simpan progress ke localStorage
-                function saveExamProgress() {
-                    localStorage.setItem(`ujian_timer_${examCode}`, JSON.stringify({
-                        end_time: endTime.toISOString(),
-                        remaining: remainingSeconds
-                    }));
-                }
+                // Redirect ke logout setelah 3 detik
+                setTimeout(() => {
+                    localStorage.removeItem(`ujian_timer_${examCode}`);
+                    window.location.href = logoutUrl;
+                }, 3000);
+            }, 5000);
+        }
 
-                // Load progress dari localStorage
-                function loadExamProgress() {
-                    const savedData = localStorage.getItem(`ujian_timer_${examCode}`);
-                    if (savedData) {
-                        try {
-                            const { end_time, remaining } = JSON.parse(savedData);
-                            const now = new Date();
-                            const savedEndTime = new Date(end_time);
-                            
-                            if (now < savedEndTime) {
-                                const newRemaining = Math.floor((savedEndTime - now) / 1000);
-                                if (newRemaining > 0 && newRemaining < remainingSeconds) {
-                                    return newRemaining;
-                                }
-                            }
-                        } catch (e) {
-                            console.error('Error loading exam progress:', e);
+        // Simpan progress ke localStorage
+        function saveExamProgress() {
+            localStorage.setItem(`ujian_timer_${examCode}`, JSON.stringify({
+                end_time: endTime.toISOString(),
+                remaining: remainingSeconds
+            }));
+        }
+
+        // Load progress dari localStorage
+        function loadExamProgress() {
+            const savedData = localStorage.getItem(`ujian_timer_${examCode}`);
+            if (savedData) {
+                try {
+                    const { end_time, remaining } = JSON.parse(savedData);
+                    const now = new Date();
+                    const savedEndTime = new Date(end_time);
+
+                    if (now < savedEndTime) {
+                        const newRemaining = Math.floor((savedEndTime - now) / 1000);
+                        if (newRemaining > 0 && newRemaining < remainingSeconds) {
+                            return newRemaining;
                         }
                     }
-                    return remainingSeconds;
+                } catch (e) {
+                    console.error('Error loading exam progress:', e);
                 }
+            }
+            return remainingSeconds;
+        }
 
-                // Deteksi device type
-                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        // Deteksi device type
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-                // Main timer function
-                function initExamTimer() {
-                    // Load saved progress
-                    remainingSeconds = loadExamProgress();
-                    updateTimerDisplay(remainingSeconds);
-                    
-                    // Start timer
-                    if (isMobile) {
-                        // Gunakan requestAnimationFrame untuk mobile
-                        let lastUpdate = Date.now();
-                        
-                        function mobileTimerUpdate() {
-                            const now = Date.now();
-                            const delta = now - lastUpdate;
-                            
-                            if (delta >= 1000) {
-                                remainingSeconds--;
-                                updateTimerDisplay(remainingSeconds);
-                                lastUpdate = now - (delta % 1000);
-                                
-                                // Simpan progress setiap 10 detik
-                                if (remainingSeconds % 10 === 0) {
-                                    saveExamProgress();
-                                }
-                                
-                                if (remainingSeconds <= 0) {
-                                    handleTimeExpired();
-                                    return;
-                                }
-                            }
-                            
-                            if (!isExamFinished) {
-                                requestAnimationFrame(mobileTimerUpdate);
-                            }
-                        }
-                        
-                        requestAnimationFrame(mobileTimerUpdate);
-                    } else {
-                        // Gunakan setInterval untuk desktop
-                        timerInterval = setInterval(() => {
-                            remainingSeconds--;
-                            updateTimerDisplay(remainingSeconds);
-                            
-                            // Simpan progress setiap 10 detik
-                            if (remainingSeconds % 10 === 0) {
-                                saveExamProgress();
-                            }
-                            
-                            if (remainingSeconds <= 0) {
-                                handleTimeExpired();
-                            }
-                        }, 1000);
-                    }
-                    
-                    // Handle tab visibility changes
-                    document.addEventListener('visibilitychange', () => {
-                        if (document.visibilityState === 'visible') {
-                            const now = new Date();
-                            const newRemaining = Math.floor((endTime - now) / 1000);
-                            
-                            if (newRemaining > 0 && newRemaining < remainingSeconds) {
-                                remainingSeconds = newRemaining;
-                            } else if (newRemaining <= 0) {
-                                remainingSeconds = 0;
-                                handleTimeExpired();
-                            }
-                        }
-                    });
-                    
-                    // Handle beforeunload
-                    window.addEventListener('beforeunload', () => {
-                        if (!isExamFinished && remainingSeconds > 0) {
+        // Main timer function
+        function initExamTimer() {
+            // Load saved progress
+            remainingSeconds = loadExamProgress();
+            updateTimerDisplay(remainingSeconds);
+
+            // Start timer
+            if (isMobile) {
+                // Gunakan requestAnimationFrame untuk mobile
+                let lastUpdate = Date.now();
+
+                function mobileTimerUpdate() {
+                    const now = Date.now();
+                    const delta = now - lastUpdate;
+
+                    if (delta >= 1000) {
+                        remainingSeconds--;
+                        updateTimerDisplay(remainingSeconds);
+                        lastUpdate = now - (delta % 1000);
+
+                        // Simpan progress setiap 10 detik
+                        if (remainingSeconds % 10 === 0) {
                             saveExamProgress();
                         }
-                    });
+
+                        if (remainingSeconds <= 0) {
+                            handleTimeExpired();
+                            return;
+                        }
+                    }
+
+                    if (!isExamFinished) {
+                        requestAnimationFrame(mobileTimerUpdate);
+                    }
                 }
 
-                // Start the exam timer
-                initExamTimer();
-                
-                // Handle manual finish button
-                const finishBtn = document.querySelector('a[href*="selesai_ujian"]');
-                if (finishBtn) {
-                    finishBtn.addEventListener('click', function(e) {
-                        if (remainingSeconds <= 0) {
-                            e.preventDefault();
-                            handleTimeExpired();
-                        } else {
-                            if (!confirm('Yakin ingin menyelesaikan ujian? Pastikan semua soal telah terjawab!')) {
-                                e.preventDefault();
-                            }
-                        }
-                    });
+                requestAnimationFrame(mobileTimerUpdate);
+            } else {
+                // Gunakan setInterval untuk desktop
+                timerInterval = setInterval(() => {
+                    remainingSeconds--;
+                    updateTimerDisplay(remainingSeconds);
+
+                    // Simpan progress setiap 10 detik
+                    if (remainingSeconds % 10 === 0) {
+                        saveExamProgress();
+                    }
+
+                    if (remainingSeconds <= 0) {
+                        handleTimeExpired();
+                    }
+                }, 1000);
+            }
+
+            // Handle tab visibility changes
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    const now = new Date();
+                    const newRemaining = Math.floor((endTime - now) / 1000);
+
+                    if (newRemaining > 0 && newRemaining < remainingSeconds) {
+                        remainingSeconds = newRemaining;
+                    } else if (newRemaining <= 0) {
+                        remainingSeconds = 0;
+                        handleTimeExpired();
+                    }
                 }
+            });
+
+            // Handle beforeunload
+            window.addEventListener('beforeunload', () => {
+                if (!isExamFinished && remainingSeconds > 0) {
+                    saveExamProgress();
+                }
+            });
+        }
+
+        // Start the exam timer
+        initExamTimer();
+
+        // Handle manual finish button
+        const finishBtn = document.querySelector('a[href*="selesai_ujian"]');
+        if (finishBtn) {
+            finishBtn.addEventListener('click', function (e) {
+                if (remainingSeconds <= 0) {
+                    e.preventDefault();
+                    handleTimeExpired();
+                } else {
+                    if (!confirm('Yakin ingin menyelesaikan ujian? Pastikan semua soal telah terjawab!')) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        }
             });
     </script>
 </body>
+
 </html>

@@ -37,6 +37,9 @@ from django.db.models import Q
 import random
 import string
 
+from django.core.management import call_command
+from utils.encryption import encrypt_file, cleanup_files, decrypt_file
+
 
 @csrf_protect
 @never_cache
@@ -1577,8 +1580,6 @@ def cetak_semua_kartu_pdf(request):
 
 
 
-from django.core.management import call_command
-from utils.encryption import encrypt_file, cleanup_files, decrypt_file
 
 
 

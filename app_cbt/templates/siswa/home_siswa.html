@@ -135,8 +135,8 @@
                 <div class="text-center mt-3">
                     <form method="post" action="{% url 'cbt:Logaut' %}" class="d-inline">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-link logout-btn">
-                            <i class="bi bi-box-arrow-left me-1"></i> Keluar dari Sistem
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-box-arrow-left me-1"></i>Kembali Ke Halaman Login
                         </button>
                     </form>
                 </div>
@@ -145,7 +145,7 @@
     </div>
 
     {% include "setting/js.html" %}
-    
+
 </body>
 
 </html>
