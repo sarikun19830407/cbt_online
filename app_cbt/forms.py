@@ -632,3 +632,34 @@ class UploadForm(forms.Form):
         widget=forms.FileInput(attrs={'class': 'form-control mt-2'}),
         required=True
     )
+
+
+
+
+class FormDownload (forms.Form):
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            "class": "form-control",
+            "placeholder": "Masukkan password superuser"
+        }),
+        label="Password Superuser",
+        required=True
+    )
+    
+
+
+
+class UploadFormBackup(forms.Form):
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            "class": "form-control",
+            "placeholder": "Masukkan password superuser"
+        }),
+        label="Password Superuser",
+        required=True
+    )
+    backup_file = forms.FileField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={"class": "form-control"}),
+        label="File Backup (.aes)"
+    )

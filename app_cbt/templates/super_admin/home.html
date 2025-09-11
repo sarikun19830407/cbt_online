@@ -1,61 +1,49 @@
 {% extends 'base.html' %}
 
-
 {% block konten %}
-
-<body>
-    <div class="container-fluid">
-        <div class="row mt-4">
-            <div class="col-md-4 mb-3">
-                <div class="card bg-primary text-white">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="fas fa-users"></i>Tahun Pelajaran</h5>
-                        {% for Data in Data %}
-                        <p class="card-text">{{Data}}</p>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="card bg-success text-white">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="fas fa-shopping-cart"></i> Jumlah Siswa</h5>
-                        <p class="card-text">{{siswa}}</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="card bg-info text-white">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="fas fa-chart-line"></i>Jumlah Rombel</h5>
-                        <p class="card-text">{{rombel}}</p>
-                    </div>
+<div class="container-fluid">
+    <div class="row mt-4">
+        <div class="col-md-4 mb-3">
+            <div class="card bg-primary text-white shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-users"></i> Tahun Pelajaran</h5>
+                    {% for Data in Data %}
+                    <p class="card-text">{{ Data }}</p>
+                    {% endfor %}
                 </div>
             </div>
         </div>
-        <hr>
-        <div class="card shadow-sm mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Membersihkan Sampah</h5>
-                <p class="card-text text-muted">Hapus file sementara (temp) yang tidak digunakan lagi.</p>
-                <a class="btn btn-warning" href="{% url 'cbt:bersihkan_file_temp' %}">
-                    <i class="bi bi-trash"></i> Hapus Sampah
-                </a>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-success text-white shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-user-graduate"></i> Jumlah Siswa</h5>
+                    <p class="card-text">{{ siswa }}</p>
+                </div>
             </div>
         </div>
-
-        {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show small" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-info text-white shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-layer-group"></i> Jumlah Rombel</h5>
+                    <p class="card-text">{{ rombel }}</p>
+                </div>
+            </div>
         </div>
-        {% endfor %}
-        {% endif %}
-
     </div>
 
-</body>
-{% endblock %}
+    <hr>
 
-</html>
+    <!-- Bersihkan Sampah -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <h5 class="card-title"><i class="bi bi-trash"></i> Membersihkan Sampah</h5>
+            <p class="card-text text-muted">Hapus file sementara (temp) yang tidak digunakan lagi.</p>
+            <a class="btn btn-warning" href="{% url 'cbt:bersihkan_file_temp' %}">
+                Hapus Sampah
+            </a>
+        </div>
+    </div>
+
+
+</div>
+{% endblock %}

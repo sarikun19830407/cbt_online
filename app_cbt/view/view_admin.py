@@ -1577,11 +1577,148 @@ def cetak_semua_kartu_pdf(request):
 
 
 
+from django.core.management import call_command
+from utils.encryption import encrypt_file, cleanup_files, decrypt_file
+
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
+@csrf_protect
+def backup_database(request):
+    if request.method == 'POST':
+        form = forms.FormDownload(request.POST)
+        if form.is_valid():
+            password = form.cleaned_data['password']
+            user = authenticate(username=request.user.username, password=password)
+
+            if user is not None and user.is_superuser:
+                filename = f"backup-{now().date()}.json"
+                file_path = None
+                encrypted_path = None  # Inisialisasi variabel untuk memastikan selalu ada
+
+                try:
+                    # Buat file sementara
+                    with tempfile.NamedTemporaryFile(delete=False, suffix='.json') as temp_file:
+                        file_path = temp_file.name
+
+                    # Dump data ke file sementara
+                    with open(file_path, 'w') as output_file:
+                        with open(file_path, 'w') as output_file:
+                            call_command(
+                                'dumpdata',
+                                '--natural-primary',
+                                '--natural-foreign',
+                                '--indent', '2',
+                                stdout=output_file
+                            )
+
+                    # Enkripsi file
+                    encrypted_path = encrypt_file(file_path, password)
+
+                    # Kirim file hasil enkripsi sebagai respons untuk diunduh
+                    response = FileResponse(open(encrypted_path, 'rb'), as_attachment=True, filename=filename + '.aes')
+                    return response
+
+                except subprocess.CalledProcessError as e:
+                    messages.error(request, f"Gagal membuat backup: {e.stderr.decode()}. " +
+                                "Periksa apakah ada masalah dengan dump data atau konfigurasi server.")
+                except Exception as e:
+                    messages.error(request, f"Terjadi kesalahan tidak terduga: {str(e)}.")
+                finally:
+                    # Bersihkan file sementara jika ada
+                    if file_path:
+                        cleanup_files(file_path, encrypted_path)
+            else:
+                messages.error(request, "Password salah atau akun Anda bukan superuser.")
+    else:
+        form = forms.FormDownload()
+
+    context = {
+        "judul": "PPDB-Download Backup",
+        "data": "Download backup", 
+        "NamaForm": "Form Download Backup",
+        "link": reverse('cbt:backup_database'),
+        "form": form,
+    }
+    return render(request, 'super_admin/backup_database.html', context)
 
 
 
 
 
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
+@csrf_protect
+def restore_database(request):
+    if request.method == 'POST':
+        form = forms.UploadFormBackup(request.POST, request.FILES)
+        if form.is_valid():
+            backup_file = request.FILES['backup_file']
+            password = form.cleaned_data['password']
+
+            # Validasi file kosong
+            if backup_file.size == 0:
+                messages.error(request, "File backup kosong. Silakan pilih file yang valid untuk di-upload.")
+                return redirect('cbt:restore_database')
+
+            # Validasi ekstensi
+            if not backup_file.name.endswith('.aes'):
+                messages.error(request, "File backup harus berformat .aes (terenkripsi). Pastikan file yang diupload benar.")
+                return redirect('cbt:restore_database')
+
+            # Simpan file upload ke file sementara
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.aes') as temp_file:
+                for chunk in backup_file.chunks():
+                    temp_file.write(chunk)
+                temp_path = temp_file.name
+
+            decrypted_path = None
+            try:
+                # Dekripsi file
+                decrypted_path = decrypt_file(temp_path, password)
+
+                # Restore ke database
+                call_command('loaddata', decrypted_path)
+                
+                messages.success(request, "Backup berhasil diunggah dan dimuat ke database.")
+                return redirect('cbt:restore_database')
+
+            except subprocess.CalledProcessError as e:
+                messages.error(request, f"Kesalahan saat memuat data ke database: {e.stderr.decode()}. " +
+                                        "Pastikan data dalam backup valid dan sesuai dengan skema database.")
+                return redirect('cbt:restore_database')
+
+            except Exception as e:
+                messages.error(request, f"Terjadi kesalahan saat memproses backup: {str(e)}. " +
+                                        "Periksa kembali password atau file backup.")
+                return redirect('cbt:restore_database')
+
+            finally:
+                # Hapus file sementara
+                if decrypted_path:
+                    cleanup_files(temp_path, decrypted_path)
+                else:
+                    cleanup_files(temp_path)
+
+        else:
+            messages.error(request, "Form tidak valid. Pastikan password dan file backup diisi dengan benar.")
+            return redirect('cbt:restore_database')
+
+    else:
+        form = forms.UploadFormBackup()
+
+    context = {
+        "data": "Upload Backup",
+        "NamaForm": "Form Upload Backup",
+        "judul": "PPDB Upload Backup",
+        "link": reverse('cbt:restore_database'),
+        "form": form,
+    }
+    return render(request, 'super_admin/restore_database.html', context)
 
 
 

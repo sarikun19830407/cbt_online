@@ -69,6 +69,10 @@ urlpatterns =[
     path('ubah_rombel/<pk>/', view_admin.ubah_rombel, name='ubah_rombel'),
 
 
+    path('backup_database', view_admin.backup_database, name='backup_database'),
+    path('restore_database', view_admin.restore_database, name='restore_database'),
+
+
 
 # ...................................................................................................................................
 # view staf
