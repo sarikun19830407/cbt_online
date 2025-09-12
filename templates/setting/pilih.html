@@ -36,6 +36,19 @@
 <nav class="navbar py-2 bg-light rounded">
     <div class="container-fluid d-flex justify-content-between align-items-center">
         <!-- Dropdown untuk Jumlah Perhalaman -->
+        {% if semua == "semua" %}
+        <form method="get" class="d-flex align-items-center">
+            <input type="hidden" name="cari" value="{{ cari }}">
+            <span class="me-2">Jumlah Perhalaman:</span>
+            <select name="items_per_page" id="items_per_page" class="form-select form-select-sm w-auto"
+                onchange="this.form.submit()">
+                <option value="30" {% if items_per_page == '30' %}selected{% endif %}>30</option>
+                <option value="50" {% if items_per_page == '50' %}selected{% endif %}>50</option>
+                <option value="100" {% if items_per_page == '100' %}selected{% endif %}>100</option>
+                
+            </select>
+        </form>
+        {% else %}
         <form method="get" class="d-flex align-items-center">
             <input type="hidden" name="cari" value="{{ cari }}">
             <span class="me-2">Jumlah Perhalaman:</span>
@@ -47,6 +60,7 @@
                 <option value="all" {% if items_per_page == 'all' %}selected{% endif %}>Semua</option>
             </select>
         </form>
+        {% endif %}
 
         <!-- Informasi Total Kabupaten -->
         <span class="ms-3">Total: <strong>{{ jumlah }}</strong> {{lembaga}}</span>

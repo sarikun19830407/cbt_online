@@ -49,6 +49,8 @@ from openpyxl.utils import get_column_letter
 
 
 
+
+
 def get_logged_in_users():
     sessions = Session.objects.filter(expire_date__gte=now())
     user_ids = []
@@ -59,8 +61,6 @@ def get_logged_in_users():
             user_ids.append(data['_auth_user_id'])
     
     return models.Pengguna.objects.filter(id__in=user_ids, is_siswa=True)
-
-
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -89,6 +89,7 @@ def staff(request):
             'selesai': selesai
         })
 
+    # 🔍 Filter pencarian
     if cari:
         user_data = [
             u for u in user_data 
@@ -97,19 +98,23 @@ def staff(request):
 
     jumlah = len(user_data)
 
-    # ✅ Tangani kasus 'all'
+    # 📄 Pagination
+    # 📄 Pagination
     if items_per_page == 'all':
-        Data = user_data  # tanpa paginator
+        Data = user_data  # tampilkan semua tanpa paginator
         page_number = 1
         start_index = 0
+        semua = 'all'
     else:
         items_per_page = int(items_per_page)
         paginator = Paginator(user_data, items_per_page)
         page_number = request.GET.get('page', 1)  
         Data = paginator.get_page(page_number)
-        start_index = paginator.page(page_number).start_index() - 1
+        start_index = Data.start_index() - 1  # cukup simpan di variabel biasa
+        semua = str(items_per_page) if items_per_page != 1000000 else 'all'
+        Data.start_index = (Data.start_index() - 1)
 
-    contex = {
+    context = {
         "data": "Home",
         "judul": "cbt-reset",
         "jumlah": jumlah,
@@ -117,13 +122,15 @@ def staff(request):
         "JmlPengguna": models.Pengguna.objects.filter(is_siswa=True).count(),
         "Data": Data,
         "cari": cari,
-        "items_per_page": items_per_page,
+        "items_per_page": semua,
         "lembaga": "User telah Login",
         "placeholder": "Nama/User Name",
         "start_index": start_index,
+        "semua":"semua"
     }
 
-    return render(request, 'staff/DasboardSuperuser.html', contex)
+    return render(request, 'staff/DasboardSuperuser.html', context)
+
 
 
 
@@ -1644,6 +1651,7 @@ def daftar_nilai(request):
         Data = paginator.page(paginator.num_pages)
 
     semua = str(items_per_page) if items_per_page != 1000000 else 'all'
+    Data.start_index = (Data.start_index() - 1)
     jumlah = data_list.count()
     
     context = {
