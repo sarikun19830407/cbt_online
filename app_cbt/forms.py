@@ -535,7 +535,7 @@ class Form_siswa (forms.ModelForm):
         widgets = {
             'username': forms.TextInput(
                 attrs = {
-                    'placeholder':"Masukan NISN Anda harus 16 digit",
+                    'placeholder':"Masukan NIK Anda harus 16 digit",
                     'class':'form-control mb-3',
                     
                 }
