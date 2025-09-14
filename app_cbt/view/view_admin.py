@@ -833,7 +833,7 @@ def tambah_pelajaran(request):
             messages.error(request, 'Silahkan tambhakan lembaga pada update user.')
         elif form.is_valid():
             form.instance.Nama_User = request.user
-            lembaga_aktif = get_object_or_404(models.Lembaga, status=True)
+            lembaga_aktif = models.Lembaga.objects.filter(status = True).first()
             form.instance.Nama_Lembaga = lembaga_aktif
             form.save()
             messages.success(request, 'Data telah berhasil ditambahkan')
