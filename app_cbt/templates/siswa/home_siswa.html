@@ -113,13 +113,13 @@
                         <form method="post" novalidate>
                             {% csrf_token %}
                             <div class="mb-4">
-                                <label for="kode_soal" class="form-label fw-medium">Kode Ujian</label>
+                                <label for="kode_soal" class="form-label fw-medium">Token Ujian</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-light"><i class="bi bi-key-fill"></i></span>
                                     <input type="text" class="form-control" id="kode_soal" name="kode_soal"
                                         placeholder="Masukkan kode ujian yang diberikan pengajar" required>
                                 </div>
-                                <small class="text-muted">Contoh: BC12XY</small>
+                                <small class="text-muted">Contoh: BC12XYTC5N (10 Digit)</small>
                             </div>
 
                             <div class="d-grid gap-2 mt-4">
