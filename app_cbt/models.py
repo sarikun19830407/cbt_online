@@ -201,7 +201,7 @@ class SetingSoal(models.Model):
     Nama_User = models.ForeignKey(settings.AUTH_USER_MODEL,  editable=False,  on_delete = models.CASCADE)
     Nama_Lembaga = models.ForeignKey(Lembaga,   on_delete = models.CASCADE)
     Kode_Soal = models.CharField(
-        max_length = 6,
+        max_length = 10,
         editable=False,
         default=buat_nomor_baru
     )
