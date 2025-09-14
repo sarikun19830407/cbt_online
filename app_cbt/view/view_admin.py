@@ -627,12 +627,7 @@ def hapus_kelas (request, pk):
         messages.error(request, "Data pengguna tidak ditemukan.")
         return redirect(reverse('cbt:Kelas'))  # Redirect ke halaman daftar pengguna
     
-    if request.user.is_superuser:
-        # Pengguna provinsi hanya bisa mengedit dirinya sendiri
-        if Data.Nama_User != request.user:
-            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
-            return redirect(reverse('cbt:Kelas'))
-
+    
     if request.method == "POST":
         Data.delete()
         messages.add_message(request, messages.INFO, 'Data telah berhasil Hapus')
@@ -708,7 +703,7 @@ def tambah_rombel(request):
     if request.method == "POST":
         if form.is_valid():
             form.instance.Nama_User = request.user
-            lembaga_aktif = get_object_or_404(models.Lembaga, status=True)
+            lembaga_aktif = models.Lembaga.objects.filter(status=True).first()
             form.instance.Nama_Lembaga = lembaga_aktif
             form.instance.satatus = True
             form.save()
@@ -737,11 +732,7 @@ def hapus_rombel (request, pk):
         messages.error(request, "Data pengguna tidak ditemukan.")
         return redirect(reverse('cbt:Rombel'))  # Redirect ke halaman daftar pengguna
     
-    if request.user.is_superuser:
-        # Pengguna provinsi hanya bisa mengedit dirinya sendiri
-        if Data.Nama_User != request.user:
-            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
-            return redirect(reverse('cbt:Rombel'))
+    
 
     if request.method == "POST":
         Data.delete()
@@ -768,11 +759,7 @@ def ubah_rombel (request, pk):
         messages.error(request, "Data pengguna tidak ditemukan.")
         return redirect(reverse('cbt:Rombel'))  # Redirect ke halaman daftar pengguna
     
-    if request.user.is_superuser:
-        # Pengguna provinsi hanya bisa mengedit dirinya sendiri
-        if Data.Nama_User != request.user:
-            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
-            return redirect(reverse('cbt:Rombel'))
+    
     form = forms.FormRombel(request.POST or None, instance=Data)
     if request.method == "POST":
         if form.is_valid():
@@ -863,11 +850,6 @@ def Hapus_mapel (request, pk):
         messages.error(request, "Data pengguna tidak ditemukan.")
         return redirect(reverse('cbt:matapelajaran'))  # Redirect ke halaman daftar pengguna
     
-    if request.user.is_superuser:
-        # Pengguna provinsi hanya bisa mengedit dirinya sendiri
-        if Data.Nama_User != request.user:
-            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
-            return redirect(reverse('cbt:matapelajaran'))
 
     if request.method == "POST":
         Data.delete()
@@ -895,11 +877,7 @@ def Ubah_Mata_Pelajaran (request, pk):
         messages.error(request, "Data pengguna tidak ditemukan.")
         return redirect(reverse('cbt:matapelajaran'))  # Redirect ke halaman daftar pengguna
     
-    if request.user.is_superuser:
-        # Pengguna provinsi hanya bisa mengedit dirinya sendiri
-        if Data.Nama_User != request.user:
-            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
-            return redirect(reverse('cbt:matapelajaran'))
+    
     form = forms.MatapelajaranForm(request.POST or None, instance=Data)
     if request.method == "POST":
         if form.is_valid():
@@ -1015,11 +993,6 @@ def hapus_user_staff (request, pk):
         messages.error(request, "Data pengguna tidak ditemukan.")
         return redirect(reverse('cbt:user_staff'))  # Redirect ke halaman daftar pengguna
     
-    if request.user.is_superuser:
-        # Pengguna provinsi hanya bisa mengedit dirinya sendiri
-        if Data.Nama_User != request.user:
-            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
-            return redirect(reverse('cbt:user_staff'))
 
     if request.method == "POST":
         Data.delete()
@@ -1046,12 +1019,7 @@ def Ubah_user_staff (request, pk):
     except Http404:
         messages.error(request, "Data pengguna tidak ditemukan.")
         return redirect(reverse('cbt:user_staff'))  # Redirect ke halaman daftar pengguna
-    
-    if request.user.is_superuser:
-        # Pengguna provinsi hanya bisa mengedit dirinya sendiri
-        if Data.Nama_User != request.user:
-            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
-            return redirect(reverse('cbt:user_staff'))
+
     form = forms.Form_Ubah_Staff(request.POST or None, instance=Data)
     if request.method == "POST":
         if form.is_valid():
@@ -1262,11 +1230,7 @@ def Ubah_user_siswa(request, pk):
         messages.error(request, "Data pengguna tidak ditemukan.")
         return redirect(reverse('cbt:user_siswa'))  # Redirect ke halaman daftar pengguna
     
-    if request.user.is_superuser:
-        # Pengguna provinsi hanya bisa mengedit dirinya sendiri
-        if Data.Nama_User != request.user:
-            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
-            return redirect(reverse('cbt:user_siswa'))
+    
     form = forms.Form_siswa(request.POST or None, instance=Data)
     if request.method == "POST":
         if form.is_valid():
