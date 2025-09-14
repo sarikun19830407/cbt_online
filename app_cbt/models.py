@@ -67,7 +67,7 @@ def buat_nomor_baru():
     alphabet = string.ascii_letters + string.digits  # Kombinasi huruf besar, kecil, dan angka
     alphabet = string.ascii_uppercase + string.digits
     alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-    return ''.join(secrets.choice(alphabet) for i in range(6))  # Token sepanjang 10 karakter
+    return ''.join(secrets.choice(alphabet) for i in range(10))  # Token sepanjang 10 karakter
 
 
 # ..........................................##################################.......................................................................
@@ -238,7 +238,7 @@ class SetingSoal(models.Model):
         alphabet = string.ascii_uppercase + string.digits
         alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
         while True:
-            token = ''.join(secrets.choice(alphabet) for i in range(6))
+            token = ''.join(secrets.choice(alphabet) for i in range(10))
             if not SetingSoal.objects.filter(token=token).exists():  # Cek apakah token sudah ada di database
                 return token
 
