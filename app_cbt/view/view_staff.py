@@ -1687,19 +1687,20 @@ def tambah_daftar_nilai(request):
             tahun_aktif = get_object_or_404(models.TahunPelajaran, status=True)
             form.instance.Tahun_Pelajaran = tahun_aktif
             form.save()
-            messages.add_message(request, messages.INFO, 'Data telah berhasil Tambahkan')
+            messages.success(request, 'Data berhasil ditambahkan')
             return redirect(reverse('cbt:daftar_nilai'))
         else:
-            messages.error(request, 'Data Masih Salah.')
+            messages.error(request, 'Data masih salah.')
     context = {
-        "data" : "Tambah daftar nilai",
+        "data": "Tambah daftar nilai",
         "NamaForm": "Form Tambah daftar nilai",
-        "judul":"CBT-daftar nilai",
-        "link":reverse("cbt:daftar_nilai"),
-        "form":form,
-        "icon":"bi bi-plus-circle"
-        }
-    return render (request, 'super_admin/form.html', context)
+        "judul": "CBT - daftar nilai",
+        "link": reverse("cbt:daftar_nilai"),
+        "form": form,
+        "icon": "bi bi-plus-circle"
+    }
+    return render(request, 'super_admin/form.html', context)
+
 
 
 

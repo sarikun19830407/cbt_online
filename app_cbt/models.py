@@ -159,8 +159,11 @@ class Rombel_kelas (models.Model):
     Kelas = models.ForeignKey(Kelas,on_delete = models.CASCADE,)
     Rombel = models.CharField(max_length=5)
 
+    
+    
     def __str__(self):
-        return self.Rombel
+        # contoh output: "7-A"
+        return f"{self.Kelas} - {self.Rombel}"
 
 class Pengguna (AbstractUser):
     Nama_User = models.ForeignKey(settings.AUTH_USER_MODEL, editable=False, on_delete = models.CASCADE, blank=True, null=True)
@@ -260,6 +263,9 @@ class DaftarNilai (models.Model):
     
     # def __str__(self):
     #     return f"{self.Mapel.Nama_Mapel} - {self.Kelas} - {self.Rombel}"
+    
+    def __str__(self):
+        return f"{self.Kelas} - {self.Rombel}"
 
 
 

@@ -1226,12 +1226,6 @@ def hapus_user_siswa(request):
         if not Data.exists():
             raise Http404("Data Madrasah tidak ditemukan.")
         
-        # Pemeriksaan kepemilikan data
-        for data in Data:
-            if data.Nama_User != request.user:
-                messages.error(request, "Anda tidak memiliki hak akses untuk menghapus data ini.")
-                return redirect(reverse('cbt:user_siswa'))
-        
         if 'confirm' in request.POST:
             Data.delete()  
             messages.success(request, 'Data telah berhasil dihapus.')
