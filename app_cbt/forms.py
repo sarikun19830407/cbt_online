@@ -9,6 +9,8 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from datetime import datetime
 from app_cbt import models
+import random
+import string
 
 
 
@@ -507,78 +509,79 @@ class Form_Ubah_Staff (forms.ModelForm):
 
 
 
-class Form_siswa (forms.ModelForm):
-    
-    
-    class Meta :
+
+
+
+
+
+
+def generate_auto_password(length=8):
+    """Generate password otomatis: hanya huruf kapital + angka, tanpa O, I, 0, 1"""
+    allowed_chars = ''.join([
+        ch for ch in (string.ascii_uppercase + string.digits)
+        if ch not in ['O', 'I', '0', '1']
+    ])
+    return ''.join(random.choice(allowed_chars) for _ in range(length))
+
+
+class Form_siswa(forms.ModelForm):
+    password1 = forms.CharField(
+        label="Password Baru",
+        widget=forms.PasswordInput(
+            attrs={'class': 'form-control mb-3', 
+                    'placeholder': 'Minimal 8 karakter', 
+                    "id": "password1"
+            }
+        ),
+        required=False
+    )
+    password2 = forms.CharField(
+        label="Konfirmasi Password",
+        widget=forms.PasswordInput(
+            attrs={
+                'class': 'form-control mb-3', 
+                'placeholder': 'Ulangi password baru', 
+                "id": "password2"
+            }
+        ),
+        required=False
+    )
+
+    class Meta:
         model = models.Pengguna
-        fields = [
-                "username",
-                "Nama",
-                "Kelas",
-                "Rombel",
-                
-                
-            ]
+        fields = ["username", "Nama", "Kelas", "Rombel"]
         exclude = ['password']
         help_texts = {
             'username': None,
-            
         }
-
-        
-        labels={
-                'Nama': 'Nama Siswa',
-            }
-
-        
+        labels = {
+            'Nama': 'Nama Siswa',
+        }
         widgets = {
             'username': forms.TextInput(
-                attrs = {
-                    'placeholder':"Masukan NIK Anda harus 16 digit",
-                    'class':'form-control mb-3',
-                    
-                }
-            ),
-            'Nama_Pengguna': forms.TextInput(
-                attrs = {
-                    'placeholder':"Nama Siswa",
-                    'class':'form-control mb-3',
-                }
+                attrs={'placeholder': "Masukan NIK Anda harus 16 digit", 'class': 'form-control mb-3'}
             ),
             "Nama": forms.TextInput(
-                attrs = {
-                    'placeholder':"Nama Siswa",
-                    'class':'form-control mb-3',
-                    
-                }
+                attrs={'placeholder': "Nama Siswa", 'class': 'form-control mb-3'}
             ),
-            "Kelas": forms.Select(
-                attrs = {
-                    'class':'form-select mb-3',
-                    
-                }
-            ),
-            "Rombel": forms.Select(
-                attrs = {
-                    'class':'form-select mb-3',
-                    
-                }
-            ),
+            "Kelas": forms.Select(attrs={'class': 'form-select mb-3'}),
+            "Rombel": forms.Select(attrs={'class': 'form-select mb-3'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Jika instance baru (belum ada pk), sembunyikan password1 & password2
+        if not self.instance.pk:
+            self.fields.pop('password1')
+            self.fields.pop('password2')
 
     def clean_username(self):
         username = self.cleaned_data.get('username')
-
-        
         if not username.isdigit():
             raise ValidationError("Username (NIK) hanya boleh berisi angka.")
-
-        username_length = len(username)
         if len(username) != 16:
-            raise ValidationError(f"Username (NIK) harus memiliki 16 karakter, tetapi Anda memasukkan {username_length} karakter.")
-
+            raise ValidationError(f"Username (NIK) harus 16 digit, sekarang {len(username)}.")
         return username
 
     def clean(self):
@@ -586,41 +589,42 @@ class Form_siswa (forms.ModelForm):
         password1 = cleaned_data.get('password1')
         password2 = cleaned_data.get('password2')
 
-        # Validasi: Jika salah satu password diisi, kedua field harus sama
         if password1 or password2:
             if password1 != password2:
-                raise forms.ValidationError("")
-        
+                raise forms.ValidationError("Password tidak sama, silakan ulangi.")
         return cleaned_data
+
+    def clean_password1(self):
+        password = self.cleaned_data.get('password1')
+        if password:  # validasi hanya kalau diisi
+            if len(password) < 8:
+                raise ValidationError("Password minimal 8 karakter.")
+            if not any(char.isupper() for char in password):
+                raise ValidationError("Password harus ada minimal 1 huruf kapital.")
+            if not any(char.isdigit() for char in password):
+                raise ValidationError("Password harus ada minimal 1 angka.")
+        return password
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        password = self.cleaned_data.get('password1')
 
-        # Jika password diisi, set password baru
-        if password:
-            user.set_password(password)
+        if not self.instance.pk:  
+            # TAMBAH siswa baru → password otomatis
+            plain_pass = generate_auto_password(8)
+            user.set_password(plain_pass)
+            user.auto_password = plain_pass
+        else:
+            # EDIT siswa → update password jika ada
+            password = self.cleaned_data.get('password1')
+            if password:
+                user.set_password(password)
+                user.auto_password = password
 
         if commit:
             user.save()
-
         return user
-    
-    def clean_password1(self):
-        password = self.cleaned_data.get('password1')
-        
-        # Check minimum length
-        if len(password) < 8:
-            raise ValidationError("Password harus memiliki minimal 8 karakter.")
-        
-        # Check for at least one uppercase letter
-        if not any(char.isupper() for char in password):
-            raise ValidationError("Password harus memiliki minimal 1 huruf kapital.")
-        
-        # Check for at least one digit
-        if not any(char.isdigit() for char in password):
-            raise ValidationError("Password harus memiliki minimal 1 angka.")
-        return password
+
+
     
 
 

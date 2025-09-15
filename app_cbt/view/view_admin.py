@@ -1129,6 +1129,9 @@ def active_user_siswa(request, pk):
 
 
 
+import random
+import string
+
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
 @csrf_protect
@@ -1137,17 +1140,17 @@ def tambah_user_siswa(request):
     if request.method == "POST":
         if form.is_valid():
             form.instance.Nama_User = request.user
-            lembaga_aktif = get_object_or_404(models.Lembaga, status=True)
+            lembaga_aktif = models.Lembaga.objects.filter(status=True).first()
             form.instance.Nama_Lembaga = lembaga_aktif
             form.instance.is_siswa = True
 
-            # 🔹 Karakter allowed (tanpa O, I, 0, 1)
+            # 🔹 Karakter allowed: hanya huruf kapital + angka, tanpa O, I, 0, 1
             allowed_chars = ''.join([
                 ch for ch in (string.ascii_uppercase + string.digits)
                 if ch not in ['O', 'I', '0', '1']
             ])
 
-            # 🔹 Generate password random
+            # 🔹 Generate password random huruf besar semua
             auto_password = ''.join(random.choice(allowed_chars) for _ in range(8))
 
             # 🔹 Simpan password plain untuk ditampilkan
@@ -1173,6 +1176,7 @@ def tambah_user_siswa(request):
         "icon": "bi bi-plus-circle"
     }
     return render(request, 'super_admin/form.html', context)
+
 
 
 
@@ -1248,7 +1252,7 @@ def Ubah_user_siswa(request, pk):
         "icon":"bi bi-pencil"
         
         }
-    return render (request, 'super_admin/form.html', context)
+    return render (request, 'super_admin/form_user.html', context)
 
 
 
