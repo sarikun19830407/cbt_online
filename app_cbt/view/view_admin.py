@@ -37,6 +37,7 @@ from django.db.models import Q
 import random
 import string
 
+
 from django.core.management import call_command
 from utils.encryption import encrypt_file, cleanup_files, decrypt_file
 
@@ -1129,8 +1130,7 @@ def active_user_siswa(request, pk):
 
 
 
-import random
-import string
+
 
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
