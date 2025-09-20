@@ -465,6 +465,7 @@ def buat_soal_siswa(request, pk):
     else:
         next_nomor = '1'
 
+
     # Handle form POST (pengiriman soal baru)
     if request.method == 'POST':
         form = forms_staff.SoalSiswaForm(request.POST)
@@ -487,6 +488,7 @@ def buat_soal_siswa(request, pk):
             'Kode_Soal': setting,
             'Mapel': setting.Mapel,
             'Kelas': setting.Kelas,
+            'Nomor': next_nomor,
             
         }
         form = forms_staff.SoalSiswaForm(initial=initial_data)

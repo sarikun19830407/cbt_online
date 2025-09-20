@@ -69,11 +69,11 @@ class SoalSiswaForm(forms.ModelForm):
     D=forms.CharField(widget=CKEditorWidget(config_name='default'))
     class Meta:
         model = models.Soal_Siswa
-        exclude = ['Nama_User', 'Kode_Soal', 'Kelas',"Mapel","Nomor"]
+        exclude = ['Nama_User', 'Kode_Soal', 'Kelas',"Mapel"]
 
 
         widgets = {
-            "Nomor": forms.TextInput(
+            "Nomor": forms.NumberInput(
                 attrs = {
                     'class':'form-control mb-3',
                     
