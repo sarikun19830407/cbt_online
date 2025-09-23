@@ -42,36 +42,53 @@ from django.core.management import call_command
 from utils.encryption import encrypt_file, cleanup_files, decrypt_file
 
 
+
+
+
 @csrf_protect
 @never_cache
-def app_cbt (request):
+def app_cbt(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
+        username = request.POST.get('username')
+        password = request.POST.get('password')
         
         user = authenticate(request, username=username, password=password)
         
-        if user is not None and user.is_superuser:
+        if user is not None:
+            # ✅ Batasi hanya untuk siswa
+            if user.is_siswa:
+                # Ambil semua session yang masih aktif
+                sessions = Session.objects.filter(expire_date__gte=timezone.now())
+                for session in sessions:
+                    data = session.get_decoded()
+                    if data.get('_auth_user_id') == str(user.id):
+                        # Kalau user sudah punya session aktif → tolak login baru
+                        if session.session_key != request.session.session_key:
+                            messages.error(request, "Akun ini sedang aktif di perangkat lain. Anda tidak boleh login.")
+                            return redirect("/")  
+
+            # ✅ Kalau lolos pengecekan, izinkan login
             login(request, user)
-            return redirect (reverse ("cbt:home"))
-        elif user is not None and user.is_staff:
-            login(request, user)
-            return redirect (reverse ("cbt:staff"))
-        elif user is not None and user.is_siswa:
-            login(request, user)
-            return redirect(reverse('cbt:siswa'))
-        elif user is not None :
-            login(request, user)
-            return redirect('/DasboardSuperuser')
-        
+
+            if user.is_superuser:
+                return redirect(reverse("cbt:home"))
+            elif user.is_staff:
+                return redirect(reverse("cbt:staff"))
+            elif user.is_siswa:
+                return redirect(reverse('cbt:siswa'))
+            else:
+                return redirect('/DasboardSuperuser')
+
         else:
             messages.error(request, 'Gagal Login Username atau Password salah')
-            return redirect ("/")
-    contex={
-        "data":"CBT",
-        "judul":"CBT"
+            return redirect("/")
+
+    context = {
+        "data": "CBT",
+        "judul": "CBT"
     }
-    return render (request, 'login.html', contex)
+    return render(request, 'login.html', context)
+
 
 
 
