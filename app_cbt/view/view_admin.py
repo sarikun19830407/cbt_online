@@ -38,6 +38,7 @@ import random
 import string
 
 
+
 from django.core.management import call_command
 from utils.encryption import encrypt_file, cleanup_files, decrypt_file
 
@@ -211,11 +212,6 @@ def Hapus_kurikulum (request, pk):
         messages.error(request, "Data pengguna tidak ditemukan.")
         return redirect(reverse('cbt:kurikulum_lembaga'))  # Redirect ke halaman daftar pengguna
     
-    if request.user.is_superuser:
-        # Pengguna provinsi hanya bisa mengedit dirinya sendiri
-        if Data.Nama_User != request.user:
-            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
-            return redirect(reverse('cbt:kurikulum_lembaga'))
 
     if request.method == "POST":
         Data.delete()
@@ -244,11 +240,6 @@ def Ubah_kurikulum (request, pk):
         messages.error(request, "Data pengguna tidak ditemukan.")
         return redirect(reverse('cbt:kurikulum_lembaga'))  # Redirect ke halaman daftar pengguna
     
-    if request.user.is_superuser:
-        # Pengguna provinsi hanya bisa mengedit dirinya sendiri
-        if Data.Nama_User != request.user:
-            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
-            return redirect(reverse('cbt:kurikulum_lembaga'))
     form = forms.Form_kurikulum(request.POST or None, instance=Data)
     if request.method == "POST":
         if form.is_valid():
@@ -378,11 +369,7 @@ def Hapus_Tahun_Pelajaran (request, pk):
         messages.error(request, "Data pengguna tidak ditemukan.")
         return redirect(reverse('cbt:tahun_pelajaran'))  # Redirect ke halaman daftar pengguna
     
-    if request.user.is_superuser:
-        # Pengguna provinsi hanya bisa mengedit dirinya sendiri
-        if Data.Nama_User != request.user:
-            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
-            return redirect(reverse('cbt:tahun_pelajaran'))
+    
 
     if request.method == "POST":
         Data.delete()
@@ -410,11 +397,7 @@ def Ubah_Tahun_Pelajaran (request, pk):
         messages.error(request, "Data pengguna tidak ditemukan.")
         return redirect(reverse('cbt:tahun_pelajaran'))  # Redirect ke halaman daftar pengguna
     
-    if request.user.is_superuser:
-        # Pengguna provinsi hanya bisa mengedit dirinya sendiri
-        if Data.Nama_User != request.user:
-            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
-            return redirect(reverse('cbt:tahun_pelajaran'))
+    
     form = forms.FormTahunPeljaran(request.POST or None, instance=Data)
     if request.method == "POST":
         if form.is_valid():
@@ -526,11 +509,6 @@ def Hapus_lembaga (request, pk):
         messages.error(request, "Data pengguna tidak ditemukan.")
         return redirect(reverse('cbt:lembaga'))  # Redirect ke halaman daftar pengguna
     
-    if request.user.is_superuser:
-        # Pengguna provinsi hanya bisa mengedit dirinya sendiri
-        if Data.Nama_User != request.user:
-            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
-            return redirect(reverse('cbt:lembaga'))
 
     if request.method == "POST":
         Data.delete()
@@ -557,11 +535,6 @@ def Ubah_lembaga (request, pk):
         messages.error(request, "Data pengguna tidak ditemukan.")
         return redirect(reverse('cbt:lembaga'))  # Redirect ke halaman daftar pengguna
     
-    if request.user.is_superuser:
-        # Pengguna provinsi hanya bisa mengedit dirinya sendiri
-        if Data.Nama_User != request.user:
-            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
-            return redirect(reverse('cbt:lembaga'))
     form = forms.Form_lembaga(request.POST or None, instance=Data)
     if request.method == "POST":
         if form.is_valid():
@@ -671,11 +644,6 @@ def Ubah_Kelas (request, pk):
         messages.error(request, "Data pengguna tidak ditemukan.")
         return redirect(reverse('cbt:Kelas'))  # Redirect ke halaman daftar pengguna
     
-    if request.user.is_superuser:
-        # Pengguna provinsi hanya bisa mengedit dirinya sendiri
-        if Data.Nama_User != request.user:
-            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
-            return redirect(reverse('cbt:Kelas'))
     form = forms.FormKelas(request.POST or None, instance=Data)
     if request.method == "POST":
         if form.is_valid():
@@ -1636,9 +1604,15 @@ def backup_database(request):
 def restore_database(request):
     if request.method == 'POST':
         form = forms.UploadFormBackup(request.POST, request.FILES)
+
         if form.is_valid():
-            backup_file = request.FILES['backup_file']
+            backup_file = request.FILES.get('backup_file')  # <-- gunakan get()
             password = form.cleaned_data['password']
+
+            # Cek apakah file dipilih
+            if not backup_file:
+                messages.error(request, "File backup belum dipilih. Silakan pilih file terlebih dahulu.")
+                return redirect('cbt:restore_database')
 
             # Validasi file kosong
             if backup_file.size == 0:
@@ -1699,6 +1673,7 @@ def restore_database(request):
         "form": form,
     }
     return render(request, 'super_admin/restore_database.html', context)
+
 
 
 
