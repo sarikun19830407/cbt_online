@@ -60,4 +60,4 @@ media/
 # Celery
 celerybeat-schedule
 celerybeat.pid
-cbt/settings.py
+#cbt/settings.py
