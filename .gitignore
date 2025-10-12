@@ -61,3 +61,4 @@ media/
 celerybeat-schedule
 celerybeat.pid
 #cbt/settings.py
+cbt/settings_local.py
