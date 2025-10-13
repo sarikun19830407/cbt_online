@@ -1542,7 +1542,7 @@ def backup_database(request):
             user = authenticate(username=request.user.username, password=password)
 
             if user is not None and user.is_superuser:
-                filename = f"backup-{now().date()}.json"
+                filename = f"backup_cbt-{now().date()}.json"
                 file_path = None
                 encrypted_path = None  # Inisialisasi variabel untuk memastikan selalu ada
 
