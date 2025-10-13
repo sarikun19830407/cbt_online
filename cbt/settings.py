@@ -45,7 +45,10 @@ INSTALLED_APPS = [
     
 ]
 
-
+try:
+    from .settings_local import *
+except ImportError:
+    raise Exception("settings_local.py tidak ditemukan! Buat file ini di server/lokal.")
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
