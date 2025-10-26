@@ -292,14 +292,25 @@ def aktifkan_soal(request, kode_soal):
 @csrf_protect
 def buat_seting_soal(request):
     form = forms_staff.SetingSoalForm(request.POST or None)
+
     if request.method == "POST":
         if form.is_valid():
             user = request.user
             lembaga = user.Nama_Lembaga
-            semester_instance = get_object_or_404(models.SEMESTER, status=True)
-            tahun_aktif = get_object_or_404(models.TahunPelajaran, status=True)
 
-            # Set nilai otomatis
+            # 🔍 Cek apakah ada semester & tahun pelajaran aktif
+            semester_instance = models.SEMESTER.objects.filter(status=True).first()
+            tahun_aktif = models.TahunPelajaran.objects.filter(status=True).first()
+
+            if not tahun_aktif:
+                messages.error(request, "Tahun Pelajaran belum ada yang diaktifkan.")
+                return redirect(reverse('cbt:setting_soal'))
+
+            if not semester_instance:
+                messages.error(request, "Semester belum ada yang diaktifkan")
+                return redirect(reverse('cbt:setting_soal'))
+
+            # 📝 Set nilai otomatis sebelum disimpan
             form.instance.Nama_User = user
             form.instance.Nama_Lembaga = lembaga
             form.instance.arsip_soal = True
@@ -323,7 +334,6 @@ def buat_seting_soal(request):
                     Mapel=seting_soal.Mapel,
                     Semester=semester_instance,
                     Tahun_Pelajaran=tahun_aktif,
-                    
                 ).exists()
 
                 if not sudah_ada:
@@ -335,13 +345,13 @@ def buat_seting_soal(request):
                         Mapel=seting_soal.Mapel,
                         Semester=semester_instance,
                         Tahun_Pelajaran=tahun_aktif,
-                        status = True
+                        status=True
                     )
 
-            messages.add_message(request, messages.INFO, 'Data telah berhasil ditambahkan.')
+            messages.success(request, '✅ Data telah berhasil ditambahkan.')
             return redirect(reverse('cbt:setting_soal'))
         else:
-            messages.error(request, 'Data masih salah.')
+            messages.error(request, '⚠️ Data masih salah. Silakan periksa kembali.')
 
     context = {
         "data": "Tambah Setting Soal",
@@ -352,6 +362,7 @@ def buat_seting_soal(request):
         'icon': 'bi bi-file-plus'
     }
     return render(request, 'staff/form.html', context)
+
 
 
 
