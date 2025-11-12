@@ -263,20 +263,12 @@ def aktifkan_soal(request, kode_soal):
         soal.save()
         messages.warning(request, f"Soal Kelas {soal.Kelas} | Mapel {soal.Mapel} telah dinonaktifkan.")
     else:
-        # Cek apakah sudah ada soal lain yang aktif
-        soal_aktif_lain = models.SetingSoal.objects.filter(aktif=True).exclude(Kode_Soal=soal.Kode_Soal).first()
-
-        if soal_aktif_lain:
-            messages.error(
-                request,
-                f"Tidak bisa mengaktifkan soal ini karena Mapel {soal_aktif_lain.Mapel} Kelas {soal_aktif_lain.Kelas} sedang aktif."
-            )
-        else:
-            # Aktifkan soal karena tidak ada soal lain yang aktif
-            soal.aktif = True
-            soal.waktu_aktif = timezone.now()
-            soal.save()
-            messages.success(request, f"Soal Kelas {soal.Kelas} | Mapel {soal.Mapel} berhasil diaktifkan.")
+        
+        # Aktifkan soal karena tidak ada soal lain yang aktif
+        soal.aktif = True
+        soal.waktu_aktif = timezone.now()
+        soal.save()
+        messages.success(request, f"Soal Kelas {soal.Kelas} | Mapel {soal.Mapel} berhasil diaktifkan.")
 
     return redirect('cbt:setting_soal')
 
