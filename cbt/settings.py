@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'ckeditor',
     'ckeditor_uploader',
     'import_export',
+    'dbbackup',
     
 ]
 
@@ -85,19 +86,7 @@ WSGI_APPLICATION = 'cbt.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'cbt_db',
-        'USER': 'sarikun',
-        'PASSWORD': 'mts12345',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
-}
-
-# if os.getenv('DB_ENGINE') == 'postgresql':
-#     DATABASES = {
+# DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
 #         'NAME': 'cbt_db',
@@ -107,13 +96,25 @@ DATABASES = {
 #         'PORT': '5432',
 #     }
 # }
-# else:
-#     DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.sqlite3',
-#             'NAME': BASE_DIR / 'db.sqlite3',
-#         }
-#     }
+
+if os.getenv('DB_ENGINE') == 'postgresql':
+    DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'cbt_db',
+        'USER': 'sarikun',
+        'PASSWORD': 'mts12345',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 
@@ -149,8 +150,8 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-#STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'),]
-STATIC_ROOT = os.path.join(BASE_DIR, 'static') 
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'),]
+#STATIC_ROOT = os.path.join(BASE_DIR, 'static') 
 
 # # Development
 # if DEBUG:

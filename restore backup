@@ -1,0 +1,13 @@
+password = input("Mts@123456 ")
+
+from utils.encryption import decrypt_file
+password = input("Masukkan password backup: ")
+decrypted_path = decrypt_file("/home/sarikun/Documents/cbt_online/backup-2025-11-12.json.aes", password)
+print("✅ File berhasil didekripsi ke:", decrypted_path)
+
+kirim keserver
+scp /home/sarikun/Documents/cbt_online/backup-2025-11-12.json username@ip_server:/home/username/
+scp /home/sarikun/Documents/cbt_online/backup-2025-11-12.json debian@192.168.43.173:/home/debian/
+ls -lh /home/debian/backup-2025-11-12.json
+
+python manage.py loaddata /home/debian/backup-2025-11-12.json
