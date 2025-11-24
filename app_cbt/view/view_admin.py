@@ -1491,7 +1491,7 @@ def cetak_semua_kartu_pdf(request):
     semester = models.SEMESTER.objects.filter(Nama_User=user).last()
     lembaga = models.Lembaga.objects.filter(Nama_User=user).last()
     tahun_pelajaran = models.TahunPelajaran.objects.filter(status=True).last()
-    tanggal_cetak = timezone.now()
+    
 
     # Potong 10 kartu per halaman
     def chunk_siswa(lst, size):
@@ -1510,7 +1510,6 @@ def cetak_semua_kartu_pdf(request):
         'semester': semester,
         'lembaga': lembaga,
         'tahun_pelajaran': tahun_pelajaran,
-        'tanggal_cetak': tanggal_cetak,
         'logo_kemenag': logo_url,
     }
 

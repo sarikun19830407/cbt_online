@@ -132,7 +132,7 @@
             </div>
             <br>
             <div class="signature">
-                Palas, {{ tanggal_cetak|date:"j F Y" }}<br>
+                {{ lembaga.kecamatan }}, {{lembaga.tanggal_mulai_ujian|date:"j F Y" }}<br>
                 Ketua Panitia<br><br><br>
                 {{ user.Nama_Lembaga.Ketua_panitia|default:"-" }} <br>
                 NIP.{{ lembaga.NIP|default:"-" }}

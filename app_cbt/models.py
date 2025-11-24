@@ -130,13 +130,18 @@ class Lembaga (models.Model):
     Ketua_panitia = models.CharField(max_length=100)
     NIP = models.CharField (max_length=30,blank=True, null=True)
     NPSN = models.CharField(max_length=8)
-    Alamat = models.TextField()
+    desa = models.CharField(max_length=100, blank=True, null=True)
+    kecamatan = models.CharField(max_length=100, blank=True, null=True)
+    kabupaten = models.CharField(max_length=100, blank=True, null=True)
+    provinsi = models.CharField(max_length=100, blank=True, null=True)
+    Alamat = models.TextField( max_length=500)
     Tikatan_Satuan_Lembaga =models.CharField(
         choices = TINKAT_CHOICES,
         default = '',
         max_length=30
         ) 
     kurikulum_lebaga = models.ForeignKey(KurikulumLembaga, on_delete = models.CASCADE)
+    tanggal_mulai_ujian = models.DateField(blank=True, null=True)
     status = models.BooleanField(default=True)
 
     def __str__(self):
