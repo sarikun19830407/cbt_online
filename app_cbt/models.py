@@ -67,7 +67,7 @@ def buat_nomor_baru():
     alphabet = string.ascii_letters + string.digits  # Kombinasi huruf besar, kecil, dan angka
     alphabet = string.ascii_uppercase + string.digits
     alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-    return ''.join(secrets.choice(alphabet) for i in range(10))  # Token sepanjang 10 karakter
+    return ''.join(secrets.choice(alphabet) for i in range(5))  # Token sepanjang 10 karakter
 
 
 # ..........................................##################################.......................................................................
@@ -209,9 +209,10 @@ class SetingSoal(models.Model):
     Nama_User = models.ForeignKey(settings.AUTH_USER_MODEL,  editable=False,  on_delete = models.CASCADE)
     Nama_Lembaga = models.ForeignKey(Lembaga,   on_delete = models.CASCADE)
     Kode_Soal = models.CharField(
-        max_length = 10,
+        max_length = 5,
         editable=False,
-        default=buat_nomor_baru
+        default=buat_nomor_baru, blank=True, null=True,
+        unique=True,    
     )
     Kelas = models.ForeignKey(Kelas,on_delete = models.CASCADE)
     Mapel = models.ForeignKey(Matapelajaran,on_delete = models.CASCADE)
@@ -246,7 +247,7 @@ class SetingSoal(models.Model):
         alphabet = string.ascii_uppercase + string.digits
         alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
         while True:
-            token = ''.join(secrets.choice(alphabet) for i in range(10))
+            token = ''.join(secrets.choice(alphabet) for i in range(5))  # Token sepanjang 5 karakter
             if not SetingSoal.objects.filter(token=token).exists():  # Cek apakah token sudah ada di database
                 return token
 
