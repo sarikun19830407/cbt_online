@@ -1800,12 +1800,22 @@ def hapus_daftar_nilai(request):
 
 
 
+# Pastikan Anda memiliki semua import yang diperlukan di file views.py Anda
+
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
 @csrf_protect
 def daftar_nilai_view(request, id_daftarnilai):
     try:
-        daftar_nilai = get_object_or_404(models.DaftarNilai, id=id_daftarnilai)
+        # Ambil objek DaftarNilai yang dicari.
+        # Catatan: Karena DaftarNilai memiliki banyak Foreign Key, lebih baik menggunakan 
+        # select_related untuk menghindari query tambahan di awal.
+        daftar_nilai = get_object_or_404(
+            models.DaftarNilai.objects.select_related(
+                'Kelas', 'Rombel', 'Mapel', 'Nama_Lembaga', 'Semester', 'Tahun_Pelajaran'
+            ), 
+            id=id_daftarnilai
+        )
     except Http404:
         messages.error(request, "Daftar nilai tidak ditemukan.")
         return redirect(reverse('cbt:daftar_nilai'))
@@ -1815,7 +1825,7 @@ def daftar_nilai_view(request, id_daftarnilai):
         messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
         return redirect(reverse('cbt:daftar_nilai'))
 
-    # Ambil data dasar
+    # Ambil data dasar (sudah diambil dengan select_related di atas)
     kelas = daftar_nilai.Kelas
     rombel = daftar_nilai.Rombel
     mapel = daftar_nilai.Mapel
@@ -1823,7 +1833,7 @@ def daftar_nilai_view(request, id_daftarnilai):
     semester = daftar_nilai.Semester
     tahun_pelajaran = daftar_nilai.Tahun_Pelajaran
 
-    # Ambil data SetingSoal berdasarkan semua parameter penting
+    # 1. Ambil data SetingSoal berdasarkan semua parameter penting
     seting_soal = models.SetingSoal.objects.filter(
         Nama_Lembaga=lembaga,
         Kelas=kelas,
@@ -1833,14 +1843,22 @@ def daftar_nilai_view(request, id_daftarnilai):
     ).first()
 
     if not seting_soal:
-        messages.error(request, "Seting Soal tidak ditemukan.")
+        messages.error(request, "Seting Soal tidak ditemukan untuk parameter ini.")
         return redirect("cbt:daftar_nilai")
 
-    # Hitung total nilai maksimal
-    soal_list = models.Soal_Siswa.objects.filter(Kode_Soal=seting_soal)
-    total_nilai_maksimal = sum(soal.Nilai or 0 for soal in soal_list)
-
-    # Ambil jawaban siswa berdasarkan soal dan filter
+    # 2. Hitung total nilai maksimal dan total jumlah soal
+    # Menggunakan values_list untuk efisiensi jika hanya butuh 2 field
+    soal_data = models.Soal_Siswa.objects.filter(Kode_Soal=seting_soal).values_list('Nilai', flat=True)
+    
+    total_nilai_maksimal = sum(nilai or 0 for nilai in soal_data)
+    total_jumlah_soal = len(soal_data)
+    
+    if total_jumlah_soal == 0:
+        messages.warning(request, "Tidak ada soal yang terdaftar untuk Seting Soal ini.")
+        total_nilai_maksimal = 1 # Hindari ZeroDivisionError jika tidak ada soal
+    
+    # 3. Ambil semua jawaban siswa berdasarkan SetingSoal dan filter kelas/rombel
+    # Menggunakan select_related untuk Nama_User (siswa) dan Nomor_Soal (bobot/nilai soal)
     jawaban = models.Answer.objects.filter(
         Kode_Soal=seting_soal,
         Kelas=kelas,
@@ -1850,38 +1868,51 @@ def daftar_nilai_view(request, id_daftarnilai):
     nilai_siswa = {}
     for ans in jawaban:
         user = ans.Nama_User
+        
+        # Inisialisasi data siswa jika belum ada
         if user.id not in nilai_siswa:
-            nama = user.get_full_name() or getattr(user, 'Nama', None) or user.username
+            # Menggunakan Nama dari model Pengguna, fallback ke username
+            nama = user.Nama or user.username
             nilai_siswa[user.id] = {
                 "nama": nama,
                 "total_nilai": 0,
                 "total_benar": 0,
-                "total_soal": 0
+                "total_soal_dijawab": 0 # Jumlah soal yang memiliki jawaban (Jawaban is not None)
             }
 
-        # Jika ada jawaban, tambah total soal
+        # Jika ada jawaban (Jawaban is not None), tambah hitungan soal yang dijawab
         if ans.Jawaban is not None:
-            nilai_siswa[user.id]["total_soal"] += 1
+            nilai_siswa[user.id]["total_soal_dijawab"] += 1
 
-        # Jika benar, tambah nilai sesuai bobot soal
+        # Jika Jawaban_Benar adalah True, tambahkan nilai
         if ans.Jawaban_Benar:
+            # Nilai diambil dari Nomor_Soal (Soal_Siswa) karena sudah diseleselect_related
             nilai_soal = ans.Nomor_Soal.Nilai or 0
             nilai_siswa[user.id]["total_nilai"] += nilai_soal
             nilai_siswa[user.id]["total_benar"] += 1
 
-    # Hitung persentase dan nilai akhir
+    # 4. Hitung persentase benar, nilai akhir (skala 100), dan progres pengerjaan
     for data in nilai_siswa.values():
-        total_soal = data['total_soal']
-        data["persentase"] = round((data["total_benar"] / total_soal) * 100, 2) if total_soal > 0 else 0
+        total_soal_dijawab = data['total_soal_dijawab']
+        
+        # Persentase Benar (dari total yang dijawab)
+        data["persentase"] = round((data["total_benar"] / total_soal_dijawab) * 100, 2) if total_soal_dijawab > 0 else 0
+        
+        # Nilai Akhir (Skor/100)
         data["nilai_akhir"] = round((data["total_nilai"] / total_nilai_maksimal) * 100, 2) if total_nilai_maksimal > 0 else 0
+        
+        # >>> VARIABEL BARU: Progres Pengerjaan <<<
+        data["progres_pengerjaan"] = round((total_soal_dijawab / total_jumlah_soal) * 100, 2) if total_jumlah_soal > 0 else 0
+
 
     # Kirim ke template
     context = {
         "judul": "CBT - Daftar Nilai",
-        "data": f"Daftar Nilai: {mapel} {kelas} / {rombel}",
+        "data": f"Daftar Nilai: {mapel.Nama_Mapel} {kelas.Kelas} / {rombel.Rombel}",
         "NamaForm": "Form Tambah Daftar Nilai",
         "seting_soal": seting_soal,
         "total_nilai_maksimal": total_nilai_maksimal,
+        "total_jumlah_soal": total_jumlah_soal, # Tambahkan untuk referensi
         "nilai_siswa": sorted(nilai_siswa.values(), key=lambda x: x["nama"]),
         "link":reverse("cbt:daftar_nilai"),
         "kembali":"Daftar nilai"

@@ -10,8 +10,9 @@
             <tr>
                 <th scope="col" class="text-center">No</th>
                 <th scope="col" class="text-center">Nama Siswa</th>
+                <th scope="col" class="text-center">Progres Pengerjaan</th>
                 <th scope="col" class="text-center">Jumlah Benar</th>
-                <th scope="col" class="text-center">Persentase</th>
+                <th scope="col" class="text-center">Persentase Benar</th>
                 <th scope="col" class="text-center">Skor Akhir (100)</th>
             </tr>
         </thead>
@@ -21,6 +22,7 @@
             <tr class="Tabel">
                 <td class="align-middle text-center">{{ forloop.counter }}</td>
                 <td class="align-middle">{{ siswa.nama }}</td>
+                <td class="align-middle text-center">{{ siswa.progres_pengerjaan|floatformat:1 }}%</td>
                 <td class="align-middle text-center">{{ siswa.total_benar }}</td>
                 <td class="align-middle text-center">{{ siswa.persentase|floatformat:1 }}%</td>
                 <td class="align-middle text-center"><strong>{{ siswa.nilai_akhir|floatformat:2 }}</strong></td>
@@ -31,7 +33,7 @@
             </tr>
             {% endfor %}
         </tbody>
-
+    </table>
     </table>
 </div>
 {% endblock %}
