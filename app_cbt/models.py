@@ -52,6 +52,19 @@ ROMBEL_CHOICES = [
         ('L', 'L'),
         ('M', 'M'),
         ('N', 'N'),
+        ('O', 'O'),
+        ('P', 'P'),
+        ('Q', 'Q'),
+        ('R', 'R'),
+        ('S', 'S'),
+        ('T', 'T'),
+        ('U', 'U'),
+        ('V', 'V'),
+        ('W', 'W'),
+        ('X', 'X'),
+        ('Y', 'Y'),
+        ('Z', 'Z'),
+
     ]
 
 
@@ -149,26 +162,27 @@ class Lembaga (models.Model):
 
 # untuk tinkatan kelas 1-MI/SD samapi dengan 12-SMA/MA
 class Kelas (models.Model):
-    Nama_User = models.ForeignKey(settings.AUTH_USER_MODEL, editable=False, on_delete = models.CASCADE)
+    Nama_User = models.ForeignKey(settings.AUTH_USER_MODEL, editable=False, on_delete = models.CASCADE, related_name='kelas_dibuat')
     Nama_Lembaga = models.ForeignKey(Lembaga,   on_delete = models.CASCADE)
-    Kelas = models.CharField(max_length=2, unique=True)
+    kelas = models.CharField(max_length=2, unique=True)
     status = models.BooleanField(default=True)
     
     def __str__(self):
-        return self.Kelas
+        return self.kelas
     
+
+
     
 class Rombel_kelas (models.Model):
     Nama_User = models.ForeignKey(settings.AUTH_USER_MODEL, editable=False, on_delete = models.CASCADE)
     Nama_Lembaga = models.ForeignKey(Lembaga,   on_delete = models.CASCADE)
-    Kelas = models.ForeignKey(Kelas,on_delete = models.CASCADE,)
-    Rombel = models.CharField(max_length=5)
+    Rombel = models.CharField(max_length=2, blank=True, null=True, choices=ROMBEL_CHOICES)
+    status = models.BooleanField(default=True)
 
     
-    
+
     def __str__(self):
-        # contoh output: "7-A"
-        return f"{self.Kelas} - {self.Rombel}"
+        return f"{self.Rombel}"
 
 class Pengguna (AbstractUser):
     Nama_User = models.ForeignKey(settings.AUTH_USER_MODEL, editable=False, on_delete = models.CASCADE, blank=True, null=True)
@@ -179,8 +193,8 @@ class Pengguna (AbstractUser):
         default = '',
         max_length=30
         )
-    Kelas= models.ForeignKey(Kelas,  on_delete = models.CASCADE, blank=True, null=True)
-    Rombel = models.ForeignKey(Rombel_kelas,on_delete = models.CASCADE, blank=True, null=True)
+    kelas= models.ForeignKey(Kelas,  on_delete = models.CASCADE, blank=True, null=True)
+    rombel = models.ForeignKey(Rombel_kelas,on_delete = models.CASCADE, blank=True, null=True)
     auto_password = models.CharField(max_length=50, blank=True, null=True)
     is_siswa = models.BooleanField("Siswa",  default= False)
     
@@ -258,7 +272,7 @@ class DaftarNilai (models.Model):
     Nama_User = models.ForeignKey(settings.AUTH_USER_MODEL, editable=False, on_delete = models.CASCADE)
     Nama_Lembaga = models.ForeignKey(Lembaga,   on_delete = models.CASCADE)
     Kelas = models.ForeignKey(Kelas,on_delete = models.CASCADE,)
-    Rombel = models.ForeignKey(Rombel_kelas,on_delete = models.CASCADE,)
+    Rombel = models.ForeignKey(Rombel_kelas,on_delete = models.CASCADE)
     Mapel = models.ForeignKey(Matapelajaran,on_delete = models.CASCADE,)
     Semester = models.ForeignKey(SEMESTER, on_delete=models.CASCADE)
     Tahun_Pelajaran = models.ForeignKey(TahunPelajaran, on_delete = models.CASCADE)

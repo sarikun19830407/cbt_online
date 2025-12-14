@@ -209,7 +209,7 @@ def setting_soal(request):
         data_list = models.SetingSoal.objects.filter(
             Semester=semester_obj,
             Tahun_Pelajaran=tahun_aktif
-        )
+        ).order_by('Kelas__kelas')
     else:
         data_list = models.SetingSoal.objects.none()
 
@@ -313,9 +313,8 @@ def buat_seting_soal(request):
 
             # 🚀 Buat entri DaftarNilai otomatis berdasarkan rombel yang sesuai
             rombel_list = models.Rombel_kelas.objects.filter(
-                Kelas=seting_soal.Kelas,
-                Nama_Lembaga=lembaga
-            )
+                    Nama_Lembaga=lembaga
+                )
 
             for rombel in rombel_list:
                 sudah_ada = models.DaftarNilai.objects.filter(
@@ -885,38 +884,61 @@ def nilai_setingsoal(request, kode_soal):
 def export_nilai_excel_setting(request, kode_soal):
     seting_soal = get_object_or_404(models.SetingSoal, Kode_Soal=kode_soal)
 
+    # 1. Hitung total soal yang tersedia
+    soal_list = list(models.Soal_Siswa.objects.filter(Kode_Soal=seting_soal))
+    total_semua_soal = len(soal_list) # <-- Inilah 40 soal
+    total_nilai_maksimal = sum(soal.Nilai or 0 for soal in soal_list)
+
+    # Ambil semua jawaban yang ada untuk kuis ini
     jawaban = models.Answer.objects.filter(
         Kode_Soal=seting_soal
     ).select_related("Nama_User", "Nomor_Soal", "Rombel")
 
-    soal_list = list(models.Soal_Siswa.objects.filter(Kode_Soal=seting_soal))
-    total_nilai_maksimal = sum(soal.Nilai or 0 for soal in soal_list)
-
+    # ...
     nilai_siswa = {}
     for ans in jawaban:
         user = ans.Nama_User
         if user.id not in nilai_siswa:
             nama = user.get_full_name() or getattr(user, 'Nama', None) or user.username
-            rombel_nama = str(getattr(ans, 'Rombel', ''))
+            
+            # --- Perbaikan di sini ---
+            rombel_obj = getattr(ans, 'Rombel', None)
+            if rombel_obj:
+                # Mengambil hanya huruf Rombel, bukan string lengkapnya (Kelas - Rombel)
+                rombel_nama = rombel_obj.Rombel 
+            else:
+                rombel_nama = ''
+            # --------------------------
+            
             nilai_siswa[user.id] = {
                 "nama": nama,
-                "rombel": rombel_nama,
+                "rombel": rombel_nama, # Sekarang hanya akan berisi 'A', 'B', dll.
                 "total_nilai": 0,
                 "total_benar": 0,
-                "total_soal": 0
+                "total_soal_dijawab": 0, 
             }
+# ... (sisa kode lainnya tetap sama)
 
+        # Hanya hitung jika siswa benar-benar memilih jawaban (Jawaban is not None)
         if ans.Jawaban is not None:
-            nilai_siswa[user.id]["total_soal"] += 1
+            nilai_siswa[user.id]["total_soal_dijawab"] += 1
 
         if ans.Jawaban_Benar:
             nilai_soal = ans.Nomor_Soal.Nilai or 0
             nilai_siswa[user.id]["total_nilai"] += nilai_soal
             nilai_siswa[user.id]["total_benar"] += 1
 
+    # 2. Perhitungan Progress dan Nilai Akhir
     for data in nilai_siswa.values():
-        total_soal = data['total_soal']
-        data["persentase"] = round((data["total_benar"] / total_soal) * 100, 2) if total_soal > 0 else 0
+        total_dijawab = data['total_soal_dijawab']
+        
+        # Progres Pengerjaan (Persentase soal yang dijawab dari total soal)
+        data["progress_pengerjaan"] = round((total_dijawab / total_semua_soal) * 100, 2) if total_semua_soal > 0 else 0
+        
+        # Format "Soal Dijawab / Total Soal" (misalnya "38/40")
+        data["progress_dikerjakan"] = f"{total_dijawab}/{total_semua_soal}"
+
+        # Nilai Akhir (dihitung berdasarkan total nilai yang diperoleh dari total nilai maksimal semua soal)
         data["nilai_akhir"] = round((data["total_nilai"] / total_nilai_maksimal) * 100, 2) if total_nilai_maksimal > 0 else 0
 
     # Buat workbook dan sheet
@@ -924,8 +946,17 @@ def export_nilai_excel_setting(request, kode_soal):
     ws = wb.active
     ws.title = f"Nilai - {seting_soal.Kode_Soal}"
 
-    # Header kolom
-    ws.append(["No", "Nama", "Rombel", "Total Benar", "Total Soal",  "Nilai Akhir"])
+    # 3. Header kolom Baru
+    # Menghapus "Total Soal" dan menggantinya dengan Progress dan Soal Dikerjakan
+    ws.append([
+        "No", 
+        "Nama", 
+        "Rombel", 
+        "Total Benar", 
+        "Progress Pengerjaan (%)", 
+        "Soal Dikerjakan", 
+        "Nilai Akhir"
+    ])
 
     # Data siswa
     for idx, data in enumerate(sorted(nilai_siswa.values(), key=lambda x: x["nama"]), start=1):
@@ -934,7 +965,8 @@ def export_nilai_excel_setting(request, kode_soal):
             data["nama"],
             data["rombel"],
             data["total_benar"],
-            data["total_soal"],
+            f"{data['progress_pengerjaan']}%", # Ditambahkan "%" untuk tampilan di Excel
+            data["progress_dikerjakan"],     # Ditampilkan sebagai "38/40"
             data["nilai_akhir"]
         ])
 
@@ -956,57 +988,57 @@ def export_nilai_excel_setting(request, kode_soal):
 
 
 
-@login_required(login_url=settings.LOGIN_URL)
-@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
-@csrf_protect
-def lihat_soal_siswa(request, pk):
-    Data = get_object_or_404(models.SetingSoal, pk=pk)
+# @login_required(login_url=settings.LOGIN_URL)
+# @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+# @csrf_protect
+# def lihat_soal_siswa(request, pk):
+#     setting_soal_instance = get_object_or_404(models.SetingSoal, pk=pk)
     
-    cari = request.POST.get('cari', request.GET.get('cari', ''))
-    items_per_page = request.GET.get('items_per_page', '30')
+#     cari = request.POST.get('cari', request.GET.get('cari', ''))
+#     items_per_page = request.GET.get('items_per_page', '30')
     
-    if items_per_page == 'all':
-        items_per_page = 1000000
-    else:
-        try:
-            items_per_page = int(items_per_page)
-        except (ValueError, TypeError):
-            items_per_page = 30
+#     if items_per_page == 'all':
+#         items_per_page = 1000000
+#     else:
+#         try:
+#             items_per_page = int(items_per_page)
+#         except (ValueError, TypeError):
+#             items_per_page = 30
 
-    # Filter berdasarkan Data soal
-    data_list = models.Soal_Siswa.objects.filter(Nomor=Data).order_by('Nomor')
+#     # Filter berdasarkan Data soal
+#     data_list = models.Soal_Siswa.objects.filter(Nomor=Data).order_by('Nomor')
 
-    if cari:
-        data_list = data_list.filter(Soal__icontains=cari)  # cari di isi soal
+#     if cari:
+#         data_list = data_list.filter(Soal__icontains=cari)  # cari di isi soal
 
-    paginator = Paginator(data_list, items_per_page)
-    page_number = request.GET.get('page', 1)
+#     paginator = Paginator(data_list, items_per_page)
+#     page_number = request.GET.get('page', 1)
 
-    try:
-        Data = paginator.page(page_number)
-    except PageNotAnInteger:
-        Data = paginator.page(1)
-    except EmptyPage:
-        Data = paginator.page(paginator.num_pages)
+#     try:
+#         Data = paginator.page(page_number)
+#     except PageNotAnInteger:
+#         Data = paginator.page(1)
+#     except EmptyPage:
+#         Data = paginator.page(paginator.num_pages)
 
-    semua = str(items_per_page) if items_per_page != 1000000 else 'all'
-    jumlah = data_list.count()
+#     semua = str(items_per_page) if items_per_page != 1000000 else 'all'
+#     jumlah = data_list.count()
     
-    context = {
-        "data": "Lihat Soal",
-        "judul": f"Soal untuk: ",
-        "Data": Data,
-        "jumlah": jumlah,
-        "cari": cari,
-        "items_per_page": semua,
-        "lembaga": "Soal Siswa",
-        "placeholder": "Nomor",
-        "icon": "bi bi-list-ul",
-        "Data": Data,
-        "link":reverse("cbt:setting_soal"),
-    }
+#     context = {
+#         "data": f"Lihat Soal ({setting_soal_instance.Kelas} - {setting_soal_instance.Mapel.Nama_Mapel})",
+#         "judul": f"Soal mmm",
+#         "Data": Data,
+#         "jumlah": jumlah,
+#         "cari": cari,
+#         "items_per_page": semua,
+#         "lembaga": "Soal Siswa",
+#         "placeholder": "Nomor",
+#         "icon": "bi bi-list-ul",
+#         "Data": Data,
+#         "link":reverse("cbt:setting_soal"),
+#     }
 
-    return render(request, 'staff/list_soal_siswa.html', context)
+#     return render(request, 'staff/list_soal_siswa.html', context)
 
 
 
@@ -1119,7 +1151,9 @@ def ujicoba_selesai(request, pk):
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
 @csrf_protect
 def lihat_soal_siswa(request, pk):
-    Data = get_object_or_404(models.SetingSoal, pk=pk)
+    Data= get_object_or_404(models.SetingSoal, pk=pk)
+    kelas =Data.Kelas
+    mapel = Data.Mapel
     
     cari = request.POST.get('cari', request.GET.get('cari', ''))
     items_per_page = request.GET.get('items_per_page', '30')
@@ -1154,8 +1188,8 @@ def lihat_soal_siswa(request, pk):
     jumlah = data_list.count()
     
     context = {
-        "data": "Lihat Soal",
-        "judul": f"Soal untuk: ",
+        "data": f"Daftar Nilai : {mapel} | Kelas : {kelas}",
+        "judul": f"Soal {mapel} - Kelas {kelas}",
         "Data": Data,
         "jumlah": jumlah,
         "cari": cari,
@@ -1635,8 +1669,7 @@ def daftar_nilai(request):
         data_list = models.DaftarNilai.objects.filter(
             Semester=semester_obj,
             Tahun_Pelajaran=tahun_aktif
-        ).order_by('Kelas__Kelas', 'Rombel__Rombel', 'Mapel__Nama_Mapel')
-
+        ).order_by('Kelas__kelas', 'Rombel__Rombel', 'Mapel__Nama_Mapel')
     else:
         data_list = models.DaftarNilai.objects.none()
 
@@ -1908,7 +1941,7 @@ def daftar_nilai_view(request, id_daftarnilai):
     # Kirim ke template
     context = {
         "judul": "CBT - Daftar Nilai",
-        "data": f"Daftar Nilai: {mapel.Nama_Mapel} {kelas.Kelas} / {rombel.Rombel}",
+        "data": f"Daftar Nilai: {mapel.Nama_Mapel} {kelas.kelas} / {rombel.Rombel}",
         "NamaForm": "Form Tambah Daftar Nilai",
         "seting_soal": seting_soal,
         "total_nilai_maksimal": total_nilai_maksimal,
@@ -1919,6 +1952,7 @@ def daftar_nilai_view(request, id_daftarnilai):
     }
 
     return render(request, "staff/daftar_nilai.html", context)
+
 
 
 

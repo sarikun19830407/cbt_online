@@ -1064,7 +1064,7 @@ def user_siswa (request):
     data_list = models.Pengguna.objects.filter(
         is_superuser=False, 
         is_siswa=True
-        ).order_by('Kelas__Kelas', 'Rombel__Rombel',"Nama")
+        ).order_by("kelas__kelas", "rombel__Rombel", "Nama")
     if cari:
         data_list = data_list.filter(Nama__icontains=cari) | data_list.filter(username__icontains=cari)
 
@@ -1351,7 +1351,8 @@ def uploadUserSiswa(request):
                         continue
 
                     # Cek kelas
-                    kelas = models.Kelas.objects.filter(Kelas__iexact=kelas_nama).first()
+                    # Cek kelas
+                    kelas = models.Kelas.objects.filter(kelas__iexact=kelas_nama).first()
                     if not kelas:
                         failed_rows.append({
                             'Nama': nama,
@@ -1362,18 +1363,21 @@ def uploadUserSiswa(request):
 
                     # Cek rombel
                     rombel_obj = models.Rombel_kelas.objects.filter(
-                        Q(Kelas=kelas),
-                        Q(Rombel__iexact=rombel_nama),
-                        Q(Nama_Lembaga=lembaga_aktif)
+                        Rombel__iexact=rombel_nama,
+                        Nama_Lembaga=lembaga_aktif
                     ).first()
 
                     if not rombel_obj:
                         failed_rows.append({
                             'Nama': nama,
                             'Kelas': kelas_nama,
-                            'Error': f'Rombel "{rombel_nama}" tidak ditemukan untuk kelas "{kelas_nama}"'
+                            'Error': f'Rombel "{rombel_nama}" tidak ditemukan'
                         })
                         continue
+
+                    # Buat user
+                    
+
 
                     # 🔹 Generate password otomatis
                     allowed_chars = ''.join([
@@ -1385,16 +1389,16 @@ def uploadUserSiswa(request):
                     # 🔹 Buat user baru
                     try:
                         user_obj = models.Pengguna.objects.create_user(
-                            username=username,
-                            password=auto_password,  # diset hash otomatis
-                            Nama_User=request.user,
-                            Nama=nama,
-                            Kelas=kelas,
-                            Rombel=rombel_obj,
-                            Nama_Lembaga=lembaga_aktif,
-                            is_siswa=True,
-                            auto_password=auto_password  # simpan plain untuk referensi
-                        )
+                                username=username,
+                                password=auto_password,
+                                Nama_User=request.user,
+                                Nama=nama,
+                                kelas=kelas,
+                                rombel=rombel_obj,
+                                Nama_Lembaga=lembaga_aktif,
+                                is_siswa=True,
+                                auto_password=auto_password
+                            )
                         success_count += 1
                     except Exception as e:
                         failed_rows.append({
@@ -1453,13 +1457,12 @@ def downloadtempUserSiswa(request):
     writer.writerow(['NIK',  'Nama Siswa', 'Kelas', 'Rombel'])
 
     # Ambil semua Rombel_kelas
-    rombel_list = models.Rombel_kelas.objects.select_related('Kelas').all().order_by('Kelas__Kelas', 'Rombel')
+    rombel_list = models.Kelas.objects.all()
 
     # Tulis satu baris contoh per rombel
     for rombel in rombel_list:
-        kelas_nama = rombel.Kelas.Kelas
-        rombel_nama = rombel.Rombel
-        writer.writerow(['', '',kelas_nama, rombel_nama])  # Kosongkan NIK, Password, Nama
+        kelas_nama = rombel.kelas
+        writer.writerow(['', '',kelas_nama, ""])  # Kosongkan NIK, Password, Nama
 
     return response
 
@@ -1477,9 +1480,9 @@ def cetak_semua_kartu_pdf(request):
 
     # Ambil semua siswa, sertakan auto_password
     semua_siswa = list(
-        models.Pengguna.objects.filter(is_siswa=True)
-        .order_by('Kelas__Kelas', 'Rombel__Rombel', 'Nama')
-        .only('username', 'Nama', 'Kelas__Kelas', 'Rombel__Rombel', 'auto_password')
+    models.Pengguna.objects.filter(is_siswa=True)
+        .order_by('kelas__kelas', 'rombel__Rombel', 'Nama')
+        .only('username', 'Nama', 'kelas__kelas', 'rombel__Rombel', 'auto_password')
     )
 
     # Tambahkan nomor peserta: mulai dari 0001 dan seterusnya

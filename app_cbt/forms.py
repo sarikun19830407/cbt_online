@@ -138,7 +138,7 @@ class Form_kurikulum(forms.ModelForm):
 
 
 class Form_lembaga(forms.ModelForm):
-    tanggal_mulai_ujian = f= forms.DateField(
+    tanggal_mulai_ujian =forms.DateField(
         widget=forms.DateInput(
             attrs={
                 'class': 'form-control form-control-sm mb-3',
@@ -268,10 +268,10 @@ class FormTahunPeljaran(forms.ModelForm):
 class FormKelas(forms.ModelForm):
     class Meta:
         model = models.Kelas
-        fields = ['Kelas']
+        fields = ['kelas']
 
         labels={
-            "Kelas":"Kelas (contoh 7 dst)"
+            "kelas":"Kelas (contoh 7 dst)"
         }
 
         widgets = {
@@ -286,19 +286,17 @@ class FormKelas(forms.ModelForm):
 class FormRombel(forms.ModelForm):
     class Meta:
         model = models.Rombel_kelas
-        fields = ['Kelas','Rombel']
+        fields = ['Rombel']
 
         labels={
-            "Kelas":"Kelas (contoh 7 dst)"
+            "Rombel":"Rombel (contoh A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z)"
         }
 
         widgets = {
-            'Rombel': forms.TextInput(
-                attrs={'class': 'form-control mb-3'}
-            ),
-            'Kelas': forms.Select(
+            'Rombel': forms.Select(
                 attrs={'class': 'form-select mb-3'}
             ),
+            
         }
 
 
@@ -593,7 +591,7 @@ class Form_siswa(forms.ModelForm):
 
     class Meta:
         model = models.Pengguna
-        fields = ["username", "Nama", "Kelas", "Rombel"]
+        fields = ["username", "Nama", "kelas", "rombel"]
         exclude = ['password']
         help_texts = {
             'username': None,
@@ -608,8 +606,8 @@ class Form_siswa(forms.ModelForm):
             "Nama": forms.TextInput(
                 attrs={'placeholder': "Nama Siswa", 'class': 'form-control mb-3'}
             ),
-            "Kelas": forms.Select(attrs={'class': 'form-select mb-3'}),
-            "Rombel": forms.Select(attrs={'class': 'form-select mb-3'}),
+            "kelas": forms.Select(attrs={'class': 'form-select mb-3'}),
+            "rombel": forms.Select(attrs={'class': 'form-select mb-3'}),
         }
 
     def __init__(self, *args, **kwargs):
