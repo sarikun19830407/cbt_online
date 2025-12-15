@@ -262,6 +262,66 @@ body {
     overflow: auto;
 }
 
+
+
+/* accordion */
+.accordion {
+    /* width: 500px;   */
+    padding-left: 15px;
+}
+
+.accordion ul {
+    margin: 0;
+    padding: 0;
+}
+
+.accordion .pagenav {
+    position: relative;
+    margin-bottom: 0;
+    /* list-style: none; */
+
+}
+
+.accordion .pagenav a {
+    text-decoration: none;
+    color: #323232;
+}
+
+.accordion .pagenav ul {
+    display: none; /* hides all ul content by default (see exceptions in JS) */
+    margin: 0;
+}
+
+.accordion .pagenav li {
+    list-style: none;
+}
+
+.accordion .pagenav .utama {
+    margin-top: 8px;
+    
+}
+
+.accordion .pagenav .utama i {
+    /* font-size: 24px; */
+    position: absolute;
+    /* right: 30px;
+    line-height: 20px; */
+    transition: .3s;
+    -webkit-transition: .3s;
+    -ms-transition: .3s;
+}
+
+.accordion .pagenav.open .utama i {
+    transform: rotate(90deg);
+}
+
+.accordion , .accordion .pagenav li.current_page_item a {
+    text-decoration: underline;
+}
+
+
+
+
 /* Mobile styles */
 @media (max-width: 800px) {
     .sidebar {

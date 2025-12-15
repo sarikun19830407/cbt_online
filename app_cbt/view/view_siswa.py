@@ -56,16 +56,16 @@ def siswa(request):
             seting_soal = models.SetingSoal.objects.get(Kode_Soal=kode_soal)
 
             # Validasi: kelas siswa harus sama dengan kelas dari soal
-            if hasattr(request.user, 'Kelas') and request.user.Kelas != seting_soal.Kelas:
-                nama_kelas_user = request.user.Kelas.Kelas  # contoh: "7A"
-                nama_kelas_soal = seting_soal.Kelas.Kelas   # contoh: "8A"
+            if hasattr(request.user, 'kelas') and request.user.kelas != seting_soal.Kelas:
+                nama_kelas_user = request.user.kelas.kelas  # contoh: "7A"
+                nama_kelas_soal = seting_soal.Kelas.kelas   # contoh: "8A"
                 messages.error(request, f"Kode ini untuk kelas {nama_kelas_soal}, sedangkan Anda dari kelas {nama_kelas_user}.")
                 return redirect('cbt:siswa')
 
             # Validasi soal aktif
             if not seting_soal.aktif:
                 nama_mapel = seting_soal.Mapel
-                nama_kelas = seting_soal.Kelas.Kelas  
+                nama_kelas = seting_soal.Kelas.kelas  
                 messages.error(request, f"Soal {nama_mapel} kelas {nama_kelas} belum diaktifkan.")
                 return redirect('cbt:siswa')
 
@@ -93,57 +93,49 @@ def siswa(request):
 @user_passes_test(lambda user: user.is_siswa, login_url=settings.LOGIN_URL)
 @csrf_protect
 def mulai_ujian(request, kode_soal):
-    # Ambil data ujian
-    seting_soal = get_object_or_404(models.SetingSoal, Kode_Soal=kode_soal)
-    
 
+    seting_soal = get_object_or_404(models.SetingSoal, Kode_Soal=kode_soal)
+
+    # ================= VALIDASI WAKTU =================
     waktu_sekarang = timezone.now()
+
     if seting_soal.waktu_aktif and waktu_sekarang > seting_soal.waktu_aktif + timedelta(minutes=seting_soal.durasi_menit):
         messages.error(request, 'Waktu ujian telah habis!')
-        return redirect(reverse('cbt:siswa'))
-    
-    # Cek apakah ujian sudah diselesaikan
+        return redirect('cbt:siswa')
+
     if models.Answer.objects.filter(
         Nama_User=request.user,
         Kode_Soal=seting_soal,
         Waktu_Selesai__isnull=False
     ).exists():
-        messages.error(request, f'Anda sudah menyelesaikan ujian {seting_soal.Mapel}')
-        return redirect(reverse('cbt:selesai_ujian', kwargs={'kode_soal': seting_soal.Kode_Soal}))
-    
-    # Pengaturan waktu ujian
-    waktu_sekarang = timezone.now()
+        return redirect('cbt:selesai_ujian', kode_soal=kode_soal)
+
+    # ================= SOAL & JAWABAN =================
+    soal_list = models.Soal_Siswa.objects.filter(Kode_Soal=seting_soal).order_by('Nomor')
+    total_soal = soal_list.count()
+
     jawaban_pertama = models.Answer.objects.filter(
         Nama_User=request.user,
         Kode_Soal=seting_soal
     ).order_by('Waktu_Mulai').first()
-    
-    # Hitung waktu tersisa
+
     if jawaban_pertama:
         waktu_mulai = jawaban_pertama.Waktu_Mulai
         waktu_berakhir = waktu_mulai + timedelta(minutes=seting_soal.durasi_menit)
-        waktu_tersisa = waktu_berakhir - waktu_sekarang
-        
-        # Jika waktu sudah habis
-        if waktu_tersisa.total_seconds() <= 0:
-            models.Answer.objects.filter(
-                Nama_User=request.user,
-                Kode_Soal=seting_soal,
-                Waktu_Selesai__isnull=True
-            ).update(Waktu_Selesai=waktu_berakhir)
-            messages.error(request, 'Waktu ujian telah habis!')
-            return redirect(reverse('cbt:selesai_ujian', kwargs={'kode_soal': seting_soal.Kode_Soal}))
-        
-        total_detik = int(waktu_tersisa.total_seconds())
+        total_detik = int((waktu_berakhir - waktu_sekarang).total_seconds())
     else:
-        # Jika baru memulai ujian
         waktu_berakhir = waktu_sekarang + timedelta(minutes=seting_soal.durasi_menit)
         total_detik = seting_soal.durasi_menit * 60
-    
-    # Ambil daftar soal
-    soal_list = models.Soal_Siswa.objects.filter(Kode_Soal=seting_soal).order_by('Nomor')
-    
-    # Inisialisasi jawaban untuk semua soal
+
+    if total_detik <= 0:
+        models.Answer.objects.filter(
+            Nama_User=request.user,
+            Kode_Soal=seting_soal,
+            Waktu_Selesai__isnull=True
+        ).update(Waktu_Selesai=waktu_berakhir)
+        return redirect('cbt:selesai_ujian', kode_soal=kode_soal)
+
+    # ================= INIT JAWABAN =================
     for soal in soal_list:
         models.Answer.objects.get_or_create(
             Nama_User=request.user,
@@ -153,95 +145,95 @@ def mulai_ujian(request, kode_soal):
                 'Jawaban': None,
                 'Jawaban_Benar': False,
                 'Nilai_Siswa': 0,
-                'Kelas': request.user.Kelas,
-                'Rombel': request.user.Rombel,
+                'Kelas': request.user.kelas,
+                'Rombel': request.user.rombel,
                 'Waktu_Mulai': waktu_sekarang if not jawaban_pertama else None
             }
         )
-    
-    # Ambil semua jawaban yang sudah ada
-    jawaban_dict = {
-        jawaban.Nomor_Soal.id: jawaban.Jawaban
-        for jawaban in models.Answer.objects.filter(
-            Nama_User=request.user,
-            Kode_Soal=seting_soal
-        )
-    }
 
-    # Hitung jumlah jawaban yang sudah diisi
-    jawaban_count = sum(1 for j in jawaban_dict.values() if j)
-    semua_terjawab = jawaban_count == soal_list.count()
-    
-    # Ambil soal saat ini
-    nomor_soal = request.GET.get('nomor', 1)
-    try:
-        nomor_soal = int(nomor_soal)
-        current_soal = models.Soal_Siswa.objects.get(Kode_Soal=seting_soal, Nomor=nomor_soal)
-    except (ValueError, models.Soal_Siswa.DoesNotExist):
-        current_soal = soal_list.first()
-        nomor_soal = current_soal.Nomor if current_soal else 1
-
-    # Ambil jawaban dari current soal
-    jawaban = models.Answer.objects.filter(
+    jawaban_qs = models.Answer.objects.filter(
         Nama_User=request.user,
-        Kode_Soal=seting_soal,
-        Nomor_Soal=current_soal
-    ).first()
-    
-    # Handle POST request
-    if request.method == 'POST':
-        if 'finish' in request.POST:
-            if semua_terjawab:
-                return redirect(reverse('cbt:selesai_ujian', kwargs={'kode_soal': seting_soal.Kode_Soal}))
-            else:
-                messages.error(request, 'Anda belum menjawab semua soal!')
-                return redirect(reverse('cbt:mulai_ujian', kwargs={'kode_soal': seting_soal.Kode_Soal}))
+        Kode_Soal=seting_soal
+    )
 
-        # Proses penyimpanan jawaban
-        jawaban_pilihan = request.POST.get('jawaban')
-        if jawaban:
-            jawaban.Jawaban = jawaban_pilihan
-            jawaban.save()
-            
-            # Update jawaban benar dan nilai jika kunci jawaban tersedia
-            if hasattr(current_soal, 'Kunci'):
-                jawaban.Jawaban_Benar = (jawaban_pilihan == current_soal.Kunci)
-                jawaban.Nilai_Siswa = seting_soal.Mapel.Bobot_Nilai if jawaban.Jawaban_Benar else 0
+    jawaban_dict = {j.Nomor_Soal.id: j.Jawaban for j in jawaban_qs}
+
+    jawaban_count = jawaban_qs.exclude(Jawaban__isnull=True).exclude(Jawaban='').count()
+    semua_terjawab = jawaban_count == total_soal
+
+    # ================= SOAL SAAT INI =================
+    nomor = request.GET.get('nomor', 1)
+    is_finish_page = request.GET.get('finish') == '1'
+
+    if not is_finish_page:
+        try:
+            nomor = int(nomor)
+            current_soal = soal_list.get(Nomor=nomor)
+        except:
+            current_soal = soal_list.first()
+    else:
+        current_soal = None
+
+    jawaban = None
+    if current_soal:
+        jawaban = jawaban_qs.filter(Nomor_Soal=current_soal).first()
+
+    # ================= POST =================
+    if request.method == 'POST':
+
+        # SIMPAN JAWABAN
+        if current_soal:
+            pilihan = request.POST.get('jawaban')
+            if pilihan:
+                jawaban.Jawaban = pilihan
+                jawaban.Jawaban_Benar = (pilihan == current_soal.Kunci_Jawaban)
+                jawaban.Nilai_Siswa = current_soal.Nilai if jawaban.Jawaban_Benar else 0
                 jawaban.save()
 
-        # Navigasi soal
+        # NEXT
         if 'next' in request.POST:
-            next_soal = models.Soal_Siswa.objects.filter(
-                Kode_Soal=seting_soal,
-                Nomor__gt=current_soal.Nomor
-            ).order_by('Nomor').first()
-            if next_soal:
-                return redirect(f"{reverse('cbt:mulai_ujian', kwargs={'kode_soal': kode_soal})}?nomor={next_soal.Nomor}")
-        
-        elif 'prev' in request.POST:
-            prev_soal = models.Soal_Siswa.objects.filter(
-                Kode_Soal=seting_soal,
-                Nomor__lt=current_soal.Nomor
-            ).order_by('-Nomor').first()
-            if prev_soal:
-                return redirect(f"{reverse('cbt:mulai_ujian', kwargs={'kode_soal': kode_soal})}?nomor={prev_soal.Nomor}")
+            if current_soal and current_soal.Nomor < total_soal:
+                return redirect(
+                    f"{reverse('cbt:mulai_ujian', kwargs={'kode_soal': kode_soal})}?nomor={current_soal.Nomor + 1}"
+                )
+            else:
+                return redirect(
+                    f"{reverse('cbt:mulai_ujian', kwargs={'kode_soal': kode_soal})}?finish=1"
+                )
 
-    # Persiapkan context
+        # PREV
+        if 'prev' in request.POST and current_soal:
+            return redirect(
+                f"{reverse('cbt:mulai_ujian', kwargs={'kode_soal': kode_soal})}?nomor={current_soal.Nomor - 1}"
+            )
+
+        # FINISH
+        if 'finish_exam' in request.POST:
+            if semua_terjawab:
+                return redirect('cbt:selesai_ujian', kode_soal=kode_soal)
+            else:
+                messages.error(request, 'Masih ada soal yang belum dijawab.')
+                return redirect(
+                    f"{reverse('cbt:mulai_ujian', kwargs={'kode_soal': kode_soal})}?finish=1"
+                )
+
+    # ================= CONTEXT =================
     context = {
         'seting_soal': seting_soal,
         'current_soal': current_soal,
         'soal_list': soal_list,
         'jawaban': jawaban,
-        'total_soal': soal_list.count(),
+        'jawaban_dict': jawaban_dict,
+        'total_soal': total_soal,
         'jawaban_count': jawaban_count,
         'semua_terjawab': semua_terjawab,
-        'jawaban_dict': jawaban_dict,
+        'is_finish_page': is_finish_page,
         'total_detik': total_detik,
         'waktu_berakhir': waktu_berakhir.isoformat(),
-        'durasi_menit': seting_soal.durasi_menit,
     }
-    
+
     return render(request, 'siswa/mulai_ujian.html', context)
+
 
 
 

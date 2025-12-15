@@ -73,21 +73,47 @@ def staff(request):
     users = get_logged_in_users()
     user_data = []
 
+    
     for user in users:
+        total_soal = 0
+        total_jawab = 0
+        progres_persen = 0
         selesai = False
-        kode_soal = models.SetingSoal.objects.filter(Nama_User=user).first()
+
+        # Ambil soal aktif siswa
+        kode_soal = models.SetingSoal.objects.filter(
+            Kelas=user.kelas,
+            aktif=True
+        ).first()
+
         if kode_soal:
-            total_soal = models.Soal_Siswa.objects.filter(Kode_Soal=kode_soal).count()
+            total_soal = models.Soal_Siswa.objects.filter(
+                Kode_Soal=kode_soal
+            ).count()
+
             total_jawab = models.Answer.objects.filter(
                 Nama_User=user,
                 Kode_Soal=kode_soal
             ).exclude(Jawaban__isnull=True).count()
-            selesai = total_soal > 0 and total_jawab >= total_soal
+
+            if total_soal > 0:
+                progres_persen = round((total_jawab / total_soal) * 100)
+
+            # Status selesai berdasarkan tombol selesai ujian
+            selesai = models.Answer.objects.filter(
+                Nama_User=user,
+                Kode_Soal=kode_soal,
+                Waktu_Selesai__isnull=False
+            ).exists()
 
         user_data.append({
             'user': user,
-            'selesai': selesai
+            'selesai': selesai,
+            'total_soal': total_soal,
+            'total_jawab': total_jawab,
+            'progres_persen': progres_persen,
         })
+
 
     # 🔍 Filter pencarian
     if cari:

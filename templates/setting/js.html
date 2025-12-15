@@ -10,23 +10,40 @@
 
 
 
+{% for message in messages %}
+<script>
+    Swal.fire({
+        title: "{{ message.tags|capfirst }}",
+        text: "{{ message|escapejs }}",
+        icon: "{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% else %}info{% endif %}",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#3085d6",
+        backdrop: true,
+        allowOutsideClick: false,
+        position: "center",
+        didOpen: (popup) => {
+            popup.style.top = "-15vh";        // geser ke atas (¼ layar)
 
+        }
+    });
+
+</script>
+{% endfor %}
 
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        // ===============================
+        // 1️⃣ Fungsi setActiveMenu (vanilla JS)
+        // ===============================
         function setActiveMenu(menuClass, storageKey) {
             let menuItems = document.querySelectorAll(menuClass);
 
             menuItems.forEach(item => {
                 item.addEventListener("click", function () {
-                    // Hapus kelas 'active' dari semua item dalam grup ini
                     menuItems.forEach(menu => menu.classList.remove("active"));
-
-                    // Tambahkan kelas 'active' ke item yang diklik
                     this.classList.add("active");
 
-                    // Simpan state menu aktif ke localStorage jika ada href
                     let href = this.getAttribute("href");
                     if (href) {
                         localStorage.setItem(storageKey, href);
@@ -34,7 +51,6 @@
                 });
             });
 
-            // Saat halaman dimuat ulang, set menu yang terakhir aktif
             let activeMenu = localStorage.getItem(storageKey);
             if (activeMenu) {
                 let currentItem = document.querySelector(`${menuClass}[href='${activeMenu}']`);
@@ -44,54 +60,90 @@
             }
         }
 
-        // Atur active state untuk masing-masing menu
+        // Terapkan ke grup menu
         setActiveMenu(".menu-1", "activeMenuUtama");
         setActiveMenu(".menu_active", "activeMenuMutasi");
         setActiveMenu(".Tabel", "activeMenuTabel");
-    });
-</script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const menuItems = document.querySelectorAll('#sidebarMenu .nav-link');
+        // ===============================
+        // 2️⃣ Sidebar menu aktif (vanilla JS)
+        // ===============================
+        const sidebarMenuItems = document.querySelectorAll('#sidebarMenu .nav-link');
+        const savedActiveMenu = localStorage.getItem('activeMenu');
 
-        menuItems.forEach(item => {
-            item.addEventListener('click', function (e) {
-                // Hapus class active dari semua menu
-                menuItems.forEach(link => link.classList.remove('active'));
-
-                // Tambahkan class active ke menu yang diklik
+        sidebarMenuItems.forEach(item => {
+            item.addEventListener('click', function () {
+                sidebarMenuItems.forEach(link => link.classList.remove('active'));
                 this.classList.add('active');
-
-                // Simpan menu aktif di localStorage
                 localStorage.setItem('activeMenu', this.getAttribute('href'));
             });
 
-            // Cek localStorage saat halaman dimuat
-            const activeMenu = localStorage.getItem('activeMenu');
-            if (activeMenu && item.getAttribute('href') === activeMenu) {
+            if (savedActiveMenu && item.getAttribute('href') === savedActiveMenu) {
                 item.classList.add('active');
             }
         });
 
-        // Set menu pertama sebagai aktif default jika belum ada yang aktif
-        if (!localStorage.getItem('activeMenu') && menuItems.length > 0) {
-            menuItems[0].classList.add('active');
-            localStorage.setItem('activeMenu', menuItems[0].getAttribute('href'));
+        if (!savedActiveMenu && sidebarMenuItems.length > 0) {
+            sidebarMenuItems[0].classList.add('active');
+            localStorage.setItem('activeMenu', sidebarMenuItems[0].getAttribute('href'));
         }
-    });
-</script>
 
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
+        // ===============================
+        // 3️⃣ Loading saat submit form upload
+        // ===============================
         const form = document.getElementById("uploadForm");
         const submitBtn = document.getElementById("submitBtn");
         const loadingDiv = document.getElementById("loading");
 
-        form.addEventListener("submit", function () {
-            submitBtn.disabled = true;  // Matikan tombol Upload
-            loadingDiv.style.display = "block";  // Tampilkan animasi loading
+        if (form) {
+            form.addEventListener("submit", function () {
+                if (submitBtn) submitBtn.disabled = true;
+                if (loadingDiv) loadingDiv.style.display = "block";
+            });
+        }
+    });
+
+    // ===============================
+    // 4️⃣ Accordion Menu (pakai jQuery)
+    // Pastikan jQuery sudah dimuat dulu
+    // ===============================
+    $(document).ready(function () {
+        // Buka otomatis menu yang punya current_page_item
+        $('.pagenav li').each(function (i, el) {
+            if ($(el).hasClass('current_page_item')) {
+                $(el).parent().show().parent().addClass('open');
+            }
+        });
+
+        // Pulihkan state accordion dari localStorage
+        $('.accordion .pagenav').each(function (index) {
+            const isOpen = localStorage.getItem('accordion_' + index);
+            if (isOpen === 'true') {
+                $(this).addClass('open').children('ul').show();
+            }
+        });
+
+        // Klik toggle accordion
+        $('.accordion .utama').click(function () {
+            const $parent = $(this).parent('.pagenav');
+            const index = $('.accordion .pagenav').index($parent);
+
+            $('.accordion > ul > li > ul:visible')
+                .not($(this).nextAll('ul'))
+                .stop().hide(200).parent().removeClass('open');
+
+            $('.accordion .pagenav').each(function (i) {
+                localStorage.setItem('accordion_' + i, 'false');
+            });
+
+            $(this).nextAll('ul').slideToggle(200, function () {
+                const isOpen = $(this).is(':visible');
+                $parent.toggleClass('open', isOpen);
+                localStorage.setItem('accordion_' + index, isOpen);
+            });
         });
     });
 </script>
+
+
+</body>

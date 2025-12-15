@@ -155,7 +155,11 @@
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center py-2">
                                 <span><i class="bi bi-people me-2"></i>Kelas</span>
-                                <span class="fw-bold text-end">{{ seting_soal.Kelas }}</span>
+                                <span class="fw-bold text-end">{{ user.kelas }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                <span><i class="bi bi-people me-2"></i>Rombel</span>
+                                <span class="fw-bold text-end">{{ user.rombel }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center py-2">
                                 <span><i class="bi bi-key me-2"></i>Kode Ujian</span>
@@ -163,14 +167,7 @@
                             </li>
                         </ul>
 
-                        <div class="d-grid gap-2">
-                            <a href="{% url 'cbt:selesai_ujian' seting_soal.Kode_Soal %}" class="btn btn-danger w-100"
-                                onclick="return confirm('Yakin ingin menyelesaikan ujian? Pastikan semua soal telah terjawab!')">
-                                <i class="bi bi-check-circle me-1"></i> Selesai Ujian
-                            </a>
-
-
-                        </div>
+                        
                     </div>
                 </div>
             </div>
@@ -243,15 +240,7 @@
                                         </li>
                                     </ul>
 
-                                    <div class="d-grid gap-2">
-                                        <a href="{% url 'cbt:selesai_ujian' seting_soal.Kode_Soal %}"
-                                            class="btn btn-danger w-100"
-                                            onclick="return confirm('Yakin ingin menyelesaikan ujian? Pastikan semua soal telah terjawab!')">
-                                            <i class="bi bi-check-circle me-1"></i> Selesai Ujian
-                                        </a>
-
-
-                                    </div>
+                                    
                                 </div>
                             </div>
                         </div>
@@ -267,73 +256,122 @@
                     </div>
                     <div class="card-body">
                         <form method="post">
-                            {% csrf_token %}
-                            <table class="table table-borderless align-middle">
-                                <tbody>
-                                    <!-- Question -->
-                                    <tr>
-                                        <td colspan="3" class="pb-4">{{ current_soal.Soal|safe }}</td>
-                                    </tr>
+                        {% csrf_token %}
 
-                                    <!-- Options -->
-                                    <tr class="align-middle">
-                                        <td style="width: 40px; vertical-align: top;">
-                                            <input class="form-check-input" type="radio" name="jawaban" value="A"
-                                                id="jawabanA" {% if jawaban.Jawaban == 'A' %}checked{% endif %}>
-                                        </td>
-                                        <td style="width: 30px; vertical-align: top;"><strong>A.</strong></td>
-                                        <td style="vertical-align: top;">{{ current_soal.A|safe }}</td>
-                                    </tr>
+                        {# ================== TAMPILAN SOAL ================== #}
+                        {% if not is_finish_page %}
 
-                                    <tr class="align-middle">
-                                        <td style="width: 40px; vertical-align: top;">
-                                            <input class="form-check-input" type="radio" name="jawaban" value="B"
-                                                id="jawabanB" {% if jawaban.Jawaban == 'B' %}checked{% endif %}>
-                                        </td>
-                                        <td style="width: 30px; vertical-align: top;"><strong>B.</strong></td>
-                                        <td style="vertical-align: top;">{{ current_soal.B|safe }}</td>
-                                    </tr>
+                        <div class="card mb-3">
+                            <div class="card-body">
 
-                                    <tr class="align-middle">
-                                        <td style="width: 40px; vertical-align: top;">
-                                            <input class="form-check-input" type="radio" name="jawaban" value="C"
-                                                id="jawabanC" {% if jawaban.Jawaban == 'C' %}checked{% endif %}>
-                                        </td>
-                                        <td style="width: 30px; vertical-align: top;"><strong>C.</strong></td>
-                                        <td style="vertical-align: top;">{{ current_soal.C|safe }}</td>
-                                    </tr>
+                                <h5 class="mb-3">
+                                    Soal Nomor {{ current_soal.Nomor }} dari {{ total_soal }}
+                                </h5>
 
-                                    <tr class="align-middle">
-                                        <td style="width: 40px; vertical-align: top;">
-                                            <input class="form-check-input" type="radio" name="jawaban" value="D"
-                                                id="jawabanD" {% if jawaban.Jawaban == 'D' %}checked{% endif %}>
-                                        </td>
-                                        <td style="width: 30px; vertical-align: top;"><strong>D.</strong></td>
-                                        <td style="vertical-align: top;">{{ current_soal.D|safe }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                <table class="table table-borderless align-middle">
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="3" class="pb-4">
+                                                {{ current_soal.Soal|safe }}
+                                            </td>
+                                        </tr>
 
-                            <div class="d-flex justify-content-between mt-4">
-                                {% if current_soal.Nomor > 1 %}
+                                        {% for opsi in "ABCD" %}
+                                        <tr>
+                                            <td width="40">
+                                                <input class="form-check-input" type="radio"
+                                                    name="jawaban" value="{{ opsi }}"
+                                                    {% if jawaban.Jawaban == opsi %}checked{% endif %}>
+                                            </td>
+                                            <td width="30"><strong>{{ opsi }}.</strong></td>
+                                            <td>
+                                                {{ current_soal|get_opsi:opsi|safe }}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+
+                            </div>
+                        </div>
+
+                        {% endif %}
+
+                        {# ================== HALAMAN FINISH ================== #}
+                        {% if is_finish_page %}
+
+                        <div class="card text-center">
+                            <div class="card-body">
+
+                                <h4 class="mb-3">
+                                    <i class="bi bi-clipboard-check"></i> Konfirmasi Penyelesaian Ujian
+                                </h4>
+
+                                <p>
+                                    Anda telah mengerjakan
+                                    <strong>{{ jawaban_count }}</strong> dari
+                                    <strong>{{ total_soal }}</strong> soal
+                                </p>
+
+                                {% if semua_terjawab %}
+                                    <div class="alert alert-success">
+                                        Semua soal telah dijawab. Silakan klik simpan & selesai atau Cek lagi.
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-warning">
+                                        Masih ada soal yang belum dijawab.
+                                        Silakan klik <strong>Cek Lagi</strong>.
+                                    </div>
+                                {% endif %}
+
+                            </div>
+                        </div>
+
+                        {% endif %}
+
+                        {# ================== TOMBOL NAVIGASI ================== #}
+                        <div class="d-flex justify-content-between mt-4">
+
+                            {# === SEBELUMNYA === #}
+                            {% if not is_finish_page and current_soal.Nomor > 1 %}
                                 <button type="submit" name="prev" class="btn btn-secondary px-4">
                                     <i class="fas fa-arrow-left me-2"></i>Sebelumnya
                                 </button>
-                                {% else %}
+                            {% else %}
                                 <div></div>
-                                {% endif %}
+                            {% endif %}
 
-                                {% if current_soal.Nomor < total_soal %} <button type="submit" name="next"
-                                    class="btn btn-primary px-4">
+                            {# === KANAN === #}
+                            {% if not is_finish_page %}
+                                <button type="submit" name="next" class="btn btn-primary px-4">
                                     Selanjutnya <i class="fas fa-arrow-right ms-2"></i>
-                                    </button>
+                                </button>
+                            {% else %}
+                                <div class="d-flex justify-content-between gap-3 container-fluid">
+                                    {% if semua_terjawab %}
+                                        <button type="submit" name="finish_exam"
+                                                class="btn btn-success ">
+                                            <i class="bi bi-check-circle "></i>
+                                            Simpan & Selesai
+                                        </button>
                                     {% else %}
-                                    <button type="submit" class="btn btn-success px-4">
-                                        <i class="bi bi-save me-2"></i>Simpan Jawaban
-                                    </button>
+                                        <button class="btn btn-danger " disabled>
+                                            <i class="bi bi-x-circle "></i>
+                                            Simpan & Selesai
+                                        </button>
                                     {% endif %}
-                            </div>
+
+                                    <a href="?nomor={{ total_soal }}"
+                                    class="btn btn-warning ">
+                                        <i class="bi bi-arrow-counterclockwise "></i>
+                                        Cek Lagi
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+
                         </form>
+
                     </div>
                 </div>
             </div>

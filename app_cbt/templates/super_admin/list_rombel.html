@@ -6,8 +6,6 @@
 
 <body>
     <div class="container-fluid">
-        {% include "menu_kelas.html" %}
-        <br>
         <div class="d-flex flex-row gap-2 mb-1">
 
             <div class="">
@@ -31,8 +29,8 @@
                 <thead class="text-center">
                     <tr class="">
                         <th class="" scope="col">No</th>
-                        <th class="" scope="col">Kelas</th>
                         <th class="" scope="col">Rombel</th>
+                        <th class="" scope="col">Status</th>
                         <th class="" scope="col">Aksi</th>
                     </tr>
                 </thead>
@@ -40,8 +38,10 @@
                     {% for data in Data %}
                     <tr class="Tabel">
                         <td class="align-middle text-center">{{ forloop.counter }}</td>
-                        <td class="align-middle text-center">{{data.Kelas}}</td>
                         <td class="align-middle text-center">{{ data.Rombel }}</td>
+                        <td class="align-middle text-center">
+                            {{ data.status|yesno:"Active,Tidak Active,TidakDiketahui"}}
+                        </td>
                         <td class="align-middle text-center">
                             <div class="btn-group" role="group" aria-label="Basic mixed styles example">
                                 <a class="btn btn-warning btn-sm bi bi-pencil-square" style="font-size: 8;"

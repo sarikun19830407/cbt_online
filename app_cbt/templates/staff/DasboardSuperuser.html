@@ -71,6 +71,8 @@
                                 <th class="bg-body-secondary text-center">Nama Pengguna</th>
                                 <th class="bg-body-secondary text-center">Kelas</th>
                                 <th class="bg-body-secondary text-center">Login Terakhir</th>
+                                <th class="bg-body-secondary text-center">Progres</th>
+                                <th class="bg-body-secondary text-center">Progres Soal</th>
                                 <th class="bg-body-secondary text-center">Status</th>
                             </tr>
                         </thead>
@@ -83,13 +85,35 @@
                                         name="user_ids" value="{{ item.user.id }}" class="select_item"></td>
                                 <td class="align-middle text-center">{{ item.user.username }}</td>
                                 <td class="align-middle">{{ item.user.Nama }}</td>
-                                <td class="align-middle text-center">{{ item.user.Kelas }}</td>
+                                <td class="align-middle text-center">{{ item.user.kelas }}/{{ item.user.rombel }}</td>
                                 <td class="align-middle">{{ item.user.last_login|date:"j F Y, H.i" }}</td>
-                                <td class="align-middle">
+                                <td class="align-middle text-center">
+                                    <div class="progress" style="height: 18px;">
+                                        <div class="progress-bar 
+                                            {% if item.progres_persen == 100 %}
+                                                bg-success
+                                            {% elif item.progres_persen >= 50 %}
+                                                bg-info
+                                            {% else %}
+                                                bg-warning
+                                            {% endif %}"
+                                            role="progressbar"
+                                            style="width: {{ item.progres_persen }}%;">
+                                            {{ item.progres_persen }}%
+                                        </div>
+                                    </div>
+                                    
+                                </td>
+                                <td class="align-middle text-center"> 
+                                    <small class="">
+                                        {{ item.total_jawab }} / {{ item.total_soal }} soal
+                                    </small>
+                                </td>
+                                <td class="text-center align-middle">
                                     {% if item.selesai %}
-                                    <span class="badge bg-success">Selesai</span>
+                                    <span class="btn btn-sm bg-success">Selesai</span>
                                     {% else %}
-                                    <span class="badge bg-warning text-dark">Sedang Login</span>
+                                    <span class="btn btn-sm bg-warning">Sedang Login</span>
                                     {% endif %}
                                 </td>
                             </tr>

@@ -15,30 +15,47 @@
     <div class="offcanvas-body">
         <ul class="nav flex-column px-2 pt-3" id="sidebarMenu">
             <li class="nav-item">
-                <a class="nav-link menu-1" href="{% url 'cbt:home' %}">
+                <a class="nav-link text-dark" href="{% url 'cbt:home' %}">
                     <i class="bi bi-house-fill fst-normal">&nbsp;&nbsp;&nbsp; Beranda</i>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link menu-1" href="{% url 'cbt:kurikulum_lembaga' %}"><i
+                <a class="nav-link text-dark" href="{% url 'cbt:kurikulum_lembaga' %}"><i
                         class="bi bi-bookmarks fst-normal">&nbsp;&nbsp;&nbsp;Kurikulum</i></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link menu-1" href="{% url 'cbt:semester' %}">
+                <a class="nav-link text-dark" href="{% url 'cbt:semester' %}">
                     <i class="bi bi-journal-check fst-normal">&nbsp;&nbsp;&nbsp;Semester</i>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link menu-1" href="{% url 'cbt:tahun_pelajaran' %}">
+                <a class="nav-link text-dark" href="{% url 'cbt:tahun_pelajaran' %}">
                     <i class="bi bi-calendar-date fst-normal">&nbsp;&nbsp;&nbsp;Tahun pelajaran</i>
                 </a>
             </li>
+            <div class="accordion text-decoration-none">
+                <ul>
+                    <li class="pagenav ">
+                        <div class="utama bg-light p-lg-2 rounded m-2 d-flex g-3">
+                            <i class="bi bi-chevron-right text-muted"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <a class="" href="#">Lembaga</a>
 
-            <li class="nav-item">
-                <a class="nav-link menu-1" href="{% url 'cbt:lembaga' %}">
-                    <i class="bi bi-bank2 fst-normal">&nbsp;&nbsp;&nbsp;Lembaga</i>
-                </a>
-            </li>
+                        </div>
+                        <ul>
+                            <li class="page_item">
+                                <a class="nav-link " href="{% url 'cbt:lembaga' %}">
+                                    <i class="bi bi-journal-bookmark-fill"></i>&nbsp;&nbsp;Lembaga
+                                </a>
+                            </li>
+                            <li class="page_item">
+                                <a class="nav-link " href="{% url 'cbt:matapelajaran' %}">
+                                    <i class="bi bi-subtract"></i>&nbsp;&nbsp;Mapel
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
             <li class="nav-item">
                 <a class="nav-link menu-1" href="{% url 'cbt:Kelas' %}">
                     <i class="bi bi-bar-chart-steps fst-normal">&nbsp;&nbsp;&nbsp;Kelas</i>
@@ -55,10 +72,10 @@
                 </a>
             </li>
             <li class="nav-item">
-            <a class="nav-link menu-1" href="{% url 'cbt:backup_database' %}">
-                <i class="bi bi-database fst-normal">&nbsp;&nbsp;&nbsp;backup</i>
-            </a>
-        </li>
+                <a class="nav-link menu-1" href="{% url 'cbt:backup_database' %}">
+                    <i class="bi bi-database fst-normal">&nbsp;&nbsp;&nbsp;backup</i>
+                </a>
+            </li>
         </ul>
     </div>
     <div class="mt-auto p-3 text-center border-top">
@@ -74,47 +91,97 @@
 
     <ul class="nav flex-column px-2 pt-3" id="sidebarMenu">
         <li class="nav-item">
-            <a class="nav-link menu-1" href="{% url 'cbt:home' %}">
+            <a class="nav-link text-dark" href="{% url 'cbt:home' %}">
                 <i class="bi bi-house-fill fst-normal">&nbsp;&nbsp;&nbsp; Beranda</i>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link menu-1" href="{% url 'cbt:kurikulum_lembaga' %}"><i
+            <a class="nav-link text-dark" href="{% url 'cbt:kurikulum_lembaga' %}"><i
                     class="bi bi-bookmarks fst-normal">&nbsp;&nbsp;&nbsp;Kurikulum</i></a>
         </li>
         <li class="nav-item">
-            <a class="nav-link menu-1" href="{% url 'cbt:semester' %}">
+            <a class="nav-link text-dark" href="{% url 'cbt:semester' %}">
                 <i class="bi bi-journal-check fst-normal">&nbsp;&nbsp;&nbsp;Semester</i>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link menu-1" href="{% url 'cbt:tahun_pelajaran' %}">
+            <a class="nav-link text-dark" href="{% url 'cbt:tahun_pelajaran' %}">
                 <i class="bi bi-calendar-date fst-normal">&nbsp;&nbsp;&nbsp;Tahun pelajaran</i>
             </a>
         </li>
 
+        <div class="accordion text-decoration-none">
+            <ul>
+                <li class="pagenav ">
+                    <div class="utama bg-light p-lg-2 rounded m-2 d-flex g-3">
+                        <i class="bi bi-chevron-right text-muted"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <a class="" href="#">Lembaga</a>
+
+                    </div>
+                    <ul>
+                        <li class="page_item">
+                            <a class="nav-link " href="{% url 'cbt:lembaga' %}">
+                                <i class="bi bi-bank2"></i>&nbsp;&nbsp;Lembaga
+                            </a>
+                        </li>
+                        <li class="page_item">
+                            <a class="nav-link " href="{% url 'cbt:matapelajaran' %}">
+                                <i class="bi bi-journal-album"></i>&nbsp;&nbsp;Mapel
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div class="accordion text-decoration-none">
+            <ul>
+                <li class="pagenav ">
+                    <div class="utama bg-light p-lg-2 rounded m-2 d-flex g-3">
+                        <i class="bi bi-chevron-right text-muted"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <a class="" href="#">Kelas</a>
+
+                    </div>
+                    <ul>
+                        <li class="page_item">
+                            <a class="nav-link " href="{% url 'cbt:Kelas' %}">
+                                <i class="bi  bi-bar-chart-steps"></i>&nbsp;&nbsp;Kelas
+                            </a>
+                        </li>
+                        <li class="page_item">
+                            <a class="nav-link " href="{% url 'cbt:Rombel' %}">
+                                <i class="bi bi-subtract"></i>&nbsp;&nbsp;Rombel
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div class="accordion text-decoration-none">
+            <ul>
+                <li class="pagenav ">
+                    <div class="utama bg-light p-lg-2 rounded m-2 d-flex g-3">
+                        <i class="bi bi-chevron-right text-muted"></i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <a class="" href="#">User</a>
+
+                    </div>
+                    <ul>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="{% url 'cbt:user_staff' %}">
+                                <i class="bi bi-person fst-normal">&nbsp;&nbsp;&nbsp;Staff</i>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="{% url 'cbt:user_siswa' %}">
+                                <i class="bi bi-people-fill fst-normal">&nbsp;&nbsp;&nbsp;Siswa</i>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
         <li class="nav-item">
-            <a class="nav-link menu-1" href="{% url 'cbt:lembaga' %}">
-                <i class="bi bi-bank2 fst-normal">&nbsp;&nbsp;&nbsp;Lembaga</i>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link menu-1" href="{% url 'cbt:Kelas' %}">
-                <i class="bi bi-bar-chart-steps fst-normal">&nbsp;&nbsp;&nbsp;Kelas</i>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link menu-1" href="{% url 'cbt:user_staff' %}">
-                <i class="bi bi-person fst-normal">&nbsp;&nbsp;&nbsp;Staff</i>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link menu-1" href="{% url 'cbt:user_siswa' %}">
-                <i class="bi bi-person-check fst-normal">&nbsp;&nbsp;&nbsp;Siswa</i>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link menu-1" href="{% url 'cbt:backup_database' %}">
+            <a class="nav-link text-dark" href="{% url 'cbt:backup_database' %}">
                 <i class="bi bi-database fst-normal">&nbsp;&nbsp;&nbsp;backup</i>
             </a>
         </li>

@@ -38,3 +38,7 @@ def percentage(sisa_waktu, durasi_menit):
         return round(result, 1)
     except:
         return 0
+    
+@register.filter
+def get_opsi(soal, huruf):
+    return getattr(soal, huruf)
