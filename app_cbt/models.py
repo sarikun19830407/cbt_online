@@ -185,16 +185,16 @@ class Rombel_kelas (models.Model):
         return f"{self.Rombel}"
 
 class Pengguna (AbstractUser):
-    Nama_User = models.ForeignKey(settings.AUTH_USER_MODEL, editable=False, on_delete = models.CASCADE, blank=True, null=True)
-    Nama = models.CharField(max_length=100)
+    Nama_User = models.ForeignKey(settings.AUTH_USER_MODEL, editable=False, on_delete = models.CASCADE, blank=True, null=True, db_index=True)
+    Nama = models.CharField(max_length=100, db_index=True)
     Nama_Lembaga = models.ForeignKey(Lembaga,  on_delete = models.CASCADE, blank=True, null=True)
     Tikatan_Satuan_Lembaga =models.CharField(
         choices = TINKAT_CHOICES,
         default = '',
         max_length=30
         )
-    kelas= models.ForeignKey(Kelas,  on_delete = models.CASCADE, blank=True, null=True)
-    rombel = models.ForeignKey(Rombel_kelas,on_delete = models.CASCADE, blank=True, null=True)
+    kelas= models.ForeignKey(Kelas,  on_delete = models.CASCADE, blank=True, null=True, db_index=True)
+    rombel = models.ForeignKey(Rombel_kelas,on_delete = models.CASCADE, blank=True, null=True, db_index=True)
     auto_password = models.CharField(max_length=50, blank=True, null=True)
     is_siswa = models.BooleanField("Siswa",  default= False)
     
@@ -278,11 +278,7 @@ class DaftarNilai (models.Model):
     Tahun_Pelajaran = models.ForeignKey(TahunPelajaran, on_delete = models.CASCADE)
     status = models.BooleanField(default=False)
 
-    def __str__(self):
-        return self.Mapel
     
-    # def __str__(self):
-    #     return f"{self.Mapel.Nama_Mapel} - {self.Kelas} - {self.Rombel}"
     
     def __str__(self):
         return f"{self.Kelas} - {self.Rombel}"
@@ -326,16 +322,16 @@ class Soal_Siswa (models.Model):
 
 
 class Answer(models.Model):
-    Nama_User = models.ForeignKey(settings.AUTH_USER_MODEL, editable=False, on_delete=models.CASCADE)
-    Kode_Soal = models.ForeignKey(SetingSoal, on_delete=models.CASCADE)
-    Nomor_Soal = models.ForeignKey(Soal_Siswa, on_delete=models.CASCADE)
-    Kelas= models.ForeignKey(Kelas,  on_delete = models.CASCADE)
-    Rombel= models.ForeignKey(Rombel_kelas, on_delete = models.CASCADE)
+    Nama_User = models.ForeignKey(settings.AUTH_USER_MODEL, editable=False, on_delete=models.CASCADE, db_index=True)
+    Kode_Soal = models.ForeignKey(SetingSoal, on_delete=models.CASCADE, db_index=True)
+    Nomor_Soal = models.ForeignKey(Soal_Siswa, on_delete=models.CASCADE, db_index=True)
+    Kelas= models.ForeignKey(Kelas,  on_delete = models.CASCADE, db_index=True)
+    Rombel= models.ForeignKey(Rombel_kelas, on_delete = models.CASCADE, db_index=True)
     Jawaban = models.CharField(
         max_length=1,
         choices=KUNCI,
         blank=True,
-        null=True
+        null=True, db_index=True
     )
     Jawaban_Benar = models.BooleanField(default=False)
     Nilai_Siswa = models.PositiveIntegerField(blank=True, null=True)
@@ -359,15 +355,7 @@ class Answer(models.Model):
     def __str__(self):
         return f"{self.Nama_User.username} - {self.Kode_Soal.Kode_Soal} - Soal {self.Nomor_Soal.Nomor}"
     
-    def save(self, *args, **kwargs):
-        # Otomatis set jawaban benar dan ambil nilai dari Soal_Siswa
-        if self.Jawaban == self.Nomor_Soal.Kunci_Jawaban:
-            self.Jawaban_Benar = True
-            self.Nilai_Siswa = self.Nomor_Soal.Nilai  # Ambil nilai dari soal terkait
-        else:
-            self.Jawaban_Benar = False
-            self.Nilai_Siswa = 0
-        super().save(*args, **kwargs)
+    
     
     
 
