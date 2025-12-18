@@ -207,9 +207,15 @@ def tambah_kurikulum(request):
 @csrf_protect
 def Hapus_kurikulum (request, pk):
     try:
+        pk= int(pk)
+    except ValueError:
+        messages.error(request, "ID kurikulum tidak valid.")
+        return redirect(reverse('cbt:kurikulum_lembaga'))
+
+    try:
         Data = get_object_or_404(models.KurikulumLembaga, id=pk)
     except Http404:
-        messages.error(request, "Data pengguna tidak ditemukan.")
+        messages.error(request, "Data kurikulum tidak ditemukan.")
         return redirect(reverse('cbt:kurikulum_lembaga'))  # Redirect ke halaman daftar pengguna
     
 
@@ -234,6 +240,11 @@ def Hapus_kurikulum (request, pk):
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
 @csrf_protect
 def Ubah_kurikulum (request, pk):
+    try:
+        pk= int(pk)
+    except ValueError:
+        messages.error(request, "ID kurikulum tidak valid.")
+        return redirect(reverse('cbt:kurikulum_lembaga'))
     try:
         Data = get_object_or_404(models.KurikulumLembaga, id=pk)
     except Http404:
@@ -364,9 +375,14 @@ def tambah_tahun_pelajaran(request):
 @csrf_protect
 def Hapus_Tahun_Pelajaran (request, pk):
     try:
+        pk= int(pk)
+    except ValueError:
+        messages.error(request, "ID tahun pelajaran tidak valid.")
+        return redirect(reverse('cbt:tahun_pelajaran'))
+    try:
         Data = get_object_or_404(models.TahunPelajaran, id=pk)
     except Http404:
-        messages.error(request, "Data pengguna tidak ditemukan.")
+        messages.error(request, "Data tahun pelajaran tidak ditemukan.")
         return redirect(reverse('cbt:tahun_pelajaran'))  # Redirect ke halaman daftar pengguna
     
     
@@ -392,9 +408,14 @@ def Hapus_Tahun_Pelajaran (request, pk):
 @csrf_protect
 def Ubah_Tahun_Pelajaran (request, pk):
     try:
+        pk= int(pk)
+    except ValueError:
+        messages.error(request, "ID tahun pelajaran tidak valid.")
+        return redirect(reverse('cbt:tahun_pelajaran'))
+    try:
         Data = get_object_or_404(models.TahunPelajaran, id=pk)
     except Http404:
-        messages.error(request, "Data pengguna tidak ditemukan.")
+        messages.error(request, "Data tahun pelajaran tidak ditemukan.")
         return redirect(reverse('cbt:tahun_pelajaran'))  # Redirect ke halaman daftar pengguna
     
     
@@ -504,9 +525,14 @@ def tambah_lembaga(request):
 @csrf_protect
 def Hapus_lembaga (request, pk):
     try:
+        pk= int(pk)
+    except ValueError:
+        messages.error(request, "ID lembaga tidak valid.")
+        return redirect(reverse('cbt:lembaga'))
+    try:
         Data = get_object_or_404(models.Lembaga, id=pk)
     except Http404:
-        messages.error(request, "Data pengguna tidak ditemukan.")
+        messages.error(request, "Data lembaga tidak ditemukan.")
         return redirect(reverse('cbt:lembaga'))  # Redirect ke halaman daftar pengguna
     
 
@@ -530,9 +556,15 @@ def Hapus_lembaga (request, pk):
 @csrf_protect
 def Ubah_lembaga (request, pk):
     try:
+        pk= int(pk)
+    except ValueError:
+        messages.error(request, "ID lembaga tidak valid.")
+        return redirect(reverse('cbt:lembaga'))
+
+    try:
         Data = get_object_or_404(models.Lembaga, id=pk)
     except Http404:
-        messages.error(request, "Data pengguna tidak ditemukan.")
+        messages.error(request, "Data lembaga tidak ditemukan.")
         return redirect(reverse('cbt:lembaga'))  # Redirect ke halaman daftar pengguna
     
     form = forms.Form_lembaga(request.POST or None, instance=Data)
@@ -613,9 +645,15 @@ def tambah_kelas(request):
 @csrf_protect
 def hapus_kelas (request, pk):
     try:
+        pk= int(pk)
+    except ValueError:
+        messages.error(request, "ID kelas tidak valid.")
+        return redirect(reverse('cbt:Kelas'))
+
+    try:
         Data = get_object_or_404(models.Kelas, id=pk)
     except Http404:
-        messages.error(request, "Data pengguna tidak ditemukan.")
+        messages.error(request, "Data kelas tidak ditemukan.")
         return redirect(reverse('cbt:Kelas'))  # Redirect ke halaman daftar pengguna
     
     
@@ -639,9 +677,15 @@ def hapus_kelas (request, pk):
 @csrf_protect
 def Ubah_Kelas (request, pk):
     try:
+        pk= int(pk)
+    except ValueError:
+        messages.error(request, "ID kelas tidak valid.")
+        return redirect(reverse('cbt:Kelas'))
+
+    try:
         Data = get_object_or_404(models.Kelas, id=pk)
     except Http404:
-        messages.error(request, "Data pengguna tidak ditemukan.")
+        messages.error(request, "Data kelas tidak ditemukan.")
         return redirect(reverse('cbt:Kelas'))  # Redirect ke halaman daftar pengguna
     
     form = forms.FormKelas(request.POST or None, instance=Data)
@@ -713,9 +757,15 @@ def tambah_rombel(request):
 @csrf_protect
 def hapus_rombel (request, pk):
     try:
+        pk= int(pk)
+    except ValueError:
+        messages.error(request, "ID rombel tidak valid.")
+        return redirect(reverse('cbt:Rombel'))
+
+    try:
         Data = get_object_or_404(models.Rombel_kelas, id=pk)
     except Http404:
-        messages.error(request, "Data pengguna tidak ditemukan.")
+        messages.error(request, "Data rombel tidak ditemukan.")
         return redirect(reverse('cbt:Rombel'))  # Redirect ke halaman daftar pengguna
     
     
@@ -740,9 +790,15 @@ def hapus_rombel (request, pk):
 @csrf_protect
 def ubah_rombel (request, pk):
     try:
+        pk= int(pk)
+    except ValueError:
+        messages.error(request, "ID rombel tidak valid.")
+        return redirect(reverse('cbt:Rombel'))
+
+    try:
         Data = get_object_or_404(models.Rombel_kelas, id=pk)
     except Http404:
-        messages.error(request, "Data pengguna tidak ditemukan.")
+        messages.error(request, "Data rombel tidak ditemukan.")
         return redirect(reverse('cbt:Rombel'))  # Redirect ke halaman daftar pengguna
     
     
@@ -831,9 +887,15 @@ def tambah_pelajaran(request):
 @csrf_protect
 def Hapus_mapel (request, pk):
     try:
+        pk= int(pk)
+    except ValueError:
+        messages.error(request, "ID mata pelajaran tidak valid.")
+        return redirect(reverse('cbt:matapelajaran'))
+
+    try:
         Data = get_object_or_404(models.Matapelajaran, id=pk)
     except Http404:
-        messages.error(request, "Data pengguna tidak ditemukan.")
+        messages.error(request, "Data mata pelajaran tidak ditemukan.")
         return redirect(reverse('cbt:matapelajaran'))  # Redirect ke halaman daftar pengguna
     
 
@@ -858,9 +920,15 @@ def Hapus_mapel (request, pk):
 @csrf_protect
 def Ubah_Mata_Pelajaran (request, pk):
     try:
+        pk= int(pk)
+    except ValueError:
+        messages.error(request, "ID mata pelajaran tidak valid.")
+        return redirect(reverse('cbt:matapelajaran'))
+
+    try:
         Data = get_object_or_404(models.Matapelajaran, id=pk)
     except Http404:
-        messages.error(request, "Data pengguna tidak ditemukan.")
+        messages.error(request, "Data mata pelajaran tidak ditemukan.")
         return redirect(reverse('cbt:matapelajaran'))  # Redirect ke halaman daftar pengguna
     
     
@@ -974,6 +1042,12 @@ def tambah_user_staff(request):
 @csrf_protect
 def hapus_user_staff (request, pk):
     try:
+        pk = int(pk)
+    except ValueError:
+        messages.error(request, "ID user staff tidak valid.")
+        return redirect(reverse('cbt:user_staff'))
+
+    try:
         Data = get_object_or_404(models.Pengguna, id=pk)
     except Http404:
         messages.error(request, "Data pengguna tidak ditemukan.")
@@ -999,7 +1073,12 @@ def hapus_user_staff (request, pk):
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
 @csrf_protect
 def Ubah_user_staff (request, pk):
-    
+    try:
+        pk = int(pk)
+    except ValueError:
+        messages.error(request, "ID user staff tidak valid.")
+        return redirect(reverse('cbt:user_staff'))
+
     try:
         Data = get_object_or_404(models.Pengguna, id=pk)
     except Http404:
@@ -1213,6 +1292,12 @@ def hapus_user_siswa(request):
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
 @csrf_protect
 def Ubah_user_siswa(request, pk):
+    try:
+        pk = int(pk)
+    except ValueError:
+        messages.error(request, "ID user siswa tidak valid.")
+        return redirect(reverse('cbt:user_siswa'))
+
     try:
         Data = get_object_or_404(models.Pengguna, id=pk)
     except Http404:

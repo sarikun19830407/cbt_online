@@ -144,7 +144,7 @@ def staff(request):
         "data": "Home",
         "judul": "cbt-reset",
         "jumlah": jumlah,
-        "JumlahPenggunaActive": models.Pengguna.objects.filter(is_active=True, is_siswa=True).count(),
+        "JumlahPenggunaActive": users.filter(is_active=True, is_siswa=True).count(),
         "JmlPengguna": models.Pengguna.objects.filter(is_siswa=True).count(),
         "Data": Data,
         "cari": cari,
@@ -431,9 +431,15 @@ def hapus_setting_soal(request):
 @csrf_protect
 def Ubah_setting_soal (request, pk):
     try:
+        pk = int(pk)
+    except ValueError:
+        messages.error(request, "ID setting soal tidak valid.")
+        return redirect(reverse('cbt:setting_soal'))
+
+    try:
         Data = get_object_or_404(models.SetingSoal, id=pk)
     except Http404:
-        messages.error(request, "Data pengguna tidak ditemukan.")
+        messages.error(request, "Data setting soal tidak ditemukan.")
         return redirect(reverse('cbt:setting_soal'))  # Redirect ke halaman daftar pengguna
     
     if request.user.is_staff:
@@ -471,6 +477,12 @@ def Ubah_setting_soal (request, pk):
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
 @csrf_protect
 def buat_soal_siswa(request, pk):
+    try:
+        pk = int(pk)
+    except ValueError:
+        messages.error(request, "ID setting soal tidak valid.")
+        return redirect(reverse('cbt:setting_soal'))
+
     try:
         setting = get_object_or_404(models.SetingSoal, id=pk)
     except Http404:
@@ -545,18 +557,24 @@ def buat_soal_siswa(request, pk):
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
 @csrf_protect
 def hapus_soal (request, pk):
-    next_url = request.GET.get('next') or reverse('cbt:setting_soal')
+    # next_url = request.GET.get('next') or reverse('cbt:setting_soal')
+    try:
+        pk = int(pk)
+    except ValueError:
+        messages.error(request, "ID soal tidak valid.")
+        return redirect(reverse('cbt:setting_soal'))
+
     try:
         Data = get_object_or_404(models.Soal_Siswa, id=pk)
     except Http404:
         messages.error(request, "Data soal tidak ditemukan.")
-        return redirect(next_url)
+        return redirect(reverse('cbt:setting_soal'))
     
     if request.user.is_staff:
         # Pengguna provinsi hanya bisa mengedit dirinya sendiri
         if Data.Nama_User != request.user:
-            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
-            return redirect(next_url)
+            messages.error(request, "Anda hanya bisa hapus data Anda sendiri.")
+            return redirect(reverse('cbt:setting_soal'))
         
     next_url = reverse('cbt:buat_soal_siswa', kwargs={'pk': Data.Kode_Soal.pk})
     if request.method == "POST":
@@ -581,15 +599,21 @@ def hapus_soal (request, pk):
 def Ubah_soal(request, pk):
     next_url = request.GET.get('next') or reverse('cbt:setting_soal')
     try:
+        pk = int(pk)
+    except ValueError:
+        messages.error(request, "ID soal tidak valid.")
+        return redirect(reverse('cbt:setting_soal'))
+
+    try:
         Data = get_object_or_404(models.Soal_Siswa, id=pk)
     except Http404:
         messages.error(request, "Data soal tidak ditemukan.")
-        return redirect(next_url)
+        return redirect(reverse('cbt:setting_soal'))  # Redirect ke halaman daftar pengguna
 
     # Pastikan user hanya bisa edit soal miliknya
     if request.user.is_staff and Data.Nama_User != request.user:
         messages.error(request, "Anda hanya bisa mengedit soal Anda sendiri.")
-        return redirect(next_url)
+        return redirect(reverse('cbt:setting_soal'))
 
     # Ambil next URL (default ke setting soal jika tidak ada)
     
@@ -843,7 +867,16 @@ def download_template_soal(request):
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
 @csrf_protect
 def nilai_setingsoal(request, kode_soal):
-    seting_soal = get_object_or_404(models.SetingSoal, id=kode_soal)
+    try:
+        kode_soal = int(kode_soal)
+    except ValueError:
+        messages.error(request, "ID nilai siswa tidak valid.")
+        return redirect(reverse('cbt:setting_soal'))
+    try:
+        seting_soal = get_object_or_404(models.SetingSoal, id=kode_soal)
+    except Http404:
+        messages.error(request, "Data nilai siswa tidak ditemukan.")
+        return redirect(reverse('cbt:setting_soal'))  # Redirect ke halaman daftar pengguna
 
     kelas = seting_soal.Kelas
     mapel = seting_soal.Mapel
@@ -1014,61 +1047,6 @@ def export_nilai_excel_setting(request, kode_soal):
 
 
 
-# @login_required(login_url=settings.LOGIN_URL)
-# @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
-# @csrf_protect
-# def lihat_soal_siswa(request, pk):
-#     setting_soal_instance = get_object_or_404(models.SetingSoal, pk=pk)
-    
-#     cari = request.POST.get('cari', request.GET.get('cari', ''))
-#     items_per_page = request.GET.get('items_per_page', '30')
-    
-#     if items_per_page == 'all':
-#         items_per_page = 1000000
-#     else:
-#         try:
-#             items_per_page = int(items_per_page)
-#         except (ValueError, TypeError):
-#             items_per_page = 30
-
-#     # Filter berdasarkan Data soal
-#     data_list = models.Soal_Siswa.objects.filter(Nomor=Data).order_by('Nomor')
-
-#     if cari:
-#         data_list = data_list.filter(Soal__icontains=cari)  # cari di isi soal
-
-#     paginator = Paginator(data_list, items_per_page)
-#     page_number = request.GET.get('page', 1)
-
-#     try:
-#         Data = paginator.page(page_number)
-#     except PageNotAnInteger:
-#         Data = paginator.page(1)
-#     except EmptyPage:
-#         Data = paginator.page(paginator.num_pages)
-
-#     semua = str(items_per_page) if items_per_page != 1000000 else 'all'
-#     jumlah = data_list.count()
-    
-#     context = {
-#         "data": f"Lihat Soal ({setting_soal_instance.Kelas} - {setting_soal_instance.Mapel.Nama_Mapel})",
-#         "judul": f"Soal mmm",
-#         "Data": Data,
-#         "jumlah": jumlah,
-#         "cari": cari,
-#         "items_per_page": semua,
-#         "lembaga": "Soal Siswa",
-#         "placeholder": "Nomor",
-#         "icon": "bi bi-list-ul",
-#         "Data": Data,
-#         "link":reverse("cbt:setting_soal"),
-#     }
-
-#     return render(request, 'staff/list_soal_siswa.html', context)
-
-
-
-
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -1121,13 +1099,22 @@ def hapus_soal_pilih(request):
 
 
 
-# views.py
-
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
 @csrf_protect
 def ujicoba_soal(request, pk):
-    setting = get_object_or_404(models.SetingSoal, pk=pk)
+    try:
+        pk = int(pk)
+    except (ValueError, TypeError):
+        messages.error(request, "ID setting soal tidak valid.")
+        return redirect('cbt:setting_soal')
+
+    try:
+        setting = get_object_or_404(models.SetingSoal, pk=pk)
+    except Http404:
+        messages.error(request, "Data setting soal tidak ditemukan.")
+        return redirect('cbt:setting_soal')
+
     soal_list = models.Soal_Siswa.objects.filter(Kode_Soal=setting).order_by('Nomor')
 
     if request.method == 'POST':
@@ -1149,7 +1136,17 @@ def ujicoba_soal(request, pk):
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
 @csrf_protect
 def ujicoba_selesai(request, pk):
-    setting = get_object_or_404(models.SetingSoal, pk=pk)
+    try:
+        pk = int(pk)
+    except (ValueError, TypeError):
+        messages.error(request, "ID setting soal tidak valid.")
+        return redirect('cbt:setting_soal')
+
+    setting = models.SetingSoal.objects.filter(pk=pk).first()
+    if not setting:
+        messages.error(request, "Data setting soal tidak ditemukan.")
+        return redirect('cbt:setting_soal')
+    
     soal_list = models.Soal_Siswa.objects.filter(Kode_Soal=setting).order_by('Nomor')
     jawaban = request.session.get('ujicoba_jawaban', {})
 
@@ -1177,8 +1174,17 @@ def ujicoba_selesai(request, pk):
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
 @csrf_protect
 def lihat_soal_siswa(request, pk):
-    Data= get_object_or_404(models.SetingSoal, pk=pk)
-    kelas =Data.Kelas
+    try:
+        pk = int(pk)
+    except (ValueError, TypeError):
+        messages.error(request, "ID setting soal tidak valid.")
+        return redirect('cbt:setting_soal')
+    try:
+        Data = get_object_or_404(models.SetingSoal, pk=pk)
+    except Http404:
+        messages.error(request, "Data setting soal tidak ditemukan.")
+        return redirect('cbt:setting_soal')
+    kelas = Data.Kelas
     mapel = Data.Mapel
     
     cari = request.POST.get('cari', request.GET.get('cari', ''))
@@ -1228,6 +1234,197 @@ def lihat_soal_siswa(request, pk):
     }
 
     return render(request, 'staff/list_soal_siswa.html', context)
+
+
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+@csrf_protect
+def daftar_nilai(request):
+    cari = request.POST.get('cari', request.GET.get('cari', ''))
+    items_per_page = request.GET.get('items_per_page', '30')
+    
+    if items_per_page == 'all':
+        items_per_page = 1000000
+    else:
+        try:
+            items_per_page = int(items_per_page)
+        except (ValueError, TypeError):
+            items_per_page = 30
+
+    # ✅ Ambil semester aktif pertama (status=True)
+    semester_obj = models.SEMESTER.objects.filter(status=True).first()
+    # semester = semester_obj.Semester if semester_obj else None
+
+    # ✅ Ambil tahun pelajaran aktif
+    tahun_aktif = models.TahunPelajaran.objects.filter(status=True).first()
+
+    if semester_obj and tahun_aktif:
+        data_list = models.DaftarNilai.objects.filter(
+            Semester=semester_obj,
+            Tahun_Pelajaran=tahun_aktif
+        ).order_by('Kelas__kelas', 'Rombel__Rombel', 'Mapel__Nama_Mapel')
+    else:
+        data_list = models.DaftarNilai.objects.none()
+
+
+    # ✅ Filter pencarian berdasarkan kelas
+    if cari:
+        data_list = data_list.filter(Kelas__Kelas__icontains=cari)
+
+    # ✅ Paginasi
+    paginator = Paginator(data_list, items_per_page)
+    page_number = request.GET.get('page', 1)
+
+    try:
+        Data = paginator.page(page_number)
+    except PageNotAnInteger:
+        Data = paginator.page(1)
+    except EmptyPage:
+        Data = paginator.page(paginator.num_pages)
+
+    semua = str(items_per_page) if items_per_page != 1000000 else 'all'
+    Data.start_index = (Data.start_index() - 1)
+    jumlah = data_list.count()
+    
+    context = {
+        "data": f"Daftar Nilai Semester {semester_obj if semester_obj else '-'} TP {tahun_aktif if tahun_aktif else '-'}",
+        "judul": "Daftar Nilai",
+        "Data": Data,
+        "jumlah": jumlah,
+        "cari": cari,
+        "semester":  semester_obj,
+        "items_per_page": semua,
+        "lembaga": "Daftar Nilai",
+        "placeholder": "Kelas",
+        "icon": "bi bi-list-ul",
+        "link": reverse("cbt:setting_soal"),
+
+    }
+
+    return render(request, 'staff/list_daftar_nilai.html', context)
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+@csrf_protect
+def tambah_daftar_nilai(request):
+    form = forms_staff.Daftar_nilai(request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            form.instance.Nama_User = request.user
+            form.instance.Nama_Lembaga = request.user.Nama_Lembaga
+            semester_instance = get_object_or_404(models.SEMESTER, status=True)
+            form.instance.Semester = semester_instance
+            tahun_aktif = get_object_or_404(models.TahunPelajaran, status=True)
+            form.instance.Tahun_Pelajaran = tahun_aktif
+            form.save()
+            messages.success(request, 'Data berhasil ditambahkan')
+            return redirect(reverse('cbt:daftar_nilai'))
+        else:
+            messages.error(request, 'Data masih salah.')
+    context = {
+        "data": "Tambah daftar nilai",
+        "NamaForm": "Form Tambah daftar nilai",
+        "judul": "CBT - daftar nilai",
+        "link": reverse("cbt:daftar_nilai"),
+        "form": form,
+        "icon": "bi bi-plus-circle"
+    }
+    return render(request, 'super_admin/form.html', context)
+
+
+
+
+
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+@csrf_protect
+def ubah_daftar_nilai (request, pk):
+    try:
+        pk = int(pk)
+    except ValueError:
+        messages.error(request, "ID daftar nilai tidak valid.")
+        return redirect(reverse('cbt:daftar_nilai'))
+    try:
+        Data = get_object_or_404(models.DaftarNilai, id=pk)
+    except Http404:
+        messages.error(request, "Data daftar tidak ditemukan.")
+        return redirect(reverse('cbt:daftar_nilai'))  # Redirect ke halaman daftar pengguna
+    
+    if request.user.is_staff:
+        # Pengguna provinsi hanya bisa mengedit dirinya sendiri
+        if Data.Nama_User != request.user:
+            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
+            return redirect(reverse('cbt:daftar_nilai'))
+    form = forms_staff.Daftar_nilai(request.POST or None, instance=Data)
+    if request.method == "POST":
+        if form.is_valid():
+            form.save()
+            messages.add_message(request, messages.INFO, 'Data telah berhasil diubah')
+            return redirect(reverse('cbt:daftar_nilai'))
+        else:
+            messages.error(request, 'Data Masih Salah.')
+    context = {
+        "data" : f"Ubah Soal {Data.Mapel}",
+        "NamaForm": "Form ubah Setting Soal",
+        "judul":"CBT-Setting Soal",
+        "link":reverse("cbt:daftar_nilai"),
+        "form":form,
+        'icon':"bi bi-pen"
+        }
+    return render (request, 'staff/form.html', context)
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+@csrf_protect
+def hapus_daftar_nilai(request):
+    
+    if request.method == "POST":
+        selected_ids = request.POST.getlist('selected_ids')
+        if not selected_ids:
+            messages.warning(request, 'Tidak ada data yang dipilih untuk dihapus.')
+            return redirect(reverse('cbt:daftar_nilai'))  
+        
+        Data = models.DaftarNilai.objects.filter(id__in=selected_ids)
+        if not Data.exists():
+            raise Http404("Data Madrasah tidak ditemukan.")
+        
+        # Pemeriksaan kepemilikan data
+        for data in Data:
+            if data.Nama_User != request.user:
+                messages.error(request, "Anda tidak memiliki hak akses untuk menghapus data ini.")
+                return redirect(reverse('cbt:daftar_nilai'))
+        
+        if 'confirm' in request.POST:
+            Data.delete()  
+            messages.success(request, 'Data telah berhasil dihapus.')
+            return redirect(reverse('cbt:daftar_nilai')) 
+        
+        context = {
+            "data" : f"Hapus {Data.count()} Daftar Nilai",
+            "NamaForm": "Form Hapus Madrsah",
+            "judul":"PPDB Hapus Madrsah",
+            "link":reverse("cbt:daftar_nilai"),
+            "hapus": reverse('cbt:hapus_daftar_nilai'),
+            "Data": Data,
+            "Hapus":f"{Data.count()} Daftar Nilai",
+            "ket":"Madrasah",
+            "icon":"bi bi-trash3"
+        }
+        return render(request, 'super_admin/hapu_data.html', context)
+    
+    return redirect(reverse('cbt:daftar_nilai'))
+
+
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -1669,185 +1866,7 @@ def export_jawaban_siswa_pdf(request, id_daftarnilai):
 
 
 
-@login_required(login_url=settings.LOGIN_URL)
-@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
-@csrf_protect
-def daftar_nilai(request):
-    cari = request.POST.get('cari', request.GET.get('cari', ''))
-    items_per_page = request.GET.get('items_per_page', '30')
-    
-    if items_per_page == 'all':
-        items_per_page = 1000000
-    else:
-        try:
-            items_per_page = int(items_per_page)
-        except (ValueError, TypeError):
-            items_per_page = 30
 
-    # ✅ Ambil semester aktif pertama (status=True)
-    semester_obj = models.SEMESTER.objects.filter(status=True).first()
-    # semester = semester_obj.Semester if semester_obj else None
-
-    # ✅ Ambil tahun pelajaran aktif
-    tahun_aktif = models.TahunPelajaran.objects.filter(status=True).first()
-
-    if semester_obj and tahun_aktif:
-        data_list = models.DaftarNilai.objects.filter(
-            Semester=semester_obj,
-            Tahun_Pelajaran=tahun_aktif
-        ).order_by('Kelas__kelas', 'Rombel__Rombel', 'Mapel__Nama_Mapel')
-    else:
-        data_list = models.DaftarNilai.objects.none()
-
-
-    # ✅ Filter pencarian berdasarkan kelas
-    if cari:
-        data_list = data_list.filter(Kelas__Kelas__icontains=cari)
-
-    # ✅ Paginasi
-    paginator = Paginator(data_list, items_per_page)
-    page_number = request.GET.get('page', 1)
-
-    try:
-        Data = paginator.page(page_number)
-    except PageNotAnInteger:
-        Data = paginator.page(1)
-    except EmptyPage:
-        Data = paginator.page(paginator.num_pages)
-
-    semua = str(items_per_page) if items_per_page != 1000000 else 'all'
-    Data.start_index = (Data.start_index() - 1)
-    jumlah = data_list.count()
-    
-    context = {
-        "data": f"Daftar Nilai Semester {semester_obj if semester_obj else '-'} TP {tahun_aktif if tahun_aktif else '-'}",
-        "judul": "Daftar Nilai",
-        "Data": Data,
-        "jumlah": jumlah,
-        "cari": cari,
-        "semester":  semester_obj,
-        "items_per_page": semua,
-        "lembaga": "Daftar Nilai",
-        "placeholder": "Kelas",
-        "icon": "bi bi-list-ul",
-        "link": reverse("cbt:setting_soal"),
-
-    }
-
-    return render(request, 'staff/list_daftar_nilai.html', context)
-
-
-
-@login_required(login_url=settings.LOGIN_URL)
-@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
-@csrf_protect
-def tambah_daftar_nilai(request):
-    form = forms_staff.Daftar_nilai(request.POST or None)
-    if request.method == "POST":
-        if form.is_valid():
-            form.instance.Nama_User = request.user
-            form.instance.Nama_Lembaga = request.user.Nama_Lembaga
-            semester_instance = get_object_or_404(models.SEMESTER, status=True)
-            form.instance.Semester = semester_instance
-            tahun_aktif = get_object_or_404(models.TahunPelajaran, status=True)
-            form.instance.Tahun_Pelajaran = tahun_aktif
-            form.save()
-            messages.success(request, 'Data berhasil ditambahkan')
-            return redirect(reverse('cbt:daftar_nilai'))
-        else:
-            messages.error(request, 'Data masih salah.')
-    context = {
-        "data": "Tambah daftar nilai",
-        "NamaForm": "Form Tambah daftar nilai",
-        "judul": "CBT - daftar nilai",
-        "link": reverse("cbt:daftar_nilai"),
-        "form": form,
-        "icon": "bi bi-plus-circle"
-    }
-    return render(request, 'super_admin/form.html', context)
-
-
-
-
-
-
-
-
-@login_required(login_url=settings.LOGIN_URL)
-@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
-@csrf_protect
-def ubah_daftar_nilai (request, pk):
-    try:
-        Data = get_object_or_404(models.DaftarNilai, id=pk)
-    except Http404:
-        messages.error(request, "Data pengguna tidak ditemukan.")
-        return redirect(reverse('cbt:daftar_nilai'))  # Redirect ke halaman daftar pengguna
-    
-    if request.user.is_staff:
-        # Pengguna provinsi hanya bisa mengedit dirinya sendiri
-        if Data.Nama_User != request.user:
-            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
-            return redirect(reverse('cbt:daftar_nilai'))
-    form = forms_staff.Daftar_nilai(request.POST or None, instance=Data)
-    if request.method == "POST":
-        if form.is_valid():
-            form.save()
-            messages.add_message(request, messages.INFO, 'Data telah berhasil diubah')
-            return redirect(reverse('cbt:daftar_nilai'))
-        else:
-            messages.error(request, 'Data Masih Salah.')
-    context = {
-        "data" : f"Ubah Soal {Data.Mapel}",
-        "NamaForm": "Form ubah Setting Soal",
-        "judul":"CBT-Setting Soal",
-        "link":reverse("cbt:daftar_nilai"),
-        "form":form,
-        'icon':"bi bi-pen"
-        }
-    return render (request, 'staff/form.html', context)
-
-
-
-@login_required(login_url=settings.LOGIN_URL)
-@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
-@csrf_protect
-def hapus_daftar_nilai(request):
-    
-    if request.method == "POST":
-        selected_ids = request.POST.getlist('selected_ids')
-        if not selected_ids:
-            messages.warning(request, 'Tidak ada data yang dipilih untuk dihapus.')
-            return redirect(reverse('cbt:daftar_nilai'))  
-        
-        Data = models.DaftarNilai.objects.filter(id__in=selected_ids)
-        if not Data.exists():
-            raise Http404("Data Madrasah tidak ditemukan.")
-        
-        # Pemeriksaan kepemilikan data
-        for data in Data:
-            if data.Nama_User != request.user:
-                messages.error(request, "Anda tidak memiliki hak akses untuk menghapus data ini.")
-                return redirect(reverse('cbt:daftar_nilai'))
-        
-        if 'confirm' in request.POST:
-            Data.delete()  
-            messages.success(request, 'Data telah berhasil dihapus.')
-            return redirect(reverse('cbt:daftar_nilai')) 
-        
-        context = {
-            "data" : f"Hapus {Data.count()} Daftar Nilai",
-            "NamaForm": "Form Hapus Madrsah",
-            "judul":"PPDB Hapus Madrsah",
-            "link":reverse("cbt:daftar_nilai"),
-            "hapus": reverse('cbt:hapus_daftar_nilai'),
-            "Data": Data,
-            "Hapus":f"{Data.count()} Daftar Nilai",
-            "ket":"Madrasah",
-            "icon":"bi bi-trash3"
-        }
-        return render(request, 'super_admin/hapu_data.html', context)
-    
-    return redirect(reverse('cbt:daftar_nilai'))
 
 
 
@@ -1866,9 +1885,11 @@ def hapus_daftar_nilai(request):
 @csrf_protect
 def daftar_nilai_view(request, id_daftarnilai):
     try:
-        # Ambil objek DaftarNilai yang dicari.
-        # Catatan: Karena DaftarNilai memiliki banyak Foreign Key, lebih baik menggunakan 
-        # select_related untuk menghindari query tambahan di awal.
+        id_daftarnilai = int(id_daftarnilai)
+    except (ValueError, TypeError):
+        messages.error(request, "ID daftar nilai tidak valid.")
+        return redirect(reverse('cbt:daftar_nilai'))
+    try:
         daftar_nilai = get_object_or_404(
             models.DaftarNilai.objects.select_related(
                 'Kelas', 'Rombel', 'Mapel', 'Nama_Lembaga', 'Semester', 'Tahun_Pelajaran'
@@ -2108,7 +2129,16 @@ def export_daftar_nilai_excel(request, id_daftarnilai):
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
 @csrf_protect
 def export_daftar_nilai_pdf(request, id_daftarnilai):
-    daftar_nilai = get_object_or_404(models.DaftarNilai, id=id_daftarnilai)
+    try:
+        id_daftarnilai = int(id_daftarnilai)
+    except (ValueError, TypeError):
+        messages.error(request, "ID daftar nilai tidak valid.")
+        return redirect(reverse('cbt:daftar_nilai'))
+    try:
+        daftar_nilai = get_object_or_404(models.DaftarNilai, id=id_daftarnilai)
+    except Http404:
+        messages.error(request, "Daftar nilai tidak ditemukan.")
+        return redirect(reverse('cbt:daftar_nilai'))
 
     if request.user.is_staff and daftar_nilai.Nama_User != request.user:
         messages.error(request, "Anda hanya bisa mengunduh data Anda sendiri.")
@@ -2332,7 +2362,11 @@ def arsip_daftar_nilai(request, pk):
             items_per_page = 30
 
     # Ambil tahun pelajaran berdasarkan pk
-    
+    try:
+        pk = int(pk)
+    except (ValueError, TypeError):
+        messages.error(request, "ID tahun pelajaran tidak valid.")
+        return redirect(reverse("cbt:arsip_soal"))
     try:
         tahun_aktif = get_object_or_404(models.TahunPelajaran, id=pk)
     except Http404:
@@ -2447,6 +2481,12 @@ def hapus_arsip_daftar_nilai(request):
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
 @csrf_protect
 def arsip_jawaban_siswa(request, pk):
+    try:
+        pk = int(pk)
+    except (ValueError, TypeError):
+        messages.error(request, "ID daftar nilai tidak valid.")
+        return redirect(reverse('cbt:daftar_nilai'))
+
     try:
         daftar_nilai = get_object_or_404(models.DaftarNilai, id=pk)
     except Http404:
@@ -2574,6 +2614,12 @@ def arsip_jawaban_siswa(request, pk):
 @csrf_protect
 def arsip_daftar_nilai_view(request, pk):
     try:
+        pk = int(pk)
+    except (ValueError, TypeError):
+        messages.error(request, "ID daftar nilai tidak valid.")
+        return redirect(reverse('cbt:daftar_nilai'))
+
+    try:
         daftar_nilai = get_object_or_404(models.DaftarNilai, id=pk)
     except Http404:
         messages.error(request, "Daftar nilai tidak ditemukan.")
@@ -2668,7 +2714,16 @@ def arsip_daftar_nilai_view(request, pk):
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
 @csrf_protect
 def lihat_arsip_soal_siswa(request, pk):
-    Data = get_object_or_404(models.SetingSoal, pk=pk)
+    try:
+        pk = int(pk)
+    except (ValueError, TypeError):
+        messages.error(request, "ID data soal tidak valid.")
+        return redirect(reverse("cbt:arsip_soal"))
+    try:
+        Data = get_object_or_404(models.SetingSoal, pk=pk)
+    except Http404:
+        messages.error(request, "Data soal tidak ditemukan.")
+        return redirect(reverse("cbt:arsip_soal"))
     
     cari = request.POST.get('cari', request.GET.get('cari', ''))
     items_per_page = request.GET.get('items_per_page', '30')
