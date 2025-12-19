@@ -281,7 +281,6 @@
                                             <td width="40">
                                                 <input class="form-check-input" type="radio"
                                                     name="jawaban" value="{{ opsi }}"
-                                                    data-soal-id="{{ current_soal.id }}"
                                                     {% if jawaban.Jawaban == opsi %}checked{% endif %}>
                                             </td>
                                             <td width="30"><strong>{{ opsi }}.</strong></td>
@@ -351,7 +350,7 @@
                                 <div class="d-flex justify-content-between gap-3 container-fluid">
                                     {% if semua_terjawab %}
                                         <button type="submit" name="finish_exam"
-                                                class="btn btn-success " id="btnSelesai">
+                                                class="btn btn-success ">
                                             <i class="bi bi-check-circle "></i>
                                             Simpan & Selesai
                                         </button>
@@ -383,411 +382,259 @@
     {% include "setting/js.html" %}
 
     <script>
+        // Timer Ujian Lengkap dengan Auto Logout
         document.addEventListener('DOMContentLoaded', function () {
-            // ======================
-            // KONSTANTA & STATE GLOBAL
-            // ======================
-            const AUTOSAVE_INTERVAL = 10000;
-            const BATCH_SIZE = 5;
-            const kodeSoal = "{{ seting_soal.Kode_Soal }}";
-            const csrfToken = "{{ csrf_token }}";
-            
-            // State variables
-            let jawabanCache = {};
-            let jawabanDikirim = {};
-            let pendingChanges = new Set();
-            let remainingSeconds = {{ total_detik }};
-            let timerInterval;
-            let autosaveInterval;
-            let isExamFinished = false;
-            let isSubmitting = false;
-            let isNavigatingInternally = false; // FLAG BARU
+            // Elemen UI
+            const timerElement = document.getElementById('timer');
+            const mobileTimerElement = document.getElementById('mobile-timer') || timerElement;
+            const examForm = document.querySelector('form[method="post"]');
 
-            // ======================
-            // 1. FUNGSI TIMER (TETAP SAMA)
-            // ======================
-            function formatTime(seconds) {
-                const hours = Math.floor(seconds / 3600);
-                const minutes = Math.floor((seconds % 3600) / 60);
-                const secs = seconds % 60;
-                return [
-                    hours.toString().padStart(2, '0'),
-                    minutes.toString().padStart(2, '0'),
-                    secs.toString().padStart(2, '0')
-                ].join(':');
+            // Konfigurasi Ujian
+            const examCode = '{{ seting_soal.Kode_Soal }}';
+            const totalSeconds = {{ total_detik }};
+        const endTime = new Date('{{ waktu_berakhir }}');
+        const logoutUrl = "{% url 'cbt:app_cbt' %}";
+        const submitUrl = "{% url 'cbt:selesai_ujian' kode_soal=seting_soal.Kode_Soal %}";
+
+        // State Timer
+        let remainingSeconds = totalSeconds;
+        let timerInterval;
+        let isExamFinished = false;
+
+        // Format waktu HH:MM:SS
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return [
+                hours.toString().padStart(2, '0'),
+                minutes.toString().padStart(2, '0'),
+                secs.toString().padStart(2, '0')
+            ].join(':');
+        }
+
+        // Update tampilan timer
+        function updateTimerDisplay(seconds) {
+            const timeString = formatTime(seconds);
+            timerElement.textContent = timeString;
+            if (mobileTimerElement) {
+                mobileTimerElement.textContent = timeString;
             }
 
-            function updateTimerDisplay(seconds) {
-                const timeString = formatTime(seconds);
-                const timerElement = document.getElementById('timer');
-                const mobileTimerElement = document.getElementById('mobile-timer');
-                
-                if (timerElement) timerElement.textContent = timeString;
-                if (mobileTimerElement) mobileTimerElement.textContent = timeString;
+            // Ubah warna saat waktu hampir habis
+            if (seconds < 300) { // 5 menit terakhir
+                timerElement.classList.add('text-danger', 'fw-bold');
+                if (mobileTimerElement) {
+                    mobileTimerElement.classList.add('text-danger', 'fw-bold');
+                }
 
-                if (seconds < 300) {
-                    const elements = [timerElement, mobileTimerElement].filter(el => el);
-                    elements.forEach(el => el.classList.add('text-danger', 'fw-bold'));
-                    if (seconds === 60) showAlert('Waktu tersisa 1 menit!');
+                // Peringatan 1 menit terakhir
+                if (seconds === 60) {
+                    showAlert('Waktu tersisa 1 menit!');
                 }
             }
+        }
 
-            function showAlert(message) {
-                const existingAlert = document.querySelector('.alert[role="alert"]');
-                if (existingAlert) existingAlert.remove();
-
-                const alertHtml = `
+        // Tampilkan modal peringatan
+        function showAlert(message) {
+            const alertHtml = `
                     <div class="position-fixed top-0 start-0 w-100 alert alert-danger alert-dismissible fade show" role="alert" style="z-index: 9999">
                         <strong>Peringatan!</strong> ${message}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
-                `;
-                document.body.insertAdjacentHTML('afterbegin', alertHtml);
-                
+                    `;
+            document.body.insertAdjacentHTML('afterbegin', alertHtml);
+        }
+
+        // Handle waktu habis
+        function handleTimeExpired() {
+            if (isExamFinished) return;
+            isExamFinished = true;
+
+            clearInterval(timerInterval);
+            updateTimerDisplay(0);
+
+            // Nonaktifkan form
+            if (examForm) {
+                examForm.querySelectorAll('input, button').forEach(el => {
+                    el.disabled = true;
+                });
+            }
+
+            // Tampilkan modal fullscreen
+            const modalHtml = `
+                    <div class="modal fade" id="timeoutModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title">Waktu Ujian Habis</h5>
+                                </div>
+                                <div class="modal-body text-center py-4">
+                                    <i class="bi bi-exclamation-triangle-fill text-danger display-4 mb-3"></i>
+                                    <p class="fs-5">Waktu ujian Anda telah berakhir!</p>
+                                    <p>Anda akan diarahkan ke halaman logout secara otomatis.</p>
+                                </div>
+                                <div class="modal-footer justify-content-center">
+                                    <a href="${logoutUrl}" class="btn btn-primary px-4">
+                                        <i class="bi bi-box-arrow-right me-2"></i>OK
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            const modal = new bootstrap.Modal(document.getElementById('timeoutModal'));
+            modal.show();
+
+            // Auto submit jawaban dan logout
+            setTimeout(() => {
+                if (examForm) {
+                    // Buat hidden input untuk trigger submit
+                    const finishInput = document.createElement('input');
+                    finishInput.type = 'hidden';
+                    finishInput.name = 'finish';
+                    examForm.appendChild(finishInput);
+                    examForm.submit();
+                }
+
+                // Redirect ke logout setelah 3 detik
                 setTimeout(() => {
-                    const alert = document.querySelector('.alert[role="alert"]');
-                    if (alert) alert.remove();
-                }, 5000);
-            }
+                    localStorage.removeItem(`ujian_timer_${examCode}`);
+                    window.location.href = logoutUrl;
+                }, 3000);
+            }, 5000);
+        }
 
-            // ======================
-            // 2. SISTEM CACHE JAWABAN
-            // ======================
-            function simpanKeCache(soalId, jawaban) {
-                if (jawabanDikirim[soalId] === jawaban) {
-                    pendingChanges.delete(soalId);
-                    delete jawabanCache[soalId];
-                    return false;
-                }
-                
-                jawabanCache[soalId] = jawaban;
-                pendingChanges.add(soalId);
-                
-                // Auto-save langsung untuk jawaban saat ini (opsional)
-                // Tapi tetap di cache untuk batch processing nanti
-                return true;
-            }
+        // Simpan progress ke localStorage
+        function saveExamProgress() {
+            localStorage.setItem(`ujian_timer_${examCode}`, JSON.stringify({
+                end_time: endTime.toISOString(),
+                remaining: remainingSeconds
+            }));
+        }
 
-            function kirimBatchKeServer() {
-                if (isSubmitting || isExamFinished || pendingChanges.size === 0) {
-                    return;
-                }
+        // Load progress dari localStorage
+        function loadExamProgress() {
+            const savedData = localStorage.getItem(`ujian_timer_${examCode}`);
+            if (savedData) {
+                try {
+                    const { end_time, remaining } = JSON.parse(savedData);
+                    const now = new Date();
+                    const savedEndTime = new Date(end_time);
 
-                const batchToSend = {};
-                let count = 0;
-                
-                for (const soalId of pendingChanges) {
-                    if (count >= BATCH_SIZE) break;
-                    if (jawabanCache[soalId]) {
-                        batchToSend[soalId] = jawabanCache[soalId];
-                        count++;
-                    }
-                }
-
-                if (Object.keys(batchToSend).length === 0) return;
-
-                isSubmitting = true;
-                
-                fetch("{% url 'cbt:submit_batch_jawaban' %}", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRFToken": csrfToken
-                    },
-                    body: JSON.stringify({
-                        kode_soal: kodeSoal,
-                        jawaban: batchToSend
-                    })
-                })
-                .then(res => {
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    return res.json();
-                })
-                .then(data => {
-                    if (data.status === 'ok') {
-                        Object.keys(batchToSend).forEach(soalId => {
-                            jawabanDikirim[soalId] = batchToSend[soalId];
-                            pendingChanges.delete(soalId);
-                            delete jawabanCache[soalId];
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Batch send error:', error);
-                })
-                .finally(() => {
-                    isSubmitting = false;
-                });
-            }
-
-            // ======================
-            // 3. SUBMIT SEMUA SEKALIGUS
-            // ======================
-            function submitSemuaJawaban() {
-                return new Promise((resolve, reject) => {
-                    if (isSubmitting) {
-                        resolve(false);
-                        return;
-                    }
-
-                    isSubmitting = true;
-
-                    const semuaJawaban = {};
-                    
-                    document.querySelectorAll('input[name="jawaban"]').forEach(el => {
-                        if (el.checked) {
-                            const soalId = el.dataset.soalId;
-                            semuaJawaban[soalId] = el.value;
-                            simpanKeCache(soalId, el.value);
+                    if (now < savedEndTime) {
+                        const newRemaining = Math.floor((savedEndTime - now) / 1000);
+                        if (newRemaining > 0 && newRemaining < remainingSeconds) {
+                            return newRemaining;
                         }
-                    });
+                    }
+                } catch (e) {
+                    console.error('Error loading exam progress:', e);
+                }
+            }
+            return remainingSeconds;
+        }
 
-                    Object.keys(jawabanCache).forEach(soalId => {
-                        if (!semuaJawaban[soalId]) {
-                            semuaJawaban[soalId] = jawabanCache[soalId];
+        // Deteksi device type
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        // Main timer function
+        function initExamTimer() {
+            // Load saved progress
+            remainingSeconds = loadExamProgress();
+            updateTimerDisplay(remainingSeconds);
+
+            // Start timer
+            if (isMobile) {
+                // Gunakan requestAnimationFrame untuk mobile
+                let lastUpdate = Date.now();
+
+                function mobileTimerUpdate() {
+                    const now = Date.now();
+                    const delta = now - lastUpdate;
+
+                    if (delta >= 1000) {
+                        remainingSeconds--;
+                        updateTimerDisplay(remainingSeconds);
+                        lastUpdate = now - (delta % 1000);
+
+                        // Simpan progress setiap 10 detik
+                        if (remainingSeconds % 10 === 0) {
+                            saveExamProgress();
                         }
-                    });
 
-                    if (Object.keys(semuaJawaban).length === 0) {
-                        isSubmitting = false;
-                        resolve(true);
-                        return;
+                        if (remainingSeconds <= 0) {
+                            handleTimeExpired();
+                            return;
+                        }
                     }
 
-                    fetch("{% url 'cbt:submit_semua_jawaban' %}", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRFToken": csrfToken
-                        },
-                        body: JSON.stringify({
-                            kode_soal: kodeSoal,
-                            jawaban: semuaJawaban
-                        })
-                    })
-                    .then(res => {
-                        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                        return res.json();
-                    })
-                    .then(data => {
-                        if (data.status === 'ok') {
-                            jawabanCache = {};
-                            jawabanDikirim = {};
-                            pendingChanges.clear();
-                            resolve(true);
-                        } else {
-                            reject(data.message || 'Gagal menyimpan');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Submit semua error:', error);
-                        reject(error);
-                    })
-                    .finally(() => {
-                        isSubmitting = false;
-                    });
-                });
-            }
+                    if (!isExamFinished) {
+                        requestAnimationFrame(mobileTimerUpdate);
+                    }
+                }
 
-            // ======================
-            // 4. HANDLE WAKTU HABIS
-            // ======================
-            function handleTimeExpired() {
-                if (isExamFinished) return;
-                isExamFinished = true;
-
-                clearInterval(timerInterval);
-                clearInterval(autosaveInterval);
-                updateTimerDisplay(0);
-
-                isNavigatingInternally = true; // Tandai sebagai navigasi internal
-                
-                submitSemuaJawaban()
-                    .then(() => {
-                        window.location.href = "{% url 'cbt:selesai_ujian' kode_soal=seting_soal.Kode_Soal %}";
-                    })
-                    .catch(() => {
-                        window.location.href = "{% url 'cbt:selesai_ujian' kode_soal=seting_soal.Kode_Soal %}";
-                    });
-            }
-
-            // ======================
-            // 5. INISIALISASI SISTEM
-            // ======================
-            function initExamSystem() {
-                // Timer
-                updateTimerDisplay(remainingSeconds);
-                
+                requestAnimationFrame(mobileTimerUpdate);
+            } else {
+                // Gunakan setInterval untuk desktop
                 timerInterval = setInterval(() => {
                     remainingSeconds--;
                     updateTimerDisplay(remainingSeconds);
-                    if (remainingSeconds <= 0) handleTimeExpired();
+
+                    // Simpan progress setiap 10 detik
+                    if (remainingSeconds % 10 === 0) {
+                        saveExamProgress();
+                    }
+
+                    if (remainingSeconds <= 0) {
+                        handleTimeExpired();
+                    }
                 }, 1000);
-
-                // Autosave Batch
-                autosaveInterval = setInterval(() => {
-                    if (pendingChanges.size > 0) {
-                        kirimBatchKeServer();
-                    }
-                }, AUTOSAVE_INTERVAL);
-
-                // Event listener untuk jawaban
-                document.querySelectorAll('input[name="jawaban"]').forEach(el => {
-                    el.addEventListener('change', () => {
-                        const soalId = el.dataset.soalId;
-                        const jawaban = el.value;
-                        simpanKeCache(soalId, jawaban);
-                    });
-                });
-
-                // ==============================================
-                // PERBAIKAN: Handle form submit untuk navigasi
-                // ==============================================
-                const examForm = document.querySelector('form[method="post"]');
-                if (examForm) {
-                    examForm.addEventListener('submit', function(e) {
-                        // Tandai sebagai navigasi internal saat submit form
-                        isNavigatingInternally = true;
-                        
-                        // Simpan jawaban yang aktif sebelum navigasi
-                        const activeAnswer = document.querySelector('input[name="jawaban"]:checked');
-                        if (activeAnswer) {
-                            const soalId = activeAnswer.dataset.soalId;
-                            const jawaban = activeAnswer.value;
-                            simpanKeCache(soalId, jawaban);
-                            
-                            // Kirim langsung jawaban aktif ini (tidak perlu tunggu batch)
-                            // Ini opsional, bisa dihapus jika ingin tetap pakai batch saja
-                            fetch("{% url 'cbt:autosave_jawaban' %}", {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/x-www-form-urlencoded",
-                                    "X-CSRFToken": csrfToken
-                                },
-                                body: new URLSearchParams({
-                                    soal_id: soalId,
-                                    kode_soal: kodeSoal,
-                                    jawaban: jawaban
-                                })
-                            }).catch(() => {
-                                // Biarkan di cache jika gagal
-                                console.log('Autosave gagal, jawaban tetap di cache');
-                            });
-                        }
-                        
-                        // Biarkan form submit berjalan normal
-                        return true;
-                    });
-                }
-
-                // ==============================================
-                // PERBAIKAN: Beforeunload handler yang SMART
-                // ==============================================
-                window.addEventListener('beforeunload', (e) => {
-                    // Jangan tampilkan peringatan jika:
-                    // 1. Sedang navigasi internal (submit form)
-                    // 2. Ujian sudah selesai
-                    // 3. Tidak ada perubahan yang pending
-                    if (isNavigatingInternally || isExamFinished || pendingChanges.size === 0) {
-                        return;
-                    }
-                    
-                    if (!isExamFinished && remainingSeconds > 0 && pendingChanges.size > 0) {
-                        e.preventDefault();
-                        e.returnValue = 'Ada jawaban yang belum disimpan. Yakin ingin meninggalkan halaman?';
-                        return e.returnValue;
-                    }
-                });
-
-                // ==============================================
-                // PERBAIKAN: Handle link navigasi soal (untuk mobile/desktop)
-                // ==============================================
-                document.querySelectorAll('a.nav-btn').forEach(link => {
-                    link.addEventListener('click', function(e) {
-                        // Tandai sebagai navigasi internal
-                        isNavigatingInternally = true;
-                        
-                        // Simpan jawaban yang aktif sebelum navigasi
-                        const activeAnswer = document.querySelector('input[name="jawaban"]:checked');
-                        if (activeAnswer) {
-                            const soalId = activeAnswer.dataset.soalId;
-                            const jawaban = activeAnswer.value;
-                            simpanKeCache(soalId, jawaban);
-                            
-                            // Kirim langsung sebelum navigasi
-                            fetch("{% url 'cbt:autosave_jawaban' %}", {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/x-www-form-urlencoded",
-                                    "X-CSRFToken": csrfToken
-                                },
-                                body: new URLSearchParams({
-                                    soal_id: soalId,
-                                    kode_soal: kodeSoal,
-                                    jawaban: jawaban
-                                })
-                            }).catch(() => {
-                                console.log('Autosave gagal saat klik navigasi');
-                            });
-                        }
-                        
-                        // Biarkan link berjalan normal
-                        return true;
-                    });
-                });
-
-                // Tombol selesai
-                const finishBtn = document.getElementById('btnSelesai');
-                if (finishBtn) {
-                    finishBtn.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        
-                        const totalSoal = {{ total_soal }};
-                        const jawabanCount = {{ jawaban_count }};
-                        const semuaTerjawab = {{ semua_terjawab|yesno:"true,false" }};
-                        
-                        if (!semuaTerjawab) {
-                            const belumTerjawab = totalSoal - jawabanCount;
-                            if (!confirm(`Masih ada ${belumTerjawab} soal yang belum dijawab.\nYakin ingin menyelesaikan ujian?`)) {
-                                return;
-                            }
-                        } else {
-                            if (!confirm('Yakin ingin menyelesaikan ujian?')) {
-                                return;
-                            }
-                        }
-
-                        clearInterval(autosaveInterval);
-                        clearInterval(timerInterval);
-                        
-                        // Tandai sebagai navigasi internal
-                        isNavigatingInternally = true;
-                        
-                        const originalHtml = finishBtn.innerHTML;
-                        finishBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';
-                        finishBtn.disabled = true;
-
-                        submitSemuaJawaban()
-                            .then(() => {
-                                window.location.href = "{% url 'cbt:selesai_ujian' kode_soal=seting_soal.Kode_Soal %}";
-                            })
-                            .catch((error) => {
-                                console.error('Finish error:', error);
-                                alert('Gagal menyimpan jawaban. Coba lagi!');
-                                finishBtn.innerHTML = originalHtml;
-                                finishBtn.disabled = false;
-                                isNavigatingInternally = false; // Reset flag
-                            });
-                    });
-                }
             }
 
-            // ======================
-            // 6. MULAI SISTEM
-            // ======================
-            initExamSystem();
+            // Handle tab visibility changes
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    const now = new Date();
+                    const newRemaining = Math.floor((endTime - now) / 1000);
 
-        });
+                    if (newRemaining > 0 && newRemaining < remainingSeconds) {
+                        remainingSeconds = newRemaining;
+                    } else if (newRemaining <= 0) {
+                        remainingSeconds = 0;
+                        handleTimeExpired();
+                    }
+                }
+            });
+
+            // Handle beforeunload
+            window.addEventListener('beforeunload', () => {
+                if (!isExamFinished && remainingSeconds > 0) {
+                    saveExamProgress();
+                }
+            });
+        }
+
+        // Start the exam timer
+        initExamTimer();
+
+        // Handle manual finish button
+        const finishBtn = document.querySelector('a[href*="selesai_ujian"]');
+        if (finishBtn) {
+            finishBtn.addEventListener('click', function (e) {
+                if (remainingSeconds <= 0) {
+                    e.preventDefault();
+                    handleTimeExpired();
+                } else {
+                    if (!confirm('Yakin ingin menyelesaikan ujian? Pastikan semua soal telah terjawab!')) {
+                        e.preventDefault();
+                    }
+                }
+            });
+        }
+            });
     </script>
 </body>
 
