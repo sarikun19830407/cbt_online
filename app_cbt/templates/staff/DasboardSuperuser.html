@@ -88,8 +88,8 @@
                                 <td class="align-middle text-center">{{ item.user.kelas }}/{{ item.user.rombel }}</td>
                                 <td class="align-middle">{{ item.user.last_login|date:"j F Y, H.i" }}</td>
                                 <td class="align-middle text-center">
-                                    <div class="progress" style="height: 18px;">
-                                        <div class="progress-bar 
+                                    <div class="progress text-dark" style="height: 18px;">
+                                        <div class="progress-bar text-dark
                                             {% if item.progres_persen == 100 %}
                                                 bg-success
                                             {% elif item.progres_persen >= 50 %}

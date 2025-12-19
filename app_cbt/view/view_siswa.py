@@ -41,6 +41,9 @@ from openpyxl import load_workbook
 from django.utils import timezone
 from django.db.models import Sum
 from datetime import timedelta
+import json
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
 
 
@@ -179,16 +182,16 @@ def mulai_ujian(request, kode_soal):
         jawaban = jawaban_qs.filter(Nomor_Soal=current_soal).first()
 
     # ================= POST =================
-    if request.method == 'POST':
+    # if request.method == 'POST':
 
         # SIMPAN JAWABAN
-        if current_soal:
-            pilihan = request.POST.get('jawaban')
-            if pilihan:
-                jawaban.Jawaban = pilihan
-                jawaban.Jawaban_Benar = (pilihan == current_soal.Kunci_Jawaban)
-                jawaban.Nilai_Siswa = current_soal.Nilai if jawaban.Jawaban_Benar else 0
-                jawaban.save()
+        # if current_soal:
+        #     pilihan = request.POST.get('jawaban')
+        #     if pilihan:
+        #         jawaban.Jawaban = pilihan
+        #         jawaban.Jawaban_Benar = (pilihan == current_soal.Kunci_Jawaban)
+        #         jawaban.Nilai_Siswa = current_soal.Nilai if jawaban.Jawaban_Benar else 0
+        #         jawaban.save()
 
         # NEXT
         if 'next' in request.POST:
@@ -236,6 +239,40 @@ def mulai_ujian(request, kode_soal):
 
 
 
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_siswa, login_url=settings.LOGIN_URL)
+@csrf_protect
+def autosave_jawaban(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error'}, status=400)
+
+    soal_id = request.POST.get('soal_id')
+    kode_soal = request.POST.get('kode_soal')
+    jawaban = request.POST.get('jawaban')
+
+    if not all([soal_id, kode_soal]):
+        return JsonResponse({'status': 'invalid'}, status=400)
+
+    try:
+        answer = models.Answer.objects.get(
+            Nama_User=request.user,
+            Kode_Soal__Kode_Soal=kode_soal,
+            Nomor_Soal_id=soal_id
+        )
+
+        if jawaban:
+            answer.Jawaban = jawaban
+            answer.save(update_fields=['Jawaban', 'Jawaban_Benar', 'Nilai_Siswa', 'Terakhir_Diubah'])
+
+        return JsonResponse({
+            'status': 'ok',
+            'updated': timezone.now().isoformat()
+        })
+
+    except models.Answer.DoesNotExist:
+        return JsonResponse({'status': 'not_found'}, status=404)
 
 
 
@@ -296,5 +333,130 @@ def selesai_ujian(request, kode_soal):
 
 
 
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda u: u.is_siswa, login_url=settings.LOGIN_URL)
+@require_POST
+def submit_batch_jawaban(request):
+    """Kirim batch jawaban (dipanggil setiap 10 detik)"""
+    try:
+        data = json.loads(request.body)
+        kode_soal = data.get("kode_soal")
+        jawaban_batch = data.get("jawaban", {})
+
+        if not kode_soal or not jawaban_batch:
+            return JsonResponse({"status": "error", "message": "Data tidak valid"}, status=400)
+
+        seting_soal = get_object_or_404(models.SetingSoal, Kode_Soal=kode_soal)
+        updated_count = 0
+        
+        with transaction.atomic():
+            for soal_id, pilihan in jawaban_batch.items():
+                try:
+                    soal = models.Soal_Siswa.objects.get(id=soal_id, Kode_Soal=seting_soal)
+                    
+                    answer, created = models.Answer.objects.update_or_create(
+                        Nama_User=request.user,
+                        Kode_Soal=seting_soal,
+                        Nomor_Soal=soal,
+                        defaults={
+                            "Jawaban": pilihan,
+                            "Jawaban_Benar": pilihan == soal.Kunci_Jawaban,
+                            "Nilai_Siswa": soal.Nilai if pilihan == soal.Kunci_Jawaban else 0,
+                            "Terakhir_Diubah": timezone.now(),
+                            "Kelas": request.user.kelas,
+                            "Rombel": request.user.rombel
+                        }
+                    )
+                    updated_count += 1
+                    
+                except models.Soal_Siswa.DoesNotExist:
+                    continue
+
+        return JsonResponse({
+            "status": "ok", 
+            "message": f"{updated_count} jawaban berhasil disimpan",
+            "count": updated_count
+        })
+        
+    except Exception as e:
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda u: u.is_siswa, login_url=settings.LOGIN_URL)
+@require_POST
+def submit_semua_jawaban(request):
+    """Submit semua jawaban sekaligus (dipanggil saat klik selesai)"""
+    try:
+        data = json.loads(request.body)
+        kode_soal = data.get("kode_soal")
+        semua_jawaban = data.get("jawaban", {})
+
+        if not kode_soal:
+            return JsonResponse({"status": "error", "message": "Kode soal tidak valid"}, status=400)
+
+        seting_soal = get_object_or_404(models.SetingSoal, Kode_Soal=kode_soal)
+        updated_count = 0
+        
+        # Waktu selesai (sama untuk semua)
+        waktu_selesai = timezone.now()
+        
+        with transaction.atomic():
+            # 1. Update semua jawaban yang dikirim
+            for soal_id, pilihan in semua_jawaban.items():
+                try:
+                    soal = models.Soal_Siswa.objects.get(id=soal_id, Kode_Soal=seting_soal)
+                    
+                    # Cek apakah jawaban sudah ada dan sama
+                    existing = models.Answer.objects.filter(
+                        Nama_User=request.user,
+                        Kode_Soal=seting_soal,
+                        Nomor_Soal=soal
+                    ).first()
+                    
+                    if existing and existing.Jawaban == pilihan:
+                        # Jika sama, hanya update waktu selesai
+                        existing.Waktu_Selesai = waktu_selesai
+                        existing.save()
+                        continue
+                    
+                    # Jika berbeda atau belum ada, buat/update
+                    answer, created = models.Answer.objects.update_or_create(
+                        Nama_User=request.user,
+                        Kode_Soal=seting_soal,
+                        Nomor_Soal=soal,
+                        defaults={
+                            "Jawaban": pilihan,
+                            "Jawaban_Benar": pilihan == soal.Kunci_Jawaban,
+                            "Nilai_Siswa": soal.Nilai if pilihan == soal.Kunci_Jawaban else 0,
+                            "Terakhir_Diubah": waktu_selesai,
+                            "Kelas": request.user.kelas,
+                            "Rombel": request.user.rombel,
+                            "Waktu_Selesai": waktu_selesai
+                        }
+                    )
+                    updated_count += 1
+                    
+                except models.Soal_Siswa.DoesNotExist:
+                    continue
+            
+            # 2. Pastikan semua record untuk ujian ini memiliki Waktu_Selesai
+            models.Answer.objects.filter(
+                Nama_User=request.user,
+                Kode_Soal=seting_soal,
+                Waktu_Selesai__isnull=True
+            ).update(Waktu_Selesai=waktu_selesai)
+
+        return JsonResponse({
+            "status": "ok", 
+            "message": f"Semua jawaban berhasil disimpan",
+            "updated_count": updated_count
+        })
+        
+    except Exception as e:
+        print(f"Error in submit_semua_jawaban: {str(e)}")
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 

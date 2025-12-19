@@ -139,6 +139,11 @@ urlpatterns =[
     path('mulai_ujian/<kode_soal>/', view_siswa.mulai_ujian, name='mulai_ujian'),
     path('selesai_ujian/<str:kode_soal>/selesai_ujian/', view_siswa.selesai_ujian, name='selesai_ujian'),
     
+    # urls.py
+    path('autosave/', view_siswa.autosave_jawaban, name='autosave_jawaban'),
+    path('submit_semua_jawaban/', view_siswa.submit_semua_jawaban, name='submit_semua_jawaban'),
+    path('submit_batch_jawaban/', view_siswa.submit_batch_jawaban, name='submit_batch_jawaban'),
+
 
 
     path('Logaut', LogoutView.as_view(next_page='/'), name='Logaut'),
