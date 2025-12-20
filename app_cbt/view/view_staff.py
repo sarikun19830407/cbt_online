@@ -2255,7 +2255,7 @@ def arsip_soal (request):
         except (ValueError, TypeError):
             items_per_page = 30  # Default jika invalid
 
-    data_list = models.TahunPelajaran.objects.filter(status=False)
+    data_list = models.TahunPelajaran.objects.all().order_by("-Tahun_Pelajaran")
     if cari:
         data_list = data_list.filter(Tahun_Pelajaran=cari)
     paginator = Paginator(data_list, items_per_page)
@@ -2316,7 +2316,7 @@ def setting_soal_arsip(request, pk):
         data_list = models.SetingSoal.objects.filter(
             Semester=semester_obj,  # Ini string, sesuai model SetingSoal
             Tahun_Pelajaran=tahun_aktif
-        ).order_by("jenis_ujian")
+        ).order_by("jenis_ujian","Kelas", "Mapel__Nama_Mapel")
     else:
         data_list = models.SetingSoal.objects.none()
 
