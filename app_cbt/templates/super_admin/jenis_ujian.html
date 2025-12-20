@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block konten %}
+<body>
+    <div class="container-fluid">
+        <div class="col-lg-5">
+            <h2>Pilih Jenis Ujian</h2>
+
+            <form class="form-control p-3" method="post">
+                {% csrf_token %}
+
+                <div class="d-flex flex-column">
+                    {% for key, label in choices %}
+                        <div class="mb-3 form-check">
+                            <input
+                                class="form-check-input"
+                                type="radio"
+                                name="jenis_ujian"
+                                id="ujian_{{ key }}"
+                                value="{{ key }}"
+                                {% if key == current_choice %}checked{% endif %}
+                                required
+                            >
+                            <label class="form-check-label" for="ujian_{{ key }}">
+                                {{ label }}
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <button class="btn btn-success btn-sm bi bi-floppy" type="submit">
+                    &nbsp;&nbsp;Simpan
+                </button>
+            </form>
+        </div>
+    </div>
+</body>
+
+{% endblock %}

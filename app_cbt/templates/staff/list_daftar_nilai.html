@@ -42,6 +42,7 @@
                         <th class="" scope="col">Kelas</th>
                         <th class="" scope="col">Rombel</th>
                         <th class="" scope="col">Mapel</th>
+                        <th class="" scope="col">Jenis Ujian</th>
                         <th class="" scope="col">Aksi</th>
                     </tr>
                 </thead>
@@ -54,6 +55,24 @@
                         <td class="align-middle text-center">{{data.Kelas}}</td>
                         <td class="align-middle text-center">{{data.Rombel}}</td>
                         <td class="align-middle ">{{data.Mapel}}</td>
+                        <td class="align-middle text-center">
+                            {% if data.jenis_ujian.Jenis_Ujian == 'UTS' %}
+                            Ujian Tengah Semester
+                            {% elif data.jenis_ujian.Jenis_Ujian == 'UAS' %}
+                            Ujian Akhir Semester
+                            {% elif data.jenis_ujian.Jenis_Ujian == 'UKK' %}
+                            Ujian Kenaikan Kelas
+                            {% elif data.jenis_ujian.Jenis_Ujian == 'UJIAN_AKHIR' %}
+                            Ujian Akhir
+                            <br>
+                            <small><strong>
+                                    {% if data.Nama_Lembaga.Tikatan_Satuan_Lembaga == 'SD/MI' %}Khusus Kelas VI
+                                    {% elif data.Nama_Lembaga.Tikatan_Satuan_Lembaga == 'SMP/MTS' %}Khusus Kelas IX
+                                    {% elif data.Nama_Lembaga.Tikatan_Satuan_Lembaga == 'SMA/MA' %}Khusus Kelas XII
+                                    {% endif %}
+                                </strong></small>
+                            {% endif %}
+                        </td>
                         <td class="align-middle text-center">
                             <div class="btn-group" role="group" aria-label="Basic mixed styles example">
                                 <a class="btn btn-warning btn-sm bi bi-pencil-square" style="font-size: 11px;"

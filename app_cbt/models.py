@@ -70,7 +70,12 @@ ROMBEL_CHOICES = [
 
 
 
-
+JENIS_UJIAN = (
+    ('UTS', 'Ujian Tengah Semester'),
+    ('UAS', 'Ujian Akhir Semester'),
+    ('UKK', 'Ujian Kenaikan Kelas'),
+    ('UJIAN_AKHIR', 'Ujian Akhir'),
+)
 
 
 
@@ -93,6 +98,13 @@ class KurikulumLembaga (models.Model):
     def __str__(self):
         return self.Kurikulum
 
+
+class Jenis_Ujian (models.Model):
+    Nama_User = models.ForeignKey(settings.AUTH_USER_MODEL, editable=False,  on_delete = models.CASCADE)
+    Jenis_Ujian = models.CharField(max_length=100, choices=JENIS_UJIAN, default='')
+    status = models.BooleanField(default=False)
+    def __str__(self):
+        return self.Jenis_Ujian
 
 
 class SEMESTER (models.Model):
@@ -230,6 +242,7 @@ class SetingSoal(models.Model):
     )
     Kelas = models.ForeignKey(Kelas,on_delete = models.CASCADE)
     Mapel = models.ForeignKey(Matapelajaran,on_delete = models.CASCADE)
+    jenis_ujian = models.ForeignKey('Jenis_Ujian', on_delete = models.CASCADE, blank=True, null=True)
     Semester = models.ForeignKey(SEMESTER, on_delete=models.CASCADE)
     Tahun_Pelajaran = models.ForeignKey(TahunPelajaran, on_delete = models.CASCADE)
     aktif = models.BooleanField(default=False)  
@@ -273,6 +286,7 @@ class DaftarNilai (models.Model):
     Nama_Lembaga = models.ForeignKey(Lembaga,   on_delete = models.CASCADE)
     Kelas = models.ForeignKey(Kelas,on_delete = models.CASCADE,)
     Rombel = models.ForeignKey(Rombel_kelas,on_delete = models.CASCADE)
+    jenis_ujian = models.ForeignKey('Jenis_Ujian', on_delete = models.CASCADE, blank=True, null=True)
     Mapel = models.ForeignKey(Matapelajaran,on_delete = models.CASCADE,)
     Semester = models.ForeignKey(SEMESTER, on_delete=models.CASCADE)
     Tahun_Pelajaran = models.ForeignKey(TahunPelajaran, on_delete = models.CASCADE)

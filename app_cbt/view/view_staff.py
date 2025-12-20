@@ -13,27 +13,21 @@ from django.db import transaction
 from django.contrib.sessions.models import Session
 
 from django.urls import reverse
-import os
 from django.http import FileResponse, HttpResponse, JsonResponse,Http404
-import tempfile
 from django.utils.timezone import now
 from django.db import IntegrityError
-import re
 from django.views.decorators.cache import never_cache
 
 from app_cbt import models
 from app_cbt import forms_staff
 from django.http import HttpResponse, Http404
-import time 
 from django.db.models import Count, Case, When, IntegerField
 from app_cbt import forms
-import xlrd
 from django.core.files.storage import default_storage
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
 from io import BytesIO
 from tempfile import NamedTemporaryFile
-import openpyxl
 from odf.opendocument import load
 from odf.table import Table, TableRow, TableCell
 from odf.text import P
@@ -43,9 +37,10 @@ from openpyxl.styles import PatternFill, Font, Alignment
 from django.utils import timezone
 from django.template.loader import render_to_string
 from weasyprint import HTML, CSS
-import tempfile
-import openpyxl
+import openpyxl,tempfile,xlrd, time, re, os, json
 from openpyxl.utils import get_column_letter
+from django.core.management import call_command
+from utils.encryption import encrypt_file, cleanup_files, decrypt_file
 
 
 
@@ -229,12 +224,14 @@ def setting_soal(request):
 
     # Ambil tahun pelajaran aktif
     tahun_aktif = models.TahunPelajaran.objects.filter(status=True).first()
+    jenis_ujian = models.Jenis_Ujian.objects.filter(status=True).first()
 
     # Ambil data SetingSoal berdasarkan semester dan tahun pelajaran
     if semester_obj and tahun_aktif:
         data_list = models.SetingSoal.objects.filter(
             Semester=semester_obj,
-            Tahun_Pelajaran=tahun_aktif
+            Tahun_Pelajaran=tahun_aktif, 
+            jenis_ujian=jenis_ujian
         ).order_by('Kelas__kelas')
     else:
         data_list = models.SetingSoal.objects.none()
@@ -259,7 +256,9 @@ def setting_soal(request):
     jumlah = data_list.count()
 
     context = {
-        "data": f"Soal Semester {semester_obj.Semester if semester_obj else '-'} TP.{tahun_aktif if tahun_aktif else '-'}",
+        "data": f"Soal {jenis_ujian.get_Jenis_Ujian_display() if jenis_ujian else '-'} di Semester "
+        f"{semester_obj if semester_obj else '-'} TP {tahun_aktif if tahun_aktif else '-'}",
+
         "judul": "CBT-Setting",
         "Data": Data,
         "icon": "bi bi-database-check",
@@ -310,7 +309,9 @@ def aktifkan_soal(request, kode_soal):
 @csrf_protect
 def buat_seting_soal(request):
     form = forms_staff.SetingSoalForm(request.POST or None)
-
+    jenis_ujian = models.Jenis_Ujian.objects.filter(status=True).first()
+    semester_instance = models.SEMESTER.objects.filter(status=True).first()
+    tahun_aktif = models.TahunPelajaran.objects.filter(status=True).first()
     if request.method == "POST":
         if form.is_valid():
             user = request.user
@@ -319,6 +320,7 @@ def buat_seting_soal(request):
             # 🔍 Cek apakah ada semester & tahun pelajaran aktif
             semester_instance = models.SEMESTER.objects.filter(status=True).first()
             tahun_aktif = models.TahunPelajaran.objects.filter(status=True).first()
+            jenis_ujian = models.Jenis_Ujian.objects.filter(status=True).first()
 
             if not tahun_aktif:
                 messages.error(request, "Tahun Pelajaran belum ada yang diaktifkan.")
@@ -334,7 +336,7 @@ def buat_seting_soal(request):
             form.instance.arsip_soal = True
             form.instance.Semester = semester_instance
             form.instance.Tahun_Pelajaran = tahun_aktif
-
+            form.instance.jenis_ujian = jenis_ujian
             seting_soal = form.save()
 
             # 🚀 Buat entri DaftarNilai otomatis berdasarkan rombel yang sesuai
@@ -361,6 +363,7 @@ def buat_seting_soal(request):
                         Rombel=rombel,
                         Mapel=seting_soal.Mapel,
                         Semester=semester_instance,
+                        jenis_ujian=jenis_ujian,
                         Tahun_Pelajaran=tahun_aktif,
                         status=True
                     )
@@ -371,7 +374,8 @@ def buat_seting_soal(request):
             messages.error(request, '⚠️ Data masih salah. Silakan periksa kembali.')
 
     context = {
-        "data": "Tambah Setting Soal",
+        "data": f"Soal {jenis_ujian.get_Jenis_Ujian_display() if jenis_ujian else '-'} di Semester "
+        f"{semester_instance if semester_instance else '-'} TP {tahun_aktif if tahun_aktif else '-'}",
         "NamaForm": "Form Setting Soal",
         "judul": "CBT-Setting",
         "link": reverse("cbt:setting_soal"),
@@ -456,7 +460,7 @@ def Ubah_setting_soal (request, pk):
         else:
             messages.error(request, 'Data Masih Salah.')
     context = {
-        "data" : f"Ubah Soal {Data.Mapel}",
+        "data" : f"Ubah Seting Soal {Data.Mapel}",
         "NamaForm": "Form ubah Setting Soal",
         "judul":"CBT-Setting Soal",
         "link":reverse("cbt:setting_soal"),
@@ -1256,6 +1260,7 @@ def daftar_nilai(request):
 
     # ✅ Ambil semester aktif pertama (status=True)
     semester_obj = models.SEMESTER.objects.filter(status=True).first()
+    jenis_ujian = models.Jenis_Ujian.objects.filter(status=True).first()
     # semester = semester_obj.Semester if semester_obj else None
 
     # ✅ Ambil tahun pelajaran aktif
@@ -1264,6 +1269,7 @@ def daftar_nilai(request):
     if semester_obj and tahun_aktif:
         data_list = models.DaftarNilai.objects.filter(
             Semester=semester_obj,
+            jenis_ujian =jenis_ujian,
             Tahun_Pelajaran=tahun_aktif
         ).order_by('Kelas__kelas', 'Rombel__Rombel', 'Mapel__Nama_Mapel')
     else:
@@ -1290,7 +1296,9 @@ def daftar_nilai(request):
     jumlah = data_list.count()
     
     context = {
-        "data": f"Daftar Nilai Semester {semester_obj if semester_obj else '-'} TP {tahun_aktif if tahun_aktif else '-'}",
+        "data": f"Daftar Nilai {jenis_ujian.get_Jenis_Ujian_display() if jenis_ujian else '-'} "
+        f"{semester_obj if semester_obj else '-'} TP {tahun_aktif if tahun_aktif else '-'}",
+
         "judul": "Daftar Nilai",
         "Data": Data,
         "jumlah": jumlah,
@@ -1321,6 +1329,8 @@ def tambah_daftar_nilai(request):
             form.instance.Semester = semester_instance
             tahun_aktif = get_object_or_404(models.TahunPelajaran, status=True)
             form.instance.Tahun_Pelajaran = tahun_aktif
+            jenis_ujian = models.Jenis_Ujian.objects.filter(status=True).first()
+            form.instance.jenis_ujian = jenis_ujian
             form.save()
             messages.success(request, 'Data berhasil ditambahkan')
             return redirect(reverse('cbt:daftar_nilai'))
@@ -2306,7 +2316,7 @@ def setting_soal_arsip(request, pk):
         data_list = models.SetingSoal.objects.filter(
             Semester=semester_obj,  # Ini string, sesuai model SetingSoal
             Tahun_Pelajaran=tahun_aktif
-        )
+        ).order_by("jenis_ujian")
     else:
         data_list = models.SetingSoal.objects.none()
 
@@ -2785,6 +2795,7 @@ def salin_setingsoal(request, pk):
     semester_aktif = models.SEMESTER.objects.filter(status=True).first()
     tahun_aktif = models.TahunPelajaran.objects.filter(status=True).first()
     tahun_tidak_Active = models.TahunPelajaran.objects.filter(status=False).first()
+    jenis_ujian = models.Jenis_Ujian.objects.filter(status=True).first()
 
     if not semester_aktif or not tahun_aktif:
         messages.error(
@@ -2803,6 +2814,7 @@ def salin_setingsoal(request, pk):
                 Mapel=soal_lama.Mapel,
                 Semester=semester_aktif,
                 Tahun_Pelajaran=tahun_aktif,
+                jenis_ujian=jenis_ujian,
                 durasi_menit=soal_lama.durasi_menit,
                 aktif=False,
                 arsip_soal=False,
@@ -2827,7 +2839,7 @@ def salin_setingsoal(request, pk):
 
             # Tambahkan pembuatan entri DaftarNilai otomatis
             rombel_list = models.Rombel_kelas.objects.filter(
-                Kelas=soal_baru.Kelas,
+                # Kelas=soal_baru.Kelas,
                 Nama_Lembaga=soal_baru.Nama_Lembaga
             )
             for rombel in rombel_list:
@@ -2846,6 +2858,7 @@ def salin_setingsoal(request, pk):
                         Nama_Lembaga=soal_baru.Nama_Lembaga,
                         Kelas=soal_baru.Kelas,
                         Rombel=rombel,
+                        jenis_ujian=jenis_ujian,
                         Mapel=soal_baru.Mapel,
                         Semester=semester_aktif,
                         Tahun_Pelajaran=tahun_aktif,
@@ -2863,6 +2876,158 @@ def salin_setingsoal(request, pk):
 
     return redirect(reverse('cbt:setting_soal_arsip', kwargs={'pk': tahun_tidak_Active.pk}))
 
+
+
+
+
+
     
 
 
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+@csrf_protect
+def backup_soal(request):
+    if request.method == 'POST':
+        form = forms.FormDownload(request.POST)
+
+        if form.is_valid():
+            password = form.cleaned_data['password']
+            user = authenticate(
+                username=request.user.username,
+                password=password
+            )
+
+            if user and user.is_staff:
+                filename = f"backup_soal-{now().date()}.json"
+                file_path = None
+                encrypted_path = None
+
+                try:
+                    # File sementara
+                    with tempfile.NamedTemporaryFile(delete=False, suffix='.json') as temp_file:
+                        file_path = temp_file.name
+
+                    # Dump HANYA model Soal_Siswa
+                    with open(file_path, 'w') as output_file:
+                        call_command(
+                        'dumpdata',
+                        'app_cbt.SetingSoal',
+                        'app_cbt.Soal_Siswa',
+                        "app_cbt.DaftarNilai",
+                        '--indent', '2',
+                        stdout=output_file
+                    )
+
+
+                    # Enkripsi
+                    encrypted_path = encrypt_file(file_path, password)
+
+                    return FileResponse(
+                        open(encrypted_path, 'rb'),
+                        as_attachment=True,
+                        filename=filename + '.aes'
+                    )
+
+                except Exception as e:
+                    messages.error(request, f"Gagal backup soal: {str(e)}")
+
+                finally:
+                    if file_path:
+                        cleanup_files(file_path, encrypted_path)
+            else:
+                messages.error(request, "Password salah atau bukan superuser.")
+    else:
+        form = forms.FormDownload()
+
+    context = {
+        "data": "Backup Soal",
+        "judul": "Backup Soal",
+        "NamaForm": "Form Backup Soal",
+        "link": reverse('cbt:backup_soal'),
+        "form": form,
+        "icon": "bi bi-download"
+    }
+    return render(request, 'staff/backup_soal.html', context)
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+@csrf_protect
+def restore_backup_soal(request):
+    if request.method == 'POST':
+        form = forms.UploadFormBackup(request.POST, request.FILES)
+
+        if form.is_valid():
+            backup_file = request.FILES.get('backup_file')
+            password = form.cleaned_data['password']
+
+            if not backup_file:
+                messages.error(request, "File backup belum dipilih.")
+                return redirect('cbt:restore_backup_soal')
+
+            if not backup_file.name.endswith('.aes'):
+                messages.error(request, "File harus berformat .aes")
+                return redirect('cbt:restore_backup_soal')
+
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.aes') as temp_file:
+                for chunk in backup_file.chunks():
+                    temp_file.write(chunk)
+                temp_path = temp_file.name
+
+            decrypted_path = None
+            try:
+                # Dekripsi
+                decrypted_path = decrypt_file(temp_path, password)
+
+                # Load data (abaikan field user)
+                call_command(
+                    'loaddata',
+                    decrypted_path,
+                    ignorenonexistent=True
+                )
+
+                # Set Nama_User otomatis ke user login
+                from app_cbt.models import Soal_Siswa
+                from django.db import transaction
+
+                with transaction.atomic():
+                    models.SetingSoal.objects.filter(
+                        Nama_User__isnull=True
+                    ).update(Nama_User=request.user)
+
+                    models.Soal_Siswa.objects.filter(
+                        Nama_User__isnull=True
+                    ).update(Nama_User=request.user)
+
+                messages.success(
+                    request,
+                    "Restore soal berhasil. Semua soal otomatis dimiliki user login."
+                )
+                return redirect('cbt:restore_backup_soal')
+
+            except Exception as e:
+                messages.error(request, f"Gagal restore soal: {str(e)}")
+                return redirect('cbt:restore_backup_soal')
+
+            finally:
+                if decrypted_path:
+                    cleanup_files(temp_path, decrypted_path)
+                else:
+                    cleanup_files(temp_path)
+        else:
+            messages.error(request, "Form tidak valid.")
+            return redirect('cbt:restore_backup_soal')
+
+    else:
+        form = forms.UploadFormBackup()
+
+    context = {
+        "data": "Restore Backup Soal",
+        "judul": "Restore Backup Soal",
+        "NamaForm": "Form Restore Backup Soal",
+        "link": reverse('cbt:restore_backup_soal'),
+        "form": form,
+        "icon": "bi bi-upload"
+    }
+    return render(request, 'staff/restore_backup_soal.html', context)

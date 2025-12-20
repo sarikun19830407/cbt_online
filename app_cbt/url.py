@@ -54,8 +54,10 @@ urlpatterns =[
     path('Ubah_Tahun_Pelajaran/<pk>/', view_admin.Ubah_Tahun_Pelajaran, name='Ubah_Tahun_Pelajaran'),
     path('Hapus_Tahun_Pelajaran/<pk>/', view_admin.Hapus_Tahun_Pelajaran, name='Hapus_Tahun_Pelajaran'),
     
-
+    path('jenis_ujian', view_admin.jenis_ujian, name='jenis_ujian'),
     path('semester', view_admin.semester, name='semester'),
+
+
     path('Kelas', view_admin.Kelas, name='Kelas'),
     path('tambah_kelas', view_admin.tambah_kelas, name='tambah_kelas'),
     path('hapus_kelas/<pk>/', view_admin.hapus_kelas, name='hapus_kelas'),
@@ -70,7 +72,7 @@ urlpatterns =[
 
 
     path('backup_database', view_admin.backup_database, name='backup_database'),
-    path('restore_database', view_admin.restore_database, name='restore_database'),
+    
 
 
 
@@ -85,6 +87,8 @@ urlpatterns =[
     path('hapus_setting_soal', view_staff.hapus_setting_soal, name='hapus_setting_soal'),
     path('Ubah_setting_soal/<pk>/', view_staff.Ubah_setting_soal, name='Ubah_setting_soal'),
 
+    path('backup_soal', view_staff.backup_soal, name='backup_soal'),
+    path('restore_backup_soal', view_staff.restore_backup_soal, name='restore_backup_soal'),
 
     path('buat_soal_siswa/<pk>/', view_staff.buat_soal_siswa, name='buat_soal_siswa'),
     path('hapus_soal/<int:pk>/', view_staff.hapus_soal, name='hapus_soal'),

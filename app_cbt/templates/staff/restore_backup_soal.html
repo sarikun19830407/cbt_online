@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block konten %}
+<div class="container mt-4 col-lg-8">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-warning text-dark">
+            <h4 class="mb-0">{{ judul }}</h4>
+        </div>
+
+        <div class="card-body">
+            <div class="container-fluid py-3">
+                {% if messages %}
+                {% for message in messages %}
+                <li class="btn bg-primary-subtle " style="font-size: 8;" {% if message.tags %}
+                    class="{{ message.tags }}" {%endif%}>
+                    {{ message }}</li>
+                {% endfor %}
+                {% endif %}
+            </div>
+            <divv class="py-3">
+                <form method="POST" action="{{ link }}" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        {{ form.password.label_tag }}
+                        {{ form.password }}
+
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.backup_file.label_tag }}
+                        {{ form.backup_file }}
+
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-upload"></i> Upload & Restore Backup
+                    </button>
+                </form>
+            </divv>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -162,8 +162,25 @@
                                 <span class="fw-bold text-end">{{ user.rombel }}</span>
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center py-2">
-                                <span><i class="bi bi-key me-2"></i>Kode Ujian</span>
-                                <span class="fw-bold text-end">{{ seting_soal.Kode_Soal }}</span>
+                                <span><i class="bi bi-bookmark-check me-2"></i>Nama Ujian</span>
+                                <span class="fw-bold text-end">
+                                    {% if seting_soal.jenis_ujian.Jenis_Ujian == 'UTS' %}
+                                    Ujian Tengah Semester
+                                    {% elif seting_soal.jenis_ujian.Jenis_Ujian == 'UAS' %}
+                                    Ujian Akhir Semester
+                                    {% elif seting_soal.jenis_ujian.Jenis_Ujian == 'UKK' %}
+                                    Ujian Kenaikan Kelas
+                                    {% elif seting_soal.jenis_ujian.Jenis_Ujian == 'UJIAN_AKHIR' %}
+                                    Ujian Akhir
+                                    <br>
+                                <small><strong>
+                                    {% if seting_soal.Nama_Lembaga.Tikatan_Satuan_Lembaga == 'SD/MI' %}Khusus Kelas VI
+                                    {% elif seting_soal.Nama_Lembaga.Tikatan_Satuan_Lembaga == 'SMP/MTS' %}Khusus Kelas IX
+                                    {% elif seting_soal.Nama_Lembaga.Tikatan_Satuan_Lembaga == 'SMA/MA' %}Khusus Kelas XII
+                                    {% endif %}
+                                </strong></small>
+                            {% endif %}
+                                </span>
                             </li>
                         </ul>
 
@@ -233,10 +250,14 @@
                                             <span><i class="bi bi-people me-2"></i>Kelas</span>
                                             <span class="fw-bold">{{ seting_soal.Kelas }}</span>
                                         </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                                            <span><i class="bi bi-people me-2"></i>Rombel</span>
+                                            <span class="fw-bold text-end">{{ user.rombel }}</span>
+                                        </li>
                                         <li
                                             class="list-group-item d-flex justify-content-between align-items-center py-2 px-0">
                                             <span><i class="bi bi-key me-2"></i>Kode Ujian</span>
-                                            <span class="fw-bold">{{ seting_soal.Kode_Soal }}</span>
+                                            <span class="fw-bold">{{ seting_soal.jenis_ujian }}</span>
                                         </li>
                                     </ul>
 
@@ -285,7 +306,7 @@
                                             </td>
                                             <td width="30"><strong>{{ opsi }}.</strong></td>
                                             <td>
-                                                {{ current_soal|get_opsi:opsi|safe }}
+                                                {{ current_soal|get_option:opsi|safe }}
                                             </td>
                                         </tr>
                                         {% endfor %}

@@ -18,12 +18,28 @@
                     <form method="POST" action="{% url 'cbt:hapus_setting_soal' %}" id="delete_form">
                         {% csrf_token %}
                         <div class="btn-group mb-2" role="group" aria-label="Basic mixed styles example">
-                            <a class="btn btn-success btn-sm" style="font-size: 12px;"
-                                href="{% url 'cbt:buat_seting_soal' %}">
-                                <i class="bi bi-plus fst-normal">&nbsp;&nbsp;Tambah</i> </a>
+                            <a href="{% url 'cbt:buat_seting_soal' %}" class="btn btn-primary btn-sm"
+                                style="font-size: 12px;">
+                                <i class="bi bi-plus-circle me-1"></i> Tambah
+                            </a>
 
-                            <button class="btn btn-danger btn-sm bi bi-trash" style="font-size: 12px;" type="submit"
-                                id="delete_button" disabled>&nbsp;Hapus</button>
+                            <!-- Hapus -->
+                            <button type="submit" id="delete_button" class="btn btn-danger btn-sm"
+                                style="font-size: 12px;" disabled>
+                                <i class="bi bi-trash me-1"></i> Hapus
+                            </button>
+
+                            <!-- Backup Soal -->
+                            <a href="{% url 'cbt:backup_soal' %}" class="btn btn-success btn-sm"
+                                style="font-size: 12px;">
+                                <i class="bi bi-cloud-arrow-up me-1"></i> Backup Soal
+                            </a>
+
+                            <!-- Restore Soal -->
+                            <a href="{% url 'cbt:restore_backup_soal' %}" class="btn btn-warning btn-sm text-dark"
+                                style="font-size: 12px;">
+                                <i class="bi bi-cloud-arrow-down me-1"></i> Restore Soal
+                            </a>
                         </div>
                 </div>
             </div>
@@ -41,6 +57,7 @@
                         <th class="align-middle text-center" scope="col">Kode Soal</th>
                         <th class="align-middle text-center" scope="col">Kelas</th>
                         <th class="align-middle text-center" scope="col">Mapel</th>
+                        <th class="align-middle text-center" scope="col">Jenis Ujian</th>
                         <th class="align-middle text-center" scope="col">Waktu</th>
                         <th class="align-middle text-center" scope="col">Status</th>
                         <th class="align-middle text-center" scope="col">Tanggal Active</th>
@@ -57,6 +74,26 @@
                         <td class="align-middle text-center">{{data.Kode_Soal}}</td>
                         <td class="align-middle text-center">{{data.Kelas}}</td>
                         <td class="align-middle">{{data.Mapel}}</td>
+                        <td class="align-middle text-center">
+                            {% if data.jenis_ujian.Jenis_Ujian == 'UTS' %}
+                            Ujian Tengah Semester
+                            {% elif data.jenis_ujian.Jenis_Ujian == 'UAS' %}
+                            Ujian Akhir Semester
+                            {% elif data.jenis_ujian.Jenis_Ujian == 'UKK' %}
+                            Ujian Kenaikan Kelas
+                            {% elif data.jenis_ujian.Jenis_Ujian == 'UJIAN_AKHIR' %}
+                            Ujian Akhir
+                            <br>
+                            <small><strong>
+                                    {% if data.Nama_Lembaga.Tikatan_Satuan_Lembaga == 'SD/MI' %}Khusus Kelas VI
+                                    {% elif data.Nama_Lembaga.Tikatan_Satuan_Lembaga == 'SMP/MTS' %}Khusus Kelas IX
+                                    {% elif data.Nama_Lembaga.Tikatan_Satuan_Lembaga == 'SMA/MA' %}Khusus Kelas XII
+                                    {% endif %}
+                                </strong></small>
+                            {% endif %}
+                        </td>
+
+
                         <td class="align-middle text-center">{{data.durasi_menit}} menit</td>
                         <td class="align-middle text-center">
                             {% if data.aktif %}

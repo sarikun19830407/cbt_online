@@ -98,7 +98,32 @@
                     <img src="{{ logo_kemenag }}" alt="Logo Kemenag" style="height: 45px;">
                 </div>
                 <div style="text-align: center; flex: 1;">
-                    <h2 style="margin: 2px; font-size: 11px;">KARTU PESERTA UJIAN SEMESTER {{ semester.Semester|upper }}
+                    <h2 style="margin: 2px; font-size: 11px;">
+                        <h2 style="margin: 2px; font-size: 11px;">
+                        {% if ujian.Jenis_Ujian == 'UTS' %}
+                            KARTU PESERTA UJIAN TENGAH SEMESTER
+                        {% elif ujian.Jenis_Ujian == 'UAS' %}
+                            KARTU PESERTA UJIAN AKHIR SEMESTER GANJIL
+                        {% elif ujian.Jenis_Ujian == 'UKK' %}
+                            KARTU PESERTA UJIAN SEMESTER GENAP
+                        {% elif ujian.Jenis_Ujian == 'UJIAN_AKHIR' %}
+                            KARTU PESERTA UJIAN AKHIR
+                        {% else %}
+                            KARTU PESERTA UJIAN
+                        {% endif %}
+                    </h2>
+                    {% if ujian.Jenis_Ujian == 'UJIAN_AKHIR' %}
+                        <p style="margin:0; font-size:9px;">
+                            <strong>
+                                {% if lembaga.Tikatan_Satuan_Lembaga == 'SD/MI' %}Khusus Kelas VI
+                                {% elif lembaga.Tikatan_Satuan_Lembaga == 'SMP/MTS' %}Khusus Kelas IX
+                                {% elif lembaga.Tikatan_Satuan_Lembaga == 'SMA/MA' %}Khusus Kelas XII
+                                {% endif %}
+                            </strong>
+                        </p>
+                    {% endif %}
+
+
                     </h2>
                     <h3 style="margin: 2px; font-size: 10px;">{{ lembaga.Nama_Lembaga|upper }}</h3>
                     <h4 style="margin: 2px; font-size: 9px;">TP. {{ tahun_pelajaran.Tahun_Pelajaran }}</h4>

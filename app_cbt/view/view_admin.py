@@ -271,6 +271,63 @@ def Ubah_kurikulum (request, pk):
 
 
 
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
+@csrf_protect
+def jenis_ujian(request):
+
+    # Ambil KEY dari choices
+    VALID_JENIS = [key for key, _ in models.JENIS_UJIAN]
+
+    if request.method == 'POST':
+        selected_jenis = request.POST.get('jenis_ujian', '').strip()
+
+        if selected_jenis in VALID_JENIS:
+
+            # ❗ Nonaktifkan semua jenis ujian milik user
+            models.Jenis_Ujian.objects.filter(
+                Nama_User=request.user
+            ).update(status=False)
+
+            # Ambil / buat data
+            obj, created = models.Jenis_Ujian.objects.get_or_create(
+                Nama_User=request.user,
+                Jenis_Ujian=selected_jenis
+            )
+
+            # Aktifkan
+            obj.status = True
+            obj.save()
+
+            messages.success(
+                request,
+                f"Jenis ujian {obj.get_Jenis_Ujian_display()} berhasil diaktifkan."
+            )
+            return redirect(reverse("cbt:jenis_ujian"))
+
+        else:
+            messages.error(request, "Pilihan jenis ujian tidak valid.")
+
+    # Ambil jenis ujian aktif
+    current = models.Jenis_Ujian.objects.filter(
+        Nama_User=request.user,
+        status=True
+    ).first()
+
+    context = {
+        "data": "Jenis Ujian",
+        "judul": "CBT",
+        "icon": "bi bi-bookmark-check",
+        "current_choice": current.Jenis_Ujian if current else '',
+        "choices": models.JENIS_UJIAN,
+    }
+
+    return render(request, 'super_admin/jenis_ujian.html', context)
+
+
+
+
+
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -1579,6 +1636,9 @@ def cetak_semua_kartu_pdf(request):
     semester = models.SEMESTER.objects.filter(Nama_User=user).last()
     lembaga = models.Lembaga.objects.filter(Nama_User=user).last()
     tahun_pelajaran = models.TahunPelajaran.objects.filter(status=True).last()
+    # Ambil jenis ujian aktif
+    ujian = models.Jenis_Ujian.objects.filter(Nama_User=user,status=True).last()
+
     
 
     # Potong 10 kartu per halaman
@@ -1599,6 +1659,7 @@ def cetak_semua_kartu_pdf(request):
         'lembaga': lembaga,
         'tahun_pelajaran': tahun_pelajaran,
         'logo_kemenag': logo_url,
+        'ujian': ujian,
     }
 
     # Render HTML ke PDF
@@ -1624,59 +1685,55 @@ def cetak_semua_kartu_pdf(request):
 def backup_database(request):
     if request.method == 'POST':
         form = forms.FormDownload(request.POST)
-        if form.is_valid():
-            password = form.cleaned_data['password']
-            user = authenticate(username=request.user.username, password=password)
 
-            if user is not None and user.is_superuser:
-                filename = f"backup_cbt-{now().date()}.json"
-                file_path = None
-                encrypted_path = None  # Inisialisasi variabel untuk memastikan selalu ada
+        if form.is_valid():
+            user = authenticate(
+                username=request.user.username,
+                password=form.cleaned_data['password']
+            )
+
+            if user and user.is_superuser:
+                filename = f"backup_cbt_{now().date()}.json"
 
                 try:
-                    # Buat file sementara
                     with tempfile.NamedTemporaryFile(delete=False, suffix='.json') as temp_file:
                         file_path = temp_file.name
 
-                    # Dump data ke file sementara
+                    # Dump SELURUH DATABASE
                     with open(file_path, 'w') as output_file:
-                        with open(file_path, 'w') as output_file:
-                            call_command(
-                                'dumpdata',
-                                '--natural-primary',
-                                '--natural-foreign',
-                                '--indent', '2',
-                                stdout=output_file
-                            )
+                        call_command(
+                            'dumpdata',
+                            '--natural-primary',
+                            '--natural-foreign',
+                            '--indent', '2',
+                            stdout=output_file
+                        )
 
-                    # Enkripsi file
-                    encrypted_path = encrypt_file(file_path, password)
+                    # Download langsung JSON
+                    return FileResponse(
+                        open(file_path, 'rb'),
+                        as_attachment=True,
+                        filename=filename
+                    )
 
-                    # Kirim file hasil enkripsi sebagai respons untuk diunduh
-                    response = FileResponse(open(encrypted_path, 'rb'), as_attachment=True, filename=filename + '.aes')
-                    return response
-
-                except subprocess.CalledProcessError as e:
-                    messages.error(request, f"Gagal membuat backup: {e.stderr.decode()}. " +
-                                "Periksa apakah ada masalah dengan dump data atau konfigurasi server.")
                 except Exception as e:
-                    messages.error(request, f"Terjadi kesalahan tidak terduga: {str(e)}.")
+                    messages.error(request, f"Gagal backup database: {str(e)}")
+
                 finally:
-                    # Bersihkan file sementara jika ada
                     if file_path:
-                        cleanup_files(file_path, encrypted_path)
+                        cleanup_files(file_path)
+
             else:
-                messages.error(request, "Password salah atau akun Anda bukan superuser.")
+                messages.error(request, "Password salah atau bukan superuser.")
+
     else:
         form = forms.FormDownload()
 
     context = {
-        "judul": "PPDB-Download Backup",
-        "data": "Download backup", 
-        "NamaForm": "Form Download Backup",
+        "judul": "Backup Database",
+        "NamaForm": "Form Backup Database",
         "link": reverse('cbt:backup_database'),
         "form": form,
-        "upload":"upload"
     }
     return render(request, 'super_admin/backup_database.html', context)
 
@@ -1685,82 +1742,6 @@ def backup_database(request):
 
 
 
-
-@login_required(login_url=settings.LOGIN_URL)
-@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
-@csrf_protect
-def restore_database(request):
-    if request.method == 'POST':
-        form = forms.UploadFormBackup(request.POST, request.FILES)
-
-        if form.is_valid():
-            backup_file = request.FILES.get('backup_file')  # <-- gunakan get()
-            password = form.cleaned_data['password']
-
-            # Cek apakah file dipilih
-            if not backup_file:
-                messages.error(request, "File backup belum dipilih. Silakan pilih file terlebih dahulu.")
-                return redirect('cbt:restore_database')
-
-            # Validasi file kosong
-            if backup_file.size == 0:
-                messages.error(request, "File backup kosong. Silakan pilih file yang valid untuk di-upload.")
-                return redirect('cbt:restore_database')
-
-            # Validasi ekstensi
-            if not backup_file.name.endswith('.aes'):
-                messages.error(request, "File backup harus berformat .aes (terenkripsi). Pastikan file yang diupload benar.")
-                return redirect('cbt:restore_database')
-
-            # Simpan file upload ke file sementara
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.aes') as temp_file:
-                for chunk in backup_file.chunks():
-                    temp_file.write(chunk)
-                temp_path = temp_file.name
-
-            decrypted_path = None
-            try:
-                # Dekripsi file
-                decrypted_path = decrypt_file(temp_path, password)
-
-                # Restore ke database
-                call_command('loaddata', decrypted_path)
-                
-                messages.success(request, "Backup berhasil diunggah dan dimuat ke database.")
-                return redirect('cbt:restore_database')
-
-            except subprocess.CalledProcessError as e:
-                messages.error(request, f"Kesalahan saat memuat data ke database: {e.stderr.decode()}. " +
-                                        "Pastikan data dalam backup valid dan sesuai dengan skema database.")
-                return redirect('cbt:restore_database')
-
-            except Exception as e:
-                messages.error(request, f"Terjadi kesalahan saat memproses backup: {str(e)}. " +
-                                        "Periksa kembali password atau file backup.")
-                return redirect('cbt:restore_database')
-
-            finally:
-                # Hapus file sementara
-                if decrypted_path:
-                    cleanup_files(temp_path, decrypted_path)
-                else:
-                    cleanup_files(temp_path)
-
-        else:
-            messages.error(request, "Form tidak valid. Pastikan password dan file backup diisi dengan benar.")
-            return redirect('cbt:restore_database')
-
-    else:
-        form = forms.UploadFormBackup()
-
-    context = {
-        "data": "Upload Backup",
-        "NamaForm": "Form Upload Backup",
-        "judul": "PPDB Upload Backup",
-        "link": reverse('cbt:restore_database'),
-        "form": form,
-    }
-    return render(request, 'super_admin/restore_database.html', context)
 
 
 

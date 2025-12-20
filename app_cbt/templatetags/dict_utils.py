@@ -42,3 +42,14 @@ def percentage(sisa_waktu, durasi_menit):
 @register.filter
 def get_opsi(soal, huruf):
     return getattr(soal, huruf)
+
+@register.filter
+def get_option(soal, opsi):
+    """
+    Mengambil isi pilihan soal (A/B/C/D)
+    Contoh: {{ soal|get_option:"A" }}
+    """
+    try:
+        return getattr(soal, opsi)
+    except AttributeError:
+        return ''

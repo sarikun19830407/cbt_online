@@ -231,7 +231,6 @@ def mulai_ujian(request, kode_soal):
         'total_detik': total_detik,
         'waktu_berakhir': waktu_berakhir.isoformat(),
     }
-
     return render(request, 'siswa/mulai_ujian.html', context)
 
 

@@ -28,12 +28,9 @@
                 <thead class="text-center">
                     <tr class="">
                         <th class="align-middle text-center" scope="col">No</th>
-                        <th class="align-middle text-center" scope="col">Kode Soal</th>
                         <th class="align-middle text-center" scope="col">Kelas</th>
                         <th class="align-middle text-center" scope="col">Mapel</th>
-                        <th class="align-middle text-center" scope="col">Waktu</th>
-                        <th class="align-middle text-center" scope="col">Status</th>
-                        <th class="align-middle text-center" scope="col">Tanggal Active</th>
+                        <th class="align-middle text-center" scope="col">Jenis Ujian</th>
                         <th class="align-middle text-center" scope="col">Semester</th>
                         <th class="align-middle text-center" scope="col">Aksi</th>
                     </tr>
@@ -43,22 +40,24 @@
                     {% for data in Data %}
                     <tr class="Tabel">
                         <td class="align-middle text-center">{{ forloop.counter|add:Data.start_index|default:0 }}</td>
-                        <td class="align-middle">{{data.Kode_Soal}}</td>
                         <td class="align-middle text-center">{{data.Kelas}}</td>
                         <td class="align-middle">{{data.Mapel}}</td>
-                        <td class="align-middle text-center">{{data.durasi_menit}} menit</td>
                         <td class="align-middle text-center">
-                            {% if data.aktif %}
-                            <span class="btn btn-success btn-sm" style="font-size: 12px;">Aktif</span>
-                            {% else %}
-                            <span class="btn btn-secondary btn-sm" style="font-size: 12px;">Nonaktif</span>
-                            {% endif %}
-                        </td>
-                        <td class="align-middle text-center">
-                            {% if data.aktif and data.waktu_aktif %}
-                            <small class="text-success">{{ data.waktu_aktif|date:"d M Y H:i" }}</small>
-                            {% else %}
-                            <small class="text-muted">-</small>
+                            {% if data.jenis_ujian.Jenis_Ujian == 'UTS' %}
+                            Ujian Tengah Semester
+                            {% elif data.jenis_ujian.Jenis_Ujian == 'UAS' %}
+                            Ujian Akhir Semester
+                            {% elif data.jenis_ujian.Jenis_Ujian == 'UKK' %}
+                            Ujian Kenaikan Kelas
+                            {% elif data.jenis_ujian.Jenis_Ujian == 'UJIAN_AKHIR' %}
+                            Ujian Akhir
+                            <br>
+                            <small><strong>
+                                    {% if data.Nama_Lembaga.Tikatan_Satuan_Lembaga == 'SD/MI' %}Khusus Kelas VI
+                                    {% elif data.Nama_Lembaga.Tikatan_Satuan_Lembaga == 'SMP/MTS' %}Khusus Kelas IX
+                                    {% elif data.Nama_Lembaga.Tikatan_Satuan_Lembaga == 'SMA/MA' %}Khusus Kelas XII
+                                    {% endif %}
+                                </strong></small>
                             {% endif %}
                         </td>
                         <td class="align-middle">{{data.Semester}}</td>

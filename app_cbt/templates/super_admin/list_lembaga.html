@@ -34,7 +34,8 @@
                         <th class="align-middle text-center" scope="col">Alamat</th>
                         <th class="align-middle text-center" scope="col">Tikatan Satuan sLembaga</th>
                         <th class="align-middle text-center" scope="col">Kurikulum</th>
-                        <th class="align-middle text-center" scope="col">status</th>
+                        <th class="align-middle text-center" scope="col">Tanggal Mulai Ujian</th>
+                        <th class="align-middle text-center" scope="col">Status</th>
                         <th class="align-middle text-center" scope="col">Aksi</th>
                     </tr>
                 </thead>
@@ -49,6 +50,7 @@
                         <td class="align-middle">{{data.Alamat}}</td>
                         <td class="align-middle">{{data.Tikatan_Satuan_Lembaga}}</td>
                         <td class="align-middle">{{data.kurikulum_lebaga}}</td>
+                        <td class="align-middle text-center">{{data.tanggal_mulai_ujian|date:"d-m-Y"}}</td>
                         <td class="align-middle">{{data.status|yesno:"Active,Tidak Active"}}</td>
                         <td class="align-middle text-center">
                             <div class="btn-group" role="group" aria-label="Basic mixed styles example">
