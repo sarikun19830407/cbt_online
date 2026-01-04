@@ -140,6 +140,7 @@ def update_userlogin(request):
     form = forms.FormUpdateSuperAdmin(request.POST or None, instance=request.user)
     if request.method == "POST":
         if form.is_valid():
+            form.instance.Nama_User = request.user
             form.save()
             messages.add_message(request, messages.INFO, 'Data telah berhasil Tambahkan')
             return redirect(reverse('cbt:home'))
@@ -164,7 +165,7 @@ def update_userlogin(request):
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
 @csrf_protect
 def kurikulum_lembaga(request):
-    Data = models.KurikulumLembaga.objects.all()
+    Data = models.KurikulumLembaga.objects.filter(Nama_User=request.user)
 
     # Add additional context
     context={
@@ -211,13 +212,17 @@ def Hapus_kurikulum (request, pk):
     except ValueError:
         messages.error(request, "ID kurikulum tidak valid.")
         return redirect(reverse('cbt:kurikulum_lembaga'))
-
+    
     try:
         Data = get_object_or_404(models.KurikulumLembaga, id=pk)
     except Http404:
         messages.error(request, "Data kurikulum tidak ditemukan.")
         return redirect(reverse('cbt:kurikulum_lembaga'))  # Redirect ke halaman daftar pengguna
     
+    if request.user.is_superuser:
+        if Data.Nama_User != request.user:
+            messages.error(request, "Anda hanya bisa hapus data Anda sendiri.")
+            return redirect (reverse('cbt:kurikulum_lembaga'))
 
     if request.method == "POST":
         Data.delete()
@@ -240,16 +245,23 @@ def Hapus_kurikulum (request, pk):
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
 @csrf_protect
 def Ubah_kurikulum (request, pk):
+    
     try:
         pk= int(pk)
     except ValueError:
         messages.error(request, "ID kurikulum tidak valid.")
         return redirect(reverse('cbt:kurikulum_lembaga'))
+    
     try:
         Data = get_object_or_404(models.KurikulumLembaga, id=pk)
     except Http404:
         messages.error(request, "Data pengguna tidak ditemukan.")
         return redirect(reverse('cbt:kurikulum_lembaga'))  # Redirect ke halaman daftar pengguna
+    
+    if request.user.is_superuser:
+        if Data.Nama_User != request.user:
+            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
+            return redirect (reverse('cbt:kurikulum_lembaga'))
     
     form = forms.Form_kurikulum(request.POST or None, instance=Data)
     if request.method == "POST":
@@ -375,10 +387,10 @@ def semester(request):
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
 @csrf_protect
 def tahun_pelajaran(request):
-    Data = models.TahunPelajaran.objects.all()
+    Data = models.TahunPelajaran.objects.filter(Nama_User=request.user)
     context ={
         "data":"Tahun Pelajaran",
-        "judul":"CBT-Tahun Pelabi bi-plus-circlejaran",
+        "judul":"CBT-Tahun Pelajaran",
         "Data":Data,
         'icon':"bi bi-calendar-check"
     }
@@ -442,7 +454,10 @@ def Hapus_Tahun_Pelajaran (request, pk):
         messages.error(request, "Data tahun pelajaran tidak ditemukan.")
         return redirect(reverse('cbt:tahun_pelajaran'))  # Redirect ke halaman daftar pengguna
     
-    
+    if request.user.is_superuser:
+        if Data.Nama_User != request.user:
+            messages.error(request, "Anda hanya bisa hapus data Anda sendiri.")
+            return redirect (reverse('cbt:tahun_pelajaran'))
 
     if request.method == "POST":
         Data.delete()
@@ -474,8 +489,12 @@ def Ubah_Tahun_Pelajaran (request, pk):
     except Http404:
         messages.error(request, "Data tahun pelajaran tidak ditemukan.")
         return redirect(reverse('cbt:tahun_pelajaran'))  # Redirect ke halaman daftar pengguna
-    
-    
+
+    if request.user.is_superuser:
+        if Data.Nama_User != request.user:
+            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
+            return redirect (reverse('cbt:tahun_pelajaran'))
+
     form = forms.FormTahunPeljaran(request.POST or None, instance=Data)
     if request.method == "POST":
         if form.is_valid():
@@ -591,7 +610,11 @@ def Hapus_lembaga (request, pk):
     except Http404:
         messages.error(request, "Data lembaga tidak ditemukan.")
         return redirect(reverse('cbt:lembaga'))  # Redirect ke halaman daftar pengguna
-    
+
+    if request.user.is_superuser:
+        if Data.Nama_User != request.user:
+            messages.error(request, "Anda hanya bisa menghapus data Anda sendiri.")
+            return redirect (reverse('cbt:lembaga'))
 
     if request.method == "POST":
         Data.delete()
@@ -624,6 +647,11 @@ def Ubah_lembaga (request, pk):
         messages.error(request, "Data lembaga tidak ditemukan.")
         return redirect(reverse('cbt:lembaga'))  # Redirect ke halaman daftar pengguna
     
+    if request.user.is_superuser:
+        if Data.Nama_User != request.user:
+            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
+            return redirect (reverse('cbt:lembaga'))
+
     form = forms.Form_lembaga(request.POST or None, instance=Data)
     if request.method == "POST":
         if form.is_valid():
@@ -641,246 +669,6 @@ def Ubah_lembaga (request, pk):
         'icon':"bi bi-pen"
         }
     return render (request, 'super_admin/form.html', context)
-
-
-
-
-@login_required(login_url=settings.LOGIN_URL)
-@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
-@csrf_protect
-def Kelas(request):
-    Data = models.Kelas.objects.all()
-    context ={
-        "data":"Kelas",
-        "judul":"CBT-Kelas",
-        "Data":Data,
-        "icon":"bi bi-backpack3"
-    }
-
-    return render (request, 'super_admin/list_kelas.html', context)
-
-
-
-
-
-@login_required(login_url=settings.LOGIN_URL)
-@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
-@csrf_protect
-def tambah_kelas(request):
-    form = forms.FormKelas(request.POST or None)
-    if request.method == "POST":
-        if form.is_valid():
-            # cek lembaga aktif
-            lembaga_aktif = models.Lembaga.objects.filter(status=True).first()
-            if not lembaga_aktif:
-                messages.error(request, "Belum ada Lembaga dengan status aktif. Silakan set dulu.")
-                return redirect(reverse("cbt:tambah_kelas"))  # balik ke halaman form
-
-            form.instance.Nama_User = request.user
-            form.instance.Nama_Lembaga = lembaga_aktif
-            form.instance.satatus = True
-            form.save()
-            messages.add_message(request, messages.INFO, 'Data telah berhasil ditambahkan')
-            return redirect(reverse('cbt:Kelas'))
-        else:
-            messages.error(request, 'Data masih salah.')
-
-    context = {
-        "data": "Tambah Kelas",
-        "NamaForm": "Form Tambah Kelas",
-        "judul": "CBT-Kelas",
-        "link": reverse("cbt:Kelas"),
-        "form": form,
-        "icon": "bi bi-plus-circle"
-    }
-    return render(request, 'super_admin/form.html', context)
-
-
-
-@login_required(login_url=settings.LOGIN_URL)
-@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
-@csrf_protect
-def hapus_kelas (request, pk):
-    try:
-        pk= int(pk)
-    except ValueError:
-        messages.error(request, "ID kelas tidak valid.")
-        return redirect(reverse('cbt:Kelas'))
-
-    try:
-        Data = get_object_or_404(models.Kelas, id=pk)
-    except Http404:
-        messages.error(request, "Data kelas tidak ditemukan.")
-        return redirect(reverse('cbt:Kelas'))  # Redirect ke halaman daftar pengguna
-    
-    
-    if request.method == "POST":
-        Data.delete()
-        messages.add_message(request, messages.INFO, 'Data telah berhasil Hapus')
-        return redirect (reverse('cbt:Kelas'))
-    context = {
-        "data" : f"Hapus Kelas {Data}",
-        "judul":"CBT-Kelas",
-        "link":reverse("cbt:Kelas"),
-        "Data":f'kelas {Data}',
-        "icon":"bi bi-trash3"
-        }
-    return render (request, 'super_admin/hapus.html', context)
-
-
-
-@login_required(login_url=settings.LOGIN_URL)
-@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
-@csrf_protect
-def Ubah_Kelas (request, pk):
-    try:
-        pk= int(pk)
-    except ValueError:
-        messages.error(request, "ID kelas tidak valid.")
-        return redirect(reverse('cbt:Kelas'))
-
-    try:
-        Data = get_object_or_404(models.Kelas, id=pk)
-    except Http404:
-        messages.error(request, "Data kelas tidak ditemukan.")
-        return redirect(reverse('cbt:Kelas'))  # Redirect ke halaman daftar pengguna
-    
-    form = forms.FormKelas(request.POST or None, instance=Data)
-    if request.method == "POST":
-        if form.is_valid():
-            form.save()
-            messages.add_message(request, messages.INFO, 'Data telah berhasil diubah')
-            return redirect(reverse('cbt:Kelas'))
-        else:
-            messages.error(request, 'Data Masih Salah.')
-    context = {
-        "data" : "Ubah Kelas",
-        "NamaForm": "Form ubah Kelas",
-        "judul":"CBT-Kelas",
-        "link":reverse("cbt:Kelas"),
-        "form":form,
-        "icon":"bi bi-pencil"
-        
-        }
-    return render (request, 'super_admin/form.html', context)
-
-
-
-
-@login_required(login_url=settings.LOGIN_URL)
-@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
-@csrf_protect
-def Rombel(request):
-    Data = models.Rombel_kelas.objects.all()
-    context ={
-        "data":"Rombel",
-        "judul":"CBT-Rombel",
-        "Data":Data,
-        "icon":"bi bi-backpack3"
-    }
-
-    return render (request, 'super_admin/list_rombel.html', context)
-
-
-@login_required(login_url=settings.LOGIN_URL)
-@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
-@csrf_protect
-def tambah_rombel(request):
-    form = forms.FormRombel(request.POST or None)
-    if request.method == "POST":
-        if form.is_valid():
-            form.instance.Nama_User = request.user
-            lembaga_aktif = models.Lembaga.objects.filter(status=True).first()
-            form.instance.Nama_Lembaga = lembaga_aktif
-            form.instance.satatus = True
-            form.save()
-            messages.add_message(request, messages.INFO, 'Data telah berhasil Tambahkan')
-            return redirect(reverse('cbt:Rombel'))
-        else:
-            messages.error(request, 'Data Masih Salah.')
-    context = {
-        "data" : "Tambah Rombel",
-        "NamaForm": "Form Tambah Rombel",
-        "judul":"CBT-Rombel",
-        "link":reverse("cbt:Rombel"),
-        "form":form,
-        "icon":"bi bi-plus-circle"
-        }
-    return render (request, 'super_admin/form.html', context)
-
-
-@login_required(login_url=settings.LOGIN_URL)
-@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
-@csrf_protect
-def hapus_rombel (request, pk):
-    try:
-        pk= int(pk)
-    except ValueError:
-        messages.error(request, "ID rombel tidak valid.")
-        return redirect(reverse('cbt:Rombel'))
-
-    try:
-        Data = get_object_or_404(models.Rombel_kelas, id=pk)
-    except Http404:
-        messages.error(request, "Data rombel tidak ditemukan.")
-        return redirect(reverse('cbt:Rombel'))  # Redirect ke halaman daftar pengguna
-    
-    
-
-    if request.method == "POST":
-        Data.delete()
-        messages.add_message(request, messages.INFO, 'Data telah berhasil Hapus')
-        return redirect (reverse('cbt:Rombel'))
-    context = {
-        "data" : f"Hapus Rombel {Data}",
-        "judul":"CBT-Rombel",
-        "link":reverse("cbt:Rombel"),
-        "Data":f'Rombel {Data}',
-        "icon":"bi bi-trash3"
-        }
-    return render (request, 'super_admin/hapus.html', context)
-
-
-
-@login_required(login_url=settings.LOGIN_URL)
-@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
-@csrf_protect
-def ubah_rombel (request, pk):
-    try:
-        pk= int(pk)
-    except ValueError:
-        messages.error(request, "ID rombel tidak valid.")
-        return redirect(reverse('cbt:Rombel'))
-
-    try:
-        Data = get_object_or_404(models.Rombel_kelas, id=pk)
-    except Http404:
-        messages.error(request, "Data rombel tidak ditemukan.")
-        return redirect(reverse('cbt:Rombel'))  # Redirect ke halaman daftar pengguna
-    
-    
-    form = forms.FormRombel(request.POST or None, instance=Data)
-    if request.method == "POST":
-        if form.is_valid():
-            form.save()
-            messages.add_message(request, messages.INFO, 'Data telah berhasil diubah')
-            return redirect(reverse('cbt:Rombel'))
-        else:
-            messages.error(request, 'Data Masih Salah.')
-    context = {
-        "data" : "Ubah Rombel",
-        "NamaForm": "Form ubah Rombel",
-        "judul":"CBT-Rombel",
-        "link":reverse("cbt:Rombel"),
-        "form":form,
-        "icon":"bi bi-pencil"
-        
-        }
-    return render (request, 'super_admin/form.html', context)
-
-
-
-
 
 
 
@@ -955,6 +743,10 @@ def Hapus_mapel (request, pk):
         messages.error(request, "Data mata pelajaran tidak ditemukan.")
         return redirect(reverse('cbt:matapelajaran'))  # Redirect ke halaman daftar pengguna
     
+    if request.user.is_superuser:
+        if Data.Nama_User != request.user:
+            messages.error(request, "Anda hanya bisa hapus data Anda sendiri.")
+            return redirect (reverse('cbt:matapelajaran'))
 
     if request.method == "POST":
         Data.delete()
@@ -988,6 +780,10 @@ def Ubah_Mata_Pelajaran (request, pk):
         messages.error(request, "Data mata pelajaran tidak ditemukan.")
         return redirect(reverse('cbt:matapelajaran'))  # Redirect ke halaman daftar pengguna
     
+    if request.user.is_superuser:
+        if Data.Nama_User != request.user:
+            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
+            return redirect (reverse('cbt:matapelajaran'))
     
     form = forms.MatapelajaranForm(request.POST or None, instance=Data)
     if request.method == "POST":
@@ -1010,6 +806,254 @@ def Ubah_Mata_Pelajaran (request, pk):
 
 
 
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
+@csrf_protect
+def Kelas(request):
+    Data = models.Kelas.objects.filter(Nama_User=request.user)
+    context ={
+        "data":"Kelas",
+        "judul":"CBT-Kelas",
+        "Data":Data,
+        "icon":"bi bi-backpack3"
+    }
+
+    return render (request, 'super_admin/list_kelas.html', context)
+
+
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
+@csrf_protect
+def tambah_kelas(request):
+    form = forms.FormKelas(request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            # cek lembaga aktif
+            lembaga_aktif = models.Lembaga.objects.filter(status=True).first()
+            if not lembaga_aktif:
+                messages.error(request, "Belum ada Lembaga dengan status aktif. Silakan set dulu.")
+                return redirect(reverse("cbt:tambah_kelas"))  # balik ke halaman form
+
+            form.instance.Nama_User = request.user
+            form.instance.Nama_Lembaga = lembaga_aktif
+            form.instance.satatus = True
+            form.save()
+            messages.add_message(request, messages.INFO, 'Data telah berhasil ditambahkan')
+            return redirect(reverse('cbt:Kelas'))
+        else:
+            messages.error(request, 'Data masih salah.')
+
+    context = {
+        "data": "Tambah Kelas",
+        "NamaForm": "Form Tambah Kelas",
+        "judul": "CBT-Kelas",
+        "link": reverse("cbt:Kelas"),
+        "form": form,
+        "icon": "bi bi-plus-circle"
+    }
+    return render(request, 'super_admin/form.html', context)
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
+@csrf_protect
+def hapus_kelas (request, pk):
+    try:
+        pk= int(pk)
+    except ValueError:
+        messages.error(request, "ID kelas tidak valid.")
+        return redirect(reverse('cbt:Kelas'))
+
+    try:
+        Data = get_object_or_404(models.Kelas, id=pk)
+    except Http404:
+        messages.error(request, "Data kelas tidak ditemukan.")
+        return redirect(reverse('cbt:Kelas'))  # Redirect ke halaman daftar pengguna
+    
+    if request.user.is_superuser:
+        if Data.Nama_User != request.user:
+            messages.error(request, "Anda hanya bisa hapus data Anda sendiri.")
+            return redirect (reverse('cbt:Kelas'))
+    
+    if request.method == "POST":
+        Data.delete()
+        messages.add_message(request, messages.INFO, 'Data telah berhasil Hapus')
+        return redirect (reverse('cbt:Kelas'))
+    context = {
+        "data" : f"Hapus Kelas {Data}",
+        "judul":"CBT-Kelas",
+        "link":reverse("cbt:Kelas"),
+        "Data":f'kelas {Data}',
+        "icon":"bi bi-trash3"
+        }
+    return render (request, 'super_admin/hapus.html', context)
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
+@csrf_protect
+def Ubah_Kelas (request, pk):
+    try:
+        pk= int(pk)
+    except ValueError:
+        messages.error(request, "ID kelas tidak valid.")
+        return redirect(reverse('cbt:Kelas'))
+
+    try:
+        Data = get_object_or_404(models.Kelas, id=pk)
+    except Http404:
+        messages.error(request, "Data kelas tidak ditemukan.")
+        return redirect(reverse('cbt:Kelas'))  # Redirect ke halaman daftar pengguna
+    
+    if request.user.is_superuser:
+        if Data.Nama_User != request.user:
+            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
+            return redirect (reverse('cbt:Kelas'))
+
+    form = forms.FormKelas(request.POST or None, instance=Data)
+    if request.method == "POST":
+        if form.is_valid():
+            form.save()
+            messages.add_message(request, messages.INFO, 'Data telah berhasil diubah')
+            return redirect(reverse('cbt:Kelas'))
+        else:
+            messages.error(request, 'Data Masih Salah.')
+    context = {
+        "data" : "Ubah Kelas",
+        "NamaForm": "Form ubah Kelas",
+        "judul":"CBT-Kelas",
+        "link":reverse("cbt:Kelas"),
+        "form":form,
+        "icon":"bi bi-pencil"
+        
+        }
+    return render (request, 'super_admin/form.html', context)
+
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
+@csrf_protect
+def Rombel(request):
+    Data = models.Rombel_kelas.objects.filter(Nama_User=request.user)
+    context ={
+        "data":"Rombel",
+        "judul":"CBT-Rombel",
+        "Data":Data,
+        "icon":"bi bi-backpack3"
+    }
+
+    return render (request, 'super_admin/list_rombel.html', context)
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
+@csrf_protect
+def tambah_rombel(request):
+    form = forms.FormRombel(request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            form.instance.Nama_User = request.user
+            lembaga_aktif = models.Lembaga.objects.filter(status=True).first()
+            form.instance.Nama_Lembaga = lembaga_aktif
+            form.instance.satatus = True
+            form.save()
+            messages.add_message(request, messages.INFO, 'Data telah berhasil Tambahkan')
+            return redirect(reverse('cbt:Rombel'))
+        else:
+            messages.error(request, 'Data Masih Salah.')
+    context = {
+        "data" : "Tambah Rombel",
+        "NamaForm": "Form Tambah Rombel",
+        "judul":"CBT-Rombel",
+        "link":reverse("cbt:Rombel"),
+        "form":form,
+        "icon":"bi bi-plus-circle"
+        }
+    return render (request, 'super_admin/form.html', context)
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
+@csrf_protect
+def hapus_rombel (request, pk):
+    try:
+        pk= int(pk)
+    except ValueError:
+        messages.error(request, "ID rombel tidak valid.")
+        return redirect(reverse('cbt:Rombel'))
+
+    try:
+        Data = get_object_or_404(models.Rombel_kelas, id=pk)
+    except Http404:
+        messages.error(request, "Data rombel tidak ditemukan.")
+        return redirect(reverse('cbt:Rombel'))  # Redirect ke halaman daftar pengguna
+    
+    if request.user.is_superuser:
+        if Data.Nama_User != request.user:
+            messages.error(request, "Anda hanya bisa hapus data Anda sendiri.")
+            return redirect (reverse('cbt:matapelajaran'))
+
+    if request.method == "POST":
+        Data.delete()
+        messages.add_message(request, messages.INFO, 'Data telah berhasil Hapus')
+        return redirect (reverse('cbt:Rombel'))
+    context = {
+        "data" : f"Hapus Rombel {Data}",
+        "judul":"CBT-Rombel",
+        "link":reverse("cbt:Rombel"),
+        "Data":f'Rombel {Data}',
+        "icon":"bi bi-trash3"
+        }
+    return render (request, 'super_admin/hapus.html', context)
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
+@csrf_protect
+def ubah_rombel (request, pk):
+    try:
+        pk= int(pk)
+    except ValueError:
+        messages.error(request, "ID rombel tidak valid.")
+        return redirect(reverse('cbt:Rombel'))
+
+    try:
+        Data = get_object_or_404(models.Rombel_kelas, id=pk)
+    except Http404:
+        messages.error(request, "Data rombel tidak ditemukan.")
+        return redirect(reverse('cbt:Rombel'))  # Redirect ke halaman daftar pengguna
+    
+    if request.user.is_superuser:
+        if Data.Nama_User != request.user:
+            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
+            return redirect (reverse('cbt:matapelajaran'))
+
+    form = forms.FormRombel(request.POST or None, instance=Data)
+    if request.method == "POST":
+        if form.is_valid():
+            form.save()
+            messages.add_message(request, messages.INFO, 'Data telah berhasil diubah')
+            return redirect(reverse('cbt:Rombel'))
+        else:
+            messages.error(request, 'Data Masih Salah.')
+    context = {
+        "data" : "Ubah Rombel",
+        "NamaForm": "Form ubah Rombel",
+        "judul":"CBT-Rombel",
+        "link":reverse("cbt:Rombel"),
+        "form":form,
+        "icon":"bi bi-pencil"
+        
+        }
+    return render (request, 'super_admin/form.html', context)
 
 
 
@@ -1031,7 +1075,7 @@ def user_staff(request):
         except (ValueError, TypeError):
             items_per_page = 30  # Default jika invalid
 
-    data_list = models.Pengguna.objects.filter(is_staff=True, is_superuser=False)
+    data_list = models.Pengguna.objects.filter(is_staff=True, is_superuser=False, Nama_User=request.user)
     if cari:
         data_list = data_list.filter(Nama_Pengguna__icontains=cari) | data_list.filter(username__icontains=cari)
 
@@ -1110,6 +1154,10 @@ def hapus_user_staff (request, pk):
         messages.error(request, "Data pengguna tidak ditemukan.")
         return redirect(reverse('cbt:user_staff'))  # Redirect ke halaman daftar pengguna
     
+    if request.user.is_superuser:
+        if Data.Nama_User != request.user:
+            messages.error(request, "Anda hanya bisa hapus data Anda sendiri.")
+            return redirect (reverse('cbt:matapelajaran'))
 
     if request.method == "POST":
         Data.delete()
@@ -1140,7 +1188,12 @@ def Ubah_user_staff (request, pk):
         Data = get_object_or_404(models.Pengguna, id=pk)
     except Http404:
         messages.error(request, "Data pengguna tidak ditemukan.")
-        return redirect(reverse('cbt:user_staff'))  # Redirect ke halaman daftar pengguna
+        return redirect(reverse('cbt:user_staff'))  
+    
+    if request.user.is_superuser:
+        if Data.Nama_User != request.user:
+            messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
+            return redirect (reverse('cbt:matapelajaran'))
 
     form = forms.Form_Ubah_Staff(request.POST or None, instance=Data)
     if request.method == "POST":
@@ -1169,7 +1222,21 @@ login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
 @csrf_protect
 def active_user_staff(request, pk):
-    user_target = get_object_or_404(models.Pengguna, id=pk, is_staff=True)
+    try:
+        pk = int(pk)
+    except ValueError:
+        messages.error(request, "ID user staff tidak valid.")
+        return redirect(reverse('cbt:user_staff'))  
+    try:
+        user_target = get_object_or_404(models.Pengguna, id=pk, is_staff=True)
+    except Http404:
+        messages.error(request, "Data pengguna tidak ditemukan.")
+        return redirect(reverse('cbt:user_staff'))
+    
+    if request.user.is_superuser:
+        if user_target.Nama_User != request.user:
+            messages.error(request, "Anda hanya bisa aktifkan data Anda sendiri.")
+            return redirect (reverse('cbt:user_staff'))
 
     # Toggle status aktif
     user_target.is_active = not user_target.is_active
@@ -1199,7 +1266,7 @@ def user_siswa (request):
 
     data_list = models.Pengguna.objects.filter(
         is_superuser=False, 
-        is_siswa=True
+        is_siswa=True, Nama_User=request.user
         ).order_by("kelas__kelas", "rombel__Rombel", "Nama")
     if cari:
         data_list = data_list.filter(Nama__icontains=cari) | data_list.filter(username__icontains=cari)
@@ -1239,7 +1306,21 @@ login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
 @csrf_protect
 def active_user_siswa(request, pk):
-    user_target = get_object_or_404(models.Pengguna, id=pk, is_siswa=True)
+    try:
+        pk = int(pk)
+    except ValueError:
+        messages.error(request, "ID user siswa tidak valid.")
+        return redirect(reverse('cbt:user_siswa'))  
+    try:
+        user_target = get_object_or_404(models.Pengguna, id=pk, is_siswa=True)
+    except Http404:
+        messages.error(request, "Data pengguna tidak ditemukan.")
+        return redirect(reverse('cbt:user_siswa'))
+    
+    if request.user.is_superuser:
+        if user_target.Nama_User != request.user:
+            messages.error(request, "Anda hanya bisa aktifkan data Anda sendiri.")
+            return redirect (reverse('cbt:user_siswa'))
 
     # Toggle status aktif
     user_target.is_active = not user_target.is_active
@@ -1359,7 +1440,13 @@ def Ubah_user_siswa(request, pk):
         Data = get_object_or_404(models.Pengguna, id=pk)
     except Http404:
         messages.error(request, "Data pengguna tidak ditemukan.")
-        return redirect(reverse('cbt:user_siswa'))  # Redirect ke halaman daftar pengguna
+        return redirect(reverse('cbt:user_siswa'))
+    
+    if request.user.is_superuser:
+        if Data.Nama_User != request.user:
+            messages.error(request, "Anda hanya bisa ubah data Anda sendiri.")
+            return redirect (reverse('cbt:user_siswa'))
+
     
     
     form = forms.Form_siswa(request.POST or None, instance=Data)

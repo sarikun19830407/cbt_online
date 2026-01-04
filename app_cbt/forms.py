@@ -15,6 +15,23 @@ from datetime import date, datetime
 
 
 
+class LoginForm(forms.Form):
+    username = forms.CharField(
+        label="Username",
+        widget=forms.TextInput(attrs={
+            "class": "form-control",
+            "placeholder": "Username"
+        })
+    )
+    password = forms.CharField(
+        label="Password",
+        widget=forms.PasswordInput(attrs={
+            "class": "form-control",
+            "placeholder": "Password"
+        })
+    )
+
+
 
 class FormUpdateSuperAdmin (ModelForm):
     password1 = forms.CharField(

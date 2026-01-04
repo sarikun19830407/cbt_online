@@ -229,6 +229,7 @@ def setting_soal(request):
     # Ambil data SetingSoal berdasarkan semester dan tahun pelajaran
     if semester_obj and tahun_aktif:
         data_list = models.SetingSoal.objects.filter(
+            Nama_User=request.user,
             Semester=semester_obj,
             Tahun_Pelajaran=tahun_aktif, 
             jenis_ujian=jenis_ujian
@@ -404,6 +405,7 @@ def hapus_setting_soal(request):
         if not Data.exists():
             raise Http404("Data Madrasah tidak ditemukan.")
         
+        
         # Pemeriksaan kepemilikan data
         for data in Data:
             if data.Nama_User != request.user:
@@ -444,13 +446,14 @@ def Ubah_setting_soal (request, pk):
         Data = get_object_or_404(models.SetingSoal, id=pk)
     except Http404:
         messages.error(request, "Data setting soal tidak ditemukan.")
-        return redirect(reverse('cbt:setting_soal'))  # Redirect ke halaman daftar pengguna
+        return redirect(reverse('cbt:setting_soal'))  
     
     if request.user.is_staff:
-        # Pengguna provinsi hanya bisa mengedit dirinya sendiri
         if Data.Nama_User != request.user:
             messages.error(request, "Anda hanya bisa mengedit data Anda sendiri.")
             return redirect(reverse('cbt:setting_soal'))
+        
+
     form = forms_staff.SetingSoalForm(request.POST or None, instance=Data)
     if request.method == "POST":
         if form.is_valid():

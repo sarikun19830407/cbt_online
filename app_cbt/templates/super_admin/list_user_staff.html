@@ -28,7 +28,13 @@
                         <td class="align-middle">{{data.username}}</td>
                         <td class="align-middle">{{data.Nama}}</td>
                         <td class="align-middle">{{data.Nama_Lembaga}}</td>
-                        <td class="align-middle">{{data.is_active|yesno:"Active,Tidak Active"}}</td>
+                        <td class="align-middle text-center">
+                            {% if data.is_active %}
+                            <span class="btn btn-success btn-sm disabled" style="font-size: 11px;">Active</span>
+                            {% else %}
+                            <span class="btn btn-danger btn-sm disabled" style="font-size: 11px;">Tidak Active</span>
+                            {% endif %}
+                        </td>
                         <td class="align-middle text-center">
                             <div class="btn-group" role="group" aria-label="Basic mixed styles example">
                                 <a class="btn btn-warning btn-sm bi bi-pencil-square" style="font-size: 12px;"

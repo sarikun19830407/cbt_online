@@ -59,7 +59,15 @@
                         <td class="align-middle text-center">{{data.auto_password}}</td>
                         <td class="align-middle text-center">{{data.kelas}}</td>
                         <td class="align-middle text-center">{{data.rombel}}</td>
-                        <td class="align-middle text-center">{{data.is_active|yesno:"Active,Tidak Active"}}</td>
+                        <td class="align-middle text-center">
+                            {% if data.is_active %}
+                            <span class="btn btn-success btn-sm disabled" style="font-size: 11px;">Active</span>
+                            {% else %}
+                            <span class="btn btn-danger btn-sm disabled" style="font-size: 11px;">Tidak Active</span>
+                            {% endif %}
+                        </td>
+
+
                         <td class="align-middle text-center">
                             <div class="btn-group" role="group" aria-label="Basic mixed styles example">
                                 <a class="btn btn-warning btn-sm bi bi-pencil-square" style="font-size: 12px;"
