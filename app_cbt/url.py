@@ -31,6 +31,8 @@ urlpatterns =[
     path('cetak_semua_kartu_pdf', view_admin.cetak_semua_kartu_pdf, name='cetak_semua_kartu_pdf'),
     path('generate-ulang-password-siswa/',view_admin.generate_ulang_password_siswa,name='generate_ulang_password_siswa'),
     path('proses-generate-password-siswa', view_admin.proses_generate_password_siswa, name='proses_generate_password_siswa'),
+    path('generate-ulang-password-per-siswa/<pk>/', view_admin.generate_ulang_password_per_siswa, name='generate_ulang_password_per_siswa'),
+    path('generate-password-per-siswa/<pk>/,', view_admin.generate_password_persiswa, name='generate_password_persiswa'),
 
 
     path('lembaga', view_admin.lembaga, name='lembaga'),

@@ -1476,7 +1476,7 @@ def Ubah_user_siswa(request, pk):
         "icon":"bi bi-pencil"
         
         }
-    return render (request, 'super_admin/form_user.html', context)
+    return render (request, 'super_admin/form.html', context)
 
 
 
@@ -1773,6 +1773,86 @@ def cetak_semua_kartu_pdf(request):
 
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+@csrf_protect
+def generate_ulang_password_per_siswa(request, pk):
+    try:
+        pk= int(pk)
+    except ValueError:
+        messages.error(request, "ID tidak valid.")
+        return redirect('cbt:user_siswa')
+    try:
+        siswa = get_object_or_404(models.Pengguna, id=pk)
+    except Http404 :
+        messages.error(request,'Siswa tidak ditemukan atau bukan siswa Anda.')
+        return redirect('cbt:user_siswa')
+    context =   {
+        'judul':"Generet password siswa",
+        'data':"Generet password siswa",
+        'siswa': siswa,
+        "link": reverse('cbt:user_siswa'),
+        "icon":"bi bi-arrow-repeat"
+    }
+    return render(request,'super_admin/generate_password_per_siswa.html', context)
+
+
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+@csrf_protect
+def generate_password_persiswa(request, pk):
+    try:
+        pk= int(pk)
+    except ValueError:
+        messages.error(request, "ID tidak valid.")
+        return redirect('cbt:user_siswa')
+    if request.method == 'POST':
+        try:
+            siswa = get_object_or_404(models.Pengguna, id=pk,)
+        except models.Pengguna.DoesNotExist:
+            messages.error(request,'Siswa tidak ditemukan atau bukan siswa Anda.')
+            return redirect('cbt:user_siswa')
+
+        # Karakter yang diperbolehkan
+        allowed_chars = ''.join([
+            ch for ch in (string.ascii_uppercase + string.digits)
+            if ch not in ['O', 'I', '0', '1']
+        ])
+
+        # Generate password tepat 8 karakter
+        auto_password = ''.join(
+            random.choice(allowed_chars)
+            for _ in range(8)
+        )
+
+        # Hash password Django
+        siswa.set_password(auto_password)
+
+        # Simpan password asli
+        siswa.auto_password = auto_password
+
+        # Simpan
+        siswa.save(update_fields=[
+            'password',
+            'auto_password',
+        ])
+
+        messages.success(
+            request,
+            f'Berhasil generate password siswa {siswa.Nama}.'
+        )
+
+        return redirect('cbt:user_siswa')
+
+    return redirect('cbt:user_siswa')
+
+
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
 def generate_ulang_password_siswa(request):
 
     siswa_count = models.Pengguna.objects.filter(is_siswa=True,Nama_User=request.user).count()
@@ -1785,9 +1865,6 @@ def generate_ulang_password_siswa(request):
         "icon":"bi bi-arrow-repeat"
     }
     return render(request,'super_admin/generate_ulang_password_siswa.html', context)
-
-
-
 
 
 

@@ -1,10 +1,9 @@
 {% extends 'base.html' %}
 
 
-
+{% block konten %}
 
 <body>
-    {% block konten %}
     <div class="container-fluid">
         <nav class="navbar navbar-expand-lg rounded">
             <div class="container-fluid">
@@ -18,18 +17,17 @@
                     <form method="POST" action="{% url 'cbt:hapus_user_siswa' %}" id="delete_form">
                         {% csrf_token %}
                         <div class="btn-group mb-2" role="group" aria-label="Basic mixed styles example">
-                            <a href="{% url 'cbt:generate_ulang_password_siswa' %}" class="btn btn-warning btn-sm">
-                                <i class="bi bi-arrow-repeat"></i>
-                                Generate
+                            <a href="{% url 'cbt:generate_ulang_password_siswa' %}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-arrow-repeat fst-normal">&nbsp;Generate</i>
                             </a>
-                            <a class="btn btn-primary btn-sm bi bi-arrow-down-square" style="font-size: 12px;"
+                            <a class="btn btn-warning btn-sm bi bi-arrow-down-square" style="font-size: 12px;"
                                 href="{% url 'cbt:uploadUserSiswa' %}">&nbsp;&nbsp;Impor</a>
                             <a class="btn btn-success btn-sm bi bi-plus-circle" style="font-size: 12px;"
                                 href="{% url 'cbt:tambah_user_siswa' %}">&nbsp;Tambah</a>
                             <a class="btn btn-info btn-sm bi bi-file-pdf" style="font-size: 12px;"
-                                href="{% url 'cbt:cetak_semua_kartu_pdf' %}">&nbsp;Kartu</a>
-                            <button class="btn btn-danger btn-sm bi bi-trash" type="submit" id="delete_button style="
-                                font-size: 12px;" disabled>&nbsp;Hapus</button>
+                                href="{% url 'cbt:cetak_semua_kartu_pdf' %}">&nbsp;Kartu ujian</a>
+                            <button class="btn btn-danger btn-sm bi bi-trash" style="font-size: 12px;" type="submit"
+                                id="delete_button" disabled>&nbsp;Hapus</button>
                         </div>
                 </div>
             </div>
@@ -80,6 +78,8 @@
                                 <a class="btn btn-sm bi bi-person-check {% if data.is_active %}btn-info{% else %}btn-success{% endif %}"
                                     style="font-size: 12px;" href="{% url 'cbt:active_user_siswa' data.id %}">
                                     &nbsp;{% if data.is_active %}Nonaktifkan{% else %}Aktifkan{% endif %}</a>
+                                <a class="btn btn-primary btn-sm bi bi-pencil-square" style="font-size: 12px;"
+                                    href="{% url 'cbt:generate_ulang_password_per_siswa' data.id %}">&nbsp;Generet</a>
                             </div>
                         </td>
                     </tr>
@@ -91,5 +91,5 @@
         </div>
         {% include "setting/pilih.html" %}
     </div>
-    {%endblock%}
 </body>
+{%endblock%}

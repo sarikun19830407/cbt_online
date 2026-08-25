@@ -600,27 +600,6 @@ def generate_auto_password(length=8):
 
 
 class Form_siswa(forms.ModelForm):
-    password1 = forms.CharField(
-        label="Password Baru",
-        widget=forms.PasswordInput(
-            attrs={'class': 'form-control mb-3', 
-                    'placeholder': 'Minimal 8 karakter', 
-                    "id": "password1"
-            }
-        ),
-        required=False
-    )
-    password2 = forms.CharField(
-        label="Konfirmasi Password",
-        widget=forms.PasswordInput(
-            attrs={
-                'class': 'form-control mb-3', 
-                'placeholder': 'Ulangi password baru', 
-                "id": "password2"
-            }
-        ),
-        required=False
-    )
 
     class Meta:
         model = models.Pengguna
@@ -646,10 +625,6 @@ class Form_siswa(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Jika instance baru (belum ada pk), sembunyikan password1 & password2
-        if not self.instance.pk:
-            self.fields.pop('password1')
-            self.fields.pop('password2')
 
     def clean_username(self):
         username = self.cleaned_data.get('username')
@@ -659,45 +634,8 @@ class Form_siswa(forms.ModelForm):
             raise ValidationError(f"Username (NIK) harus 16 digit, sekarang {len(username)}.")
         return username
 
-    def clean(self):
-        cleaned_data = super().clean()
-        password1 = cleaned_data.get('password1')
-        password2 = cleaned_data.get('password2')
 
-        if password1 or password2:
-            if password1 != password2:
-                raise forms.ValidationError("Password tidak sama, silakan ulangi.")
-        return cleaned_data
-
-    def clean_password1(self):
-        password = self.cleaned_data.get('password1')
-        if password:  # validasi hanya kalau diisi
-            if len(password) < 8:
-                raise ValidationError("Password minimal 8 karakter.")
-            if not any(char.isupper() for char in password):
-                raise ValidationError("Password harus ada minimal 1 huruf kapital.")
-            if not any(char.isdigit() for char in password):
-                raise ValidationError("Password harus ada minimal 1 angka.")
-        return password
-
-    def save(self, commit=True):
-        user = super().save(commit=False)
-
-        if not self.instance.pk:  
-            # TAMBAH siswa baru → password otomatis
-            plain_pass = generate_auto_password(8)
-            user.set_password(plain_pass)
-            user.auto_password = plain_pass
-        else:
-            # EDIT siswa → update password jika ada
-            password = self.cleaned_data.get('password1')
-            if password:
-                user.set_password(password)
-                user.auto_password = password
-
-        if commit:
-            user.save()
-        return user
+    
 
 
     
