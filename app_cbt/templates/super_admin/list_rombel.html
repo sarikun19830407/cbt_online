@@ -12,15 +12,7 @@
                 <a class="btn btn-success btn-sm bi bi-plus" style="font-size: 8;"
                     href="{% url 'cbt:tambah_rombel' %}">&nbsp;Tambah</a>
             </div>
-            <div class="d-grid d-md-flex justify-content-md-start">
-                {% if messages %}
-                {% for message in messages %}
-                <li class="btn bg-primary-subtle btn-sm" style="font-size: 8;" {% if message.tags %}
-                    class="{{ message.tags }}" {%endif%}>
-                    {{ message }}</li>
-                {% endfor %}
-                {% endif %}
-            </div>
+
         </div>
 
         <div class="overflow-auto">

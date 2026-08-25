@@ -97,19 +97,6 @@
                         <h4 class="mb-0 fw-bold"><i class="bi bi-key me-2"></i> Masukkan Kode Ujian</h4>
                     </div>
                     <div class="card-body p-4">
-
-                        {% if messages %}
-                        <div class="mb-3">
-                            {% for message in messages %}
-                            <div class="alert alert-info alert-dismissible fade show small mb-2" role="alert">
-                                <i class="bi bi-info-circle me-2 fst-normal fw-bold">&nbsp;&nbsp; {{message|title}}</i>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                    aria-label="Close"></button>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-
                         <form method="post" novalidate>
                             {% csrf_token %}
                             <div class="mb-4">

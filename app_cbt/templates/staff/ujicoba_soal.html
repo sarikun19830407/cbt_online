@@ -1,92 +1,405 @@
 {% load static %}
+{% load dict_utils %}
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
     <title>Ujicoba Soal</title>
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
     {% include "setting/css.html" %}
+    <style>
+        .question-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            border-radius: 10px 10px 0 0 !important;
+        }
+
+        .nav-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 3px;
+            transition: all 0.3s ease;
+            color: rgb(253, 250, 250);
+        }
+
+        .nav-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .option-label {
+            transition: background-color 0.2s;
+        }
+
+        .option-label:hover {
+            background-color: #f8f9fa;
+        }
+
+        .info-card {
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 992px) {
+
+            .nav-btn {
+                width: 36px;
+                height: 36px;
+                margin: 2px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+
 </head>
 
-<body class="bg-body-secondary">
-    <div class="container p-3">
-        <div class="card mb-3">
-            <div class="card-body">
-                <div class="col-lg-3">
-                    <table class="table table-borderless p-0 m-0 ">
-                        <tr>
-                            <td>Mata Pelajaran</td>
-                            <td>:</td>
-                            <td>{{ setting.Mapel }}</td>
-                        </tr>
-                        <tr>
-                            <td>Kelas</td>
-                            <td>:</td>
-                            <td>{{ setting.Kelas }}</td>
-                        </tr>
-                        <tr>
-                            <td>Semester</td>
-                            <td>:</td>
-                            <td>{{ setting.Semester }}</td>
-                        </tr>
-                    </table>
+
+<body class="bg-light">
+    <div class="container-fluid mt-3">
+        <div class="row g-3">
+            <!-- ================================================= -->
+            <!-- SIDEBAR DESKTOP -->
+            <!-- ================================================= -->
+            <div class="col-lg-3 d-none d-lg-block">
+                <!-- Navigasi Soal -->
+                <div class="card question-card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-list-check me-2"></i>
+                            Navigasi Soal
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap">
+                            {% for soal in soal_list %}
+
+                            <a href="?nomor={{ soal.Nomor }}"
+                            class="btn btn-success nav-btn
+                            {% if soal.sudah_dijawab %}
+                                btn-dark
+                            {% else %}
+                                btn-outline-primary
+                            {% endif %}">
+                                {{ soal.Nomor }}
+                            </a>
+
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <!-- Informasi -->
+                <div class="card question-card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Informasi Ujicoba
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>
+                                    
+                                    Mata Pelajaran
+                                </span>
+                                <strong>
+                                    {{ setting.Mapel }}
+                                </strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>
+                                    
+                                    Kelas
+                                </span>
+                                <strong>
+                                    {{ setting.Kelas }}
+                                </strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>
+                                    
+                                    Semester
+                                </span>
+                                <strong>
+                                    {{ setting.Semester }}
+                                </strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>
+                                    Jumlah Soal
+                                </span>
+                                <strong>
+                                    {{ total_soal }}
+                                </strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between">
+                                <span>
+                                    Sudah Dijawab
+                                </span>
+                                <strong class="text-success">
+                                    {{ jawaban_count }}
+                                    /
+                                    {{ total_soal }}
+                                </strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- MAIN CONTENT -->
+            <!-- ================================================= -->
+            <div class="col-lg-9 col-12">
+                <!-- ================================================= -->
+                <!-- MOBILE NAVIGATION -->
+                <!-- ================================================= -->
+                <div class="d-lg-none mb-3">
+                    <div class="accordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#mobileNavigation">
+                                    <i class="bi bi-list-check me-2"></i>
+                                    Navigasi Soal
+                                </button>
+                            </h2>
+                            <div id="mobileNavigation" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    <div class="d-flex flex-wrap">
+                                        {% for soal in soal_list %}
+
+                                        <a href="?nomor={{ soal.Nomor }}"
+                                        class="btn btn-success nav-btn
+                                        {% if soal.sudah_dijawab %}
+                                            btn-dark
+                                        {% else %}
+                                            btn-outline-primary
+                                        {% endif %}">
+                                            {{ soal.Nomor }}
+                                        </a>
+
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Informasi Mobile -->
+                        <div class="accordion-item mt-2">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#mobileInfo">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Informasi Ujicoba
+                                </button>
+                            </h2>
+                            <div id="mobileInfo" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    <ul class="list-group list-group-flush">
+
+                                        <li class="list-group-item border-0 d-flex justify-content-between align-items-center">
+                                            <span>
+                                                Mata Pelajaran
+                                            </span>
+                                            <strong class="text-end ms-3">
+                                                {{ setting.Mapel }}
+                                            </strong>
+                                        </li>
+
+                                        <li class="list-group-item border-0 d-flex justify-content-between align-items-center">
+                                            <span>
+                                                Kelas
+                                            </span>
+                                            <strong class="text-end ms-3">
+                                                {{ setting.Kelas }}
+                                            </strong>
+                                        </li>
+
+                                        <li class="list-group-item border-0 d-flex justify-content-between align-items-center">
+                                            <span>
+                                                Semester
+                                            </span>
+                                            <strong class="text-end ms-3">
+                                                {{ setting.Semester }}
+                                            </strong>
+                                        </li>
+
+                                        <li class="list-group-item border-0 d-flex justify-content-between align-items-center">
+                                            <span>
+                                                Jumlah Soal
+                                            </span>
+                                            <strong class="text-end ms-3">
+                                                {{ total_soal }}
+                                            </strong>
+                                        </li>
+
+                                        <li class="list-group-item border-0 d-flex justify-content-between align-items-center">
+                                            <span>
+
+                                                Progress
+                                            </span>
+                                            <strong class="text-success text-end ms-3">
+                                                {{ jawaban_count }}/{{ total_soal }}
+                                            </strong>
+                                        </li>
+
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ================================================= -->
+                <!-- CARD SOAL -->
+                <!-- ================================================= -->
+                <div class="card question-card">
+                    <div class="card-header bg-primary text-white
+                            d-flex justify-content-between
+                            align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-question-circle me-2"></i>
+                            Soal Nomor {{ current_soal.Nomor }}
+                        </h5>
+                        <span class="badge bg-light text-primary">
+                            Soal {{ current_soal.Nomor }}
+                            dari
+                            {{ total_soal }}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <!-- ========================================= -->
+                            <!-- PERTANYAAN -->
+                            <!-- ========================================= -->
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="mb-3">
+                                        Soal Nomor
+                                        {{ current_soal.Nomor }}
+                                    </h5>
+                                    <table class="table table-borderless align-middle">
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="3" class="pb-4">
+                                                    {{ current_soal.Soal|safe }}
+                                                </td>
+                                            </tr>
+                                            <!-- A -->
+                                            <tr class="option-label">
+                                                <td width="40">
+                                                    <input class="form-check-input" type="radio" name="jawaban"
+                                                        value="A" id="jawabanA" {% if jawaban.Jawaban == "A" %} checked {% endif %}>
+                                                </td>
+                                                <td width="30">
+                                                    <strong>A.</strong>
+                                                </td>
+                                                <td>
+                                                    {{ current_soal.A|safe }}
+                                                </td>
+                                            </tr>
+                                            <!-- B -->
+                                            <tr class="option-label">
+                                                <td width="40">
+                                                    <input class="form-check-input" type="radio" name="jawaban"
+                                                        value="B" id="jawabanB" {% if jawaban.Jawaban == "B" %} checked {% endif %}>
+                                                </td>
+                                                <td width="30">
+                                                    <strong>B.</strong>
+                                                </td>
+                                                <td>
+                                                    {{ current_soal.B|safe }}
+                                                </td>
+                                            </tr>
+                                            <!-- C -->
+                                            <tr class="option-label">
+                                                <td width="40">
+                                                    <input class="form-check-input" type="radio" name="jawaban"
+                                                        value="C" id="jawabanC" {% if jawaban.Jawaban == "C" %} checked {% endif %}>
+                                                </td>
+                                                <td width="30">
+                                                    <strong>C.</strong>
+                                                </td>
+                                                <td>
+                                                    {{ current_soal.C|safe }}
+                                                </td>
+                                            </tr>
+                                            <!-- D -->
+                                            <tr class="option-label">
+                                                <td width="40">
+                                                    <input class="form-check-input" type="radio" name = "jawaban"
+                                                        value="D" id="jawabanD" {% if jawaban.Jawaban == "D" %} checked {% endif %}>
+                                                </td>
+                                                <td width="30">
+                                                    <strong>D.</strong>
+                                                </td>
+                                                <td>
+                                                    {{ current_soal.D|safe }}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- ========================================= -->
+                            <!-- NAVIGASI -->
+                            <!-- ========================================= -->
+
+                            <div class="d-flex justify-content-between mt-4">
+                                <!-- SEBELUMNYA -->
+                                {% if current_soal.Nomor > 1 %}
+                                <button type="submit" name="prev" class = "btn btn-secondary px-4">
+                                    <i class="fas fa-arrow-left me-2"></i>
+                                    Sebelumnya
+                                </button>
+                                {% else %}
+                                <div></div>
+                                {% endif %}
+                                <!-- KANAN -->
+                                <div class="d-flex gap-2">
+                                    {% if current_soal.Nomor < total_soal %} <button type="submit" name = "next"
+                                        class="btn btn-primary px-4">
+                                        Selanjutnya
+                                        <i class="fas fa-arrow-right ms-2"></i>
+                                        </button>
+                                        {% else %}
+                                        <button type="submit" name="next" class="btn btn-success px-4">
+                                            Lihat Hasil
+                                            <i class="bi bi-check-circle ms-2"></i>
+                                        </button>
+                                        {% endif %}
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- ========================================= -->
+                <!-- TOMBOL TUTUP -->
+                <!-- ========================================= -->
+
+                <div class="d-flex justify-content-end mb-4">
+                    <a href="{% url 'cbt:tutup_ujicoba' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle me-1"></i>
+                        Tutup Ujicoba
+                    </a>
                 </div>
             </div>
         </div>
-        <form method="post">
-            {% csrf_token %}
-            {% for soal in soal_list %}
-            <div class="card mb-3">
-                <div class="card-header bg-light">
-                    <strong>Nomor {{ soal.Nomor }}</strong>
-                </div>
-                <div class="container-fluid p-3">
-                    <div class="container-fluid">{{ soal.Soal|safe }}</div>
-                    <table class="table table-borderless">
-                        <tr class="">
-                            <td class="" style="width: 40px;">
-                                <input class="form-check-input" type="radio" name="jawaban_{{ soal.id }}" value="A"
-                                    id="a{{ soal.id }}">
-                            </td>
-                            <td class="" style="width: 40px;">A.</td>
-                            <td class="">{{ soal.A|safe }}</td>
-                        </tr>
-                        <tr>
-                            <td class="" style="width: 40px;">
-                                <input class="form-check-input" type="radio" name="jawaban_{{ soal.id }}" value="B"
-                                    id="b{{ soal.id }}">
-                            </td>
-                            <td class="" style="width: 40px;">B.</td>
-                            <td class="">{{ soal.B|safe }}</td>
-                        </tr>
-                        <tr>
-                            <td class="" style="width: 40px;">
-                                <input class="form-check-input" type="radio" name="jawaban_{{ soal.id }}" value="C"
-                                    id="c{{ soal.id }}">
-                            </td>
-                            <td class="" style="width: 30px;">C.</td>
-                            <td class="">{{ soal.C|safe }}</td>
-                        </tr>
-                        <tr>
-                            <td class=" " style="width: 40px;">
-                                <input class="form-check-input" type="radio" name="jawaban_{{ soal.id }}" value="D"
-                                    id="d{{ soal.id }}">
-                            </td>
-                            <td class=" " style="width: 40px;">D.</td>
-                            <td class="">{{ soal.D|safe }}</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-            {% endfor %}
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <button type="submit" class="btn btn-success">Selesai Ujicoba</button>
-                <a href="{% url 'cbt:setting_soal' %}" class="btn btn-secondary">Tutup Ujicoba</a>
-            </div>
-
-        </form>
     </div>
+
+
+    {% include "setting/js.html" %}
+
 </body>
-{% include "setting/js.html" %}
 
 </html>

@@ -18,7 +18,7 @@
 
 
         <div class="col-lg-6 mb-4">
-            <div>
+            <div class="">
                 <ul>
                     <li>
                         <a class="btn btn-info bi-arrow-down-square btn-sm" style="font-size: 12px;"
@@ -27,19 +27,25 @@
                     </li>
                 </ul>
             </div>
-            <div class="card bg-body-secondary p-3 ">
-                <p class="mb-0">Token: {{ setting.Kode_Soal }}</p>
-                <p class="mb-0">Mata Pelajaran: {{ setting.Mapel }}</p>
-                <p class="mb-0">Kelas: {{ setting.Kelas }}</p>
-                <p class="mb-0">Semester: {{ setting.Semester }}</p>
-                <div class="d-grid d-md-flex justify-content-md-start">
-                    {% if messages %}
-                    {% for message in messages %}
-                    <li class="btn bg-primary-subtle btn-sm" style="font-size: 8;" {% if message.tags %}
-                        class="{{ message.tags }}" {%endif%}>
-                        {{ message }}</li>
-                    {% endfor %}
-                    {% endif %}
+            <div class="card bg-body-secondary p-3">
+                <div class="row mb-1">
+                    <div class="col-4 fw-semibold">Token</div>
+                    <div class="col-8">: {{ setting.Kode_Soal }}</div>
+                </div>
+
+                <div class="row mb-1">
+                    <div class="col-4 fw-semibold">Mata Pelajaran</div>
+                    <div class="col-8">: {{ setting.Mapel }}</div>
+                </div>
+
+                <div class="row mb-1">
+                    <div class="col-4 fw-semibold">Kelas</div>
+                    <div class="col-8">: {{ setting.Kelas }}</div>
+                </div>
+
+                <div class="row">
+                    <div class="col-4 fw-semibold">Semester</div>
+                    <div class="col-8">: {{ setting.Semester }}</div>
                 </div>
             </div>
             <div class="mt-3">

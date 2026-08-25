@@ -29,6 +29,8 @@ urlpatterns =[
     path('uploadUserSiswa', view_admin.uploadUserSiswa, name='uploadUserSiswa'),
     path('downloadtempUserSiswa', view_admin.downloadtempUserSiswa, name='downloadtempUserSiswa'),
     path('cetak_semua_kartu_pdf', view_admin.cetak_semua_kartu_pdf, name='cetak_semua_kartu_pdf'),
+    path('generate-ulang-password-siswa/',view_admin.generate_ulang_password_siswa,name='generate_ulang_password_siswa'),
+    path('proses-generate-password-siswa', view_admin.proses_generate_password_siswa, name='proses_generate_password_siswa'),
 
 
     path('lembaga', view_admin.lembaga, name='lembaga'),
@@ -87,9 +89,7 @@ urlpatterns =[
     path('hapus_setting_soal', view_staff.hapus_setting_soal, name='hapus_setting_soal'),
     path('Ubah_setting_soal/<pk>/', view_staff.Ubah_setting_soal, name='Ubah_setting_soal'),
 
-    path('backup_soal', view_staff.backup_soal, name='backup_soal'),
-    path('restore_backup_soal', view_staff.restore_backup_soal, name='restore_backup_soal'),
-
+    
     path('buat_soal_siswa/<pk>/', view_staff.buat_soal_siswa, name='buat_soal_siswa'),
     path('hapus_soal/<int:pk>/', view_staff.hapus_soal, name='hapus_soal'),
     path('Ubah_soal/<int:pk>/', view_staff.Ubah_soal, name='Ubah_soal'),
@@ -100,11 +100,11 @@ urlpatterns =[
 
     path('ujicoba_soal/<int:pk>/', view_staff.ujicoba_soal, name='ujicoba_soal'),
     path('ujicoba_selesai/<int:pk>/ujicoba_selesai/', view_staff.ujicoba_selesai, name='ujicoba_selesai'),
+    path('tutup_ujicoba/',view_staff.tutup_ujicoba,name='tutup_ujicoba'),
 
     path('nilai_setingsoal/<str:kode_soal>/', view_staff.nilai_setingsoal, name='nilai_setingsoal'),
     path('nilai/<str:kode_soal>/download/', view_staff.export_nilai_excel_setting, name='export_nilai_excel_setting'),
     path('aktifkan-soal/<str:kode_soal>/', view_staff.aktifkan_soal, name='aktifkan_soal'),
-
 
 
 

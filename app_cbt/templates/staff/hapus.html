@@ -4,17 +4,6 @@
 <div class="container my-5">
     <div class="card shadow-lg">
         <div class="card-body">
-
-            <!-- Alert messages -->
-            {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            {% endfor %}
-            {% endif %}
-
             <!-- Delete confirmation -->
             <section class="py-4 bg-light rounded shadow-sm">
                 <div class="container">

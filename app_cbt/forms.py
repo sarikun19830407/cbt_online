@@ -154,8 +154,9 @@ class Form_kurikulum(forms.ModelForm):
         }
 
 
-class Form_lembaga(forms.ModelForm):
-    tanggal_mulai_ujian =forms.DateField(
+
+class FormTahunPeljaran(forms.ModelForm):
+    tanggal_penetapan = forms.DateField(
         widget=forms.DateInput(
             attrs={
                 'class': 'form-control form-control-sm mb-3',
@@ -166,61 +167,6 @@ class Form_lembaga(forms.ModelForm):
         initial=date.today,  # supaya default juga diset di server-side
         required=True
     )
-    class Meta :
-        model = models.Lembaga
-        fields = [
-            "Nama_Lembaga",
-            "Ketua_panitia",
-            "NIP",
-            "NPSN",
-            "desa",
-            "kecamatan",
-            "kabupaten",
-            "provinsi",
-            "Alamat",
-            "Tikatan_Satuan_Lembaga",
-            "tanggal_mulai_ujian",
-            "kurikulum_lebaga"
-        ]
-        widgets = {
-            "Tikatan_Satuan_Lembaga":forms.Select(
-                attrs={'class': 'form-select mb-3'}
-            ),
-            "kurikulum_lebaga":forms.Select(
-                attrs={'class': 'form-select mb-3'}
-            ),
-            "Nama_Lembaga":forms.TextInput(
-                attrs={'class': 'form-control mb-3'}
-            ),
-            "Ketua_panitia":forms.TextInput(
-                attrs={'class': 'form-control mb-3'}
-            ),
-            "NIP":forms.TextInput(
-                attrs={'class': 'form-control mb-3'}
-            ),
-            "NPSN":forms.TextInput(
-                attrs={'class': 'form-control mb-3'}
-            ),
-            "desa":forms.TextInput(
-                attrs={'class': 'form-control mb-3'}
-            ),
-            "kecamatan":forms.TextInput(
-                attrs={'class': 'form-control mb-3'}
-            ),
-            "kabupaten":forms.TextInput(
-                attrs={'class': 'form-control mb-3'}
-            ),
-            "provinsi":forms.TextInput(
-                attrs={'class': 'form-control mb-3'}
-            ),
-            "Alamat":forms.Textarea(
-                attrs={'class': 'form-control mb-3', 'rows':3}
-            ), 
-        }
-
-
-
-class FormTahunPeljaran(forms.ModelForm):
     class Meta:
         model = models.TahunPelajaran
         fields = ['Tahun_Pelajaran', 'tanggal_penetapan']
@@ -279,6 +225,87 @@ class FormTahunPeljaran(forms.ModelForm):
 
 
 
+class Form_lembaga(forms.ModelForm):
+    tanggal_mulai_ujian =forms.DateField(
+        widget=forms.DateInput(
+            attrs={
+                'class': 'form-control form-control-sm mb-3',
+                'type': 'date',
+                'value': date.today().strftime('%Y-%m-%d'),  # otomatis hari ini
+            }
+        ),
+        initial=date.today,  # supaya default juga diset di server-side
+        required=True
+    )
+    class Meta :
+        model = models.Lembaga
+        fields = [
+            "Nama_Lembaga",
+            "Ketua_panitia",
+            "NIP",
+            "NPSN",
+            "desa",
+            "kecamatan",
+            "kabupaten",
+            "provinsi",
+            "Alamat",
+            "Tikatan_Satuan_Lembaga",
+            "tanggal_mulai_ujian",
+            
+        ]
+        widgets = {
+            "Tikatan_Satuan_Lembaga":forms.Select(
+                attrs={'class': 'form-select mb-3'}
+            ),
+            "kurikulum_lebaga":forms.Select(
+                attrs={'class': 'form-select mb-3'}
+            ),
+            "Nama_Lembaga":forms.TextInput(
+                attrs={'class': 'form-control mb-3'}
+            ),
+            "Ketua_panitia":forms.TextInput(
+                attrs={'class': 'form-control mb-3'}
+            ),
+            "NIP":forms.TextInput(
+                attrs={'class': 'form-control mb-3'}
+            ),
+            "NPSN":forms.TextInput(
+                attrs={'class': 'form-control mb-3'}
+            ),
+            "desa":forms.TextInput(
+                attrs={'class': 'form-control mb-3'}
+            ),
+            "kecamatan":forms.TextInput(
+                attrs={'class': 'form-control mb-3'}
+            ),
+            "kabupaten":forms.TextInput(
+                attrs={'class': 'form-control mb-3'}
+            ),
+            "provinsi":forms.TextInput(
+                attrs={'class': 'form-control mb-3'}
+            ),
+            "Alamat":forms.Textarea(
+                attrs={'class': 'form-control mb-3', 'rows':3}
+            ), 
+        }
+
+
+
+class MatapelajaranForm(forms.ModelForm):
+    class Meta:
+        model = models.Matapelajaran
+        fields = ['Nama_Mapel']
+
+        widgets = {
+                'Nama_Mapel': forms.TextInput(
+                    attrs={'class': 'form-control'}
+                ),
+                
+            }
+
+
+
+
 
 
 
@@ -319,17 +346,6 @@ class FormRombel(forms.ModelForm):
 
 
 
-class MatapelajaranForm(forms.ModelForm):
-    class Meta:
-        model = models.Matapelajaran
-        fields = ['Nama_Mapel']
-
-        widgets = {
-                'Nama_Mapel': forms.TextInput(
-                    attrs={'class': 'form-control'}
-                ),
-                
-            }
 
 
 
@@ -703,9 +719,9 @@ class FormDownload (forms.Form):
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
             "class": "form-control",
-            "placeholder": "Masukkan password superuser"
+            "placeholder": "Masukkan password Anda"
         }),
-        label="Password Superuser",
+        label="Password Anda",
         required=True
     )
     
@@ -716,9 +732,9 @@ class UploadFormBackup(forms.Form):
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
             "class": "form-control",
-            "placeholder": "Masukkan password superuser"
+            "placeholder": "Masukkan password Anda"
         }),
-        label="Password Superuser",
+        label="Password Anda",
         required=True
     )
     backup_file = forms.FileField(

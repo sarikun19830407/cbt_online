@@ -9,15 +9,6 @@
         </div>
 
         <div class="card-body">
-            <div class="container-fluid py-3">
-                {% if messages %}
-                {% for message in messages %}
-                <li class="btn bg-primary-subtle " style="font-size: 8;" {% if message.tags %}
-                    class="{{ message.tags }}" {%endif%}>
-                    {{ message }}</li>
-                {% endfor %}
-                {% endif %}
-            </div>
             <divv class="py-3">
                 <form method="POST" action="{{ link }}" enctype="multipart/form-data">
                     {% csrf_token %}

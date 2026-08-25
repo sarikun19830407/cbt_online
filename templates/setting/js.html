@@ -2,9 +2,11 @@
 
 <script src="{% static 'poper.js' %}"></script>
 <script src="{% static 'jquery.js' %}"></script>
+<script src="{% static 'pesan.js' %}"></script>
 <script src="{% static 'ckeditor/ckeditor-init.js' %}"></script>
 <script src="{% static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
-
+<link rel="stylesheet" type="text/css" href="{% static 'flatpickr.css' %}">
+<script src="{% static 'flatpickr.js' %}"></script>
 
 
 
@@ -29,6 +31,74 @@
 
 </script>
 {% endfor %}
+
+
+<script>
+function konfirmasiAktifkanSoal(event, url) {
+    event.preventDefault();
+
+    Swal.fire({
+        title: "Aktifkan Soal?",
+        text: "Yakin ingin mengaktifkan soal ini?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Ya, Aktifkan",
+        cancelButtonText: "Batal",
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        backdrop: true,
+        allowOutsideClick: false,
+        position: "center",
+
+        didOpen: (popup) => {
+            popup.style.top = "-15vh";
+        }
+
+    }).then((result) => {
+
+        if (result.isConfirmed) {
+            window.location.href = url;
+        }
+
+    });
+
+    return false;
+}
+</script>
+
+<script>
+function konfirmasiNonaktifkanSoal(event, url) {
+    event.preventDefault();
+
+    Swal.fire({
+        title: "Nonaktifkan Soal?",
+        text: "Yakin ingin menghentikan atau menonaktifkan soal ini?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Ya, Nonaktifkan",
+        cancelButtonText: "Batal",
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#6c757d",
+        backdrop: true,
+        allowOutsideClick: false,
+        position: "center",
+
+        didOpen: (popup) => {
+            popup.style.top = "-15vh";
+        }
+
+    }).then((result) => {
+
+        if (result.isConfirmed) {
+            window.location.href = url;
+        }
+
+    });
+
+    return false;
+}
+</script>
+
 
 
 <script>
@@ -143,6 +213,19 @@
             });
         });
     });
+</script>
+<script>
+    flatpickr(
+        "input[name='tanggal_penetapan'], \
+        input[name='tanggal_mulai_ujian'], \
+        input[name='tanggal']",
+        {
+            dateFormat: "d-m-Y",
+            allowInput: false,
+            altInput: true,
+            altFormat: "d-m-Y"
+        }
+    );
 </script>
 
 

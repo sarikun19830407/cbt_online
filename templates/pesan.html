@@ -7,14 +7,6 @@
             disabled>Cari</button>
     </form>
 </ul>
-<div class="d-grid d-md-flex justify-content-md-start mb-2">
-    {% if messages %}
-    {% for message in messages %}
-    <li class="btn bg-primary-subtle " style="font-size: 8;" {% if message.tags %} class="{{ message.tags }}" {%endif%}>
-        {{ message }}</li>
-    {% endfor %}
-    {% endif %}
-</div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {

@@ -8,19 +8,17 @@ from django.conf import settings
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseRedirect, FileResponse, HttpResponse, JsonResponse, Http404
 from django.db import transaction
 from django.contrib.sessions.models import Session
 
 from django.urls import reverse
-from django.http import FileResponse, HttpResponse, JsonResponse,Http404
 from django.utils.timezone import now
 from django.db import IntegrityError
 from django.views.decorators.cache import never_cache
 
 from app_cbt import models
 from app_cbt import forms_staff
-from django.http import HttpResponse, Http404
 from django.db.models import Count, Case, When, IntegerField
 from app_cbt import forms
 from django.core.files.storage import default_storage
@@ -458,7 +456,7 @@ def Ubah_setting_soal (request, pk):
     if request.method == "POST":
         if form.is_valid():
             form.save()
-            messages.add_message(request, messages.INFO, 'Data telah berhasil diubah')
+            messages.info(request,  'Data berhasil diubah')
             return redirect(reverse('cbt:setting_soal'))
         else:
             messages.error(request, 'Data Masih Salah.')
@@ -629,7 +627,7 @@ def Ubah_soal(request, pk):
     if request.method == "POST":
         if form.is_valid():
             form.save()
-            messages.success(request, 'Soal berhasil diperbarui.')
+            messages.success(request, f'Soal No {Data.Nomor} berhasil diperbarui.')
             return redirect(next_url)
         else:
             messages.error(request, 'Form tidak valid.')
@@ -1107,36 +1105,128 @@ def hapus_soal_pilih(request):
 
 
 @login_required(login_url=settings.LOGIN_URL)
-@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_staff,login_url=settings.LOGIN_URL)
 @csrf_protect
 def ujicoba_soal(request, pk):
+
     try:
         pk = int(pk)
     except (ValueError, TypeError):
         messages.error(request, "ID setting soal tidak valid.")
         return redirect('cbt:setting_soal')
 
-    try:
-        setting = get_object_or_404(models.SetingSoal, pk=pk)
-    except Http404:
-        messages.error(request, "Data setting soal tidak ditemukan.")
+    setting = get_object_or_404(models.SetingSoal,pk=pk)
+    soal_list = models.Soal_Siswa.objects.filter(Kode_Soal=setting).order_by('Nomor')
+    total_soal = soal_list.count()
+
+    if total_soal == 0:
+        messages.warning(request,"Belum ada soal pada setting ini.")
         return redirect('cbt:setting_soal')
 
-    soal_list = models.Soal_Siswa.objects.filter(Kode_Soal=setting).order_by('Nomor')
+    # =====================================================
+    # AMBIL JAWABAN DARI SESSION
+    # =====================================================
+    jawaban_dict = request.session.get('ujicoba_jawaban',{})
+    # Tandai soal yang sudah dijawab
+    for soal in soal_list:
+        soal.sudah_dijawab = bool(
+            jawaban_dict.get(str(soal.id))
+        )
 
+    # =====================================================
+    # NOMOR SOAL YANG AKTIF
+    # =====================================================
+    nomor = request.GET.get('nomor')
+    if nomor:
+        try:
+            nomor = int(nomor)
+        except (ValueError, TypeError):
+            nomor = 1
+    else:
+        nomor = 1
+
+    # Pastikan nomor berada dalam range
+    if nomor < 1:
+        nomor = 1
+
+    if nomor > total_soal:
+        nomor = total_soal
+
+    # =====================================================
+    # SOAL AKTIF
+    # =====================================================
+    current_soal = soal_list.filter(Nomor=nomor).first()
+
+    if not current_soal:
+        current_soal = soal_list.first()
+        nomor = current_soal.Nomor
+
+    # =====================================================
+    # JAWABAN SOAL AKTIF
+    # =====================================================
+    jawaban_sekarang = jawaban_dict.get(str(current_soal.id),"")
+
+    # =====================================================
+    # POST
+    # =====================================================
     if request.method == 'POST':
-        jawaban = {}
-        for soal in soal_list:
-            user_jawaban = request.POST.get(f"jawaban_{soal.id}", "")
-            jawaban[str(soal.id)] = user_jawaban
-        request.session['ujicoba_jawaban'] = jawaban
-        return redirect('cbt:ujicoba_selesai', pk=pk)
 
-    return render(request, 'staff/ujicoba_soal.html', {
-        'setting': setting,
-        'soal_list': soal_list
-    })
+        # Ambil jawaban soal aktif
+        user_jawaban = request.POST.get('jawaban','')
 
+        # Simpan ke session jika ada jawaban
+        if user_jawaban:
+            jawaban_dict[str(current_soal.id)] = user_jawaban
+
+            request.session['ujicoba_jawaban'] = jawaban_dict
+            request.session.modified = True
+
+        # =================================================
+        # SOAL SEBELUMNYA
+        # =================================================
+        if 'prev' in request.POST:
+
+            soal_sebelumnya = soal_list.filter(
+                Nomor__lt=current_soal.Nomor
+            ).order_by('-Nomor').first()
+
+            if soal_sebelumnya:
+                return redirect(
+                    f"{reverse('cbt:ujicoba_soal', kwargs={'pk': pk})}"
+                    f"?nomor={soal_sebelumnya.Nomor}")
+
+        # =================================================
+        # SOAL BERIKUTNYA return redirect(reverse('cbt:buat_soal_siswa', kwargs={'pk': pk}))
+        # =================================================
+        if 'next' in request.POST:
+            soal_berikutnya = soal_list.filter(Nomor__gt=current_soal.Nomor).order_by('Nomor').first()
+
+            if soal_berikutnya:
+                return redirect(
+                    f"{reverse('cbt:ujicoba_soal', kwargs={'pk': pk})}"
+                    f"?nomor={soal_berikutnya.Nomor}")
+
+            # Jika sudah soal terakhir → halaman hasil
+            return redirect('cbt:ujicoba_selesai',pk=pk)
+
+    # =====================================================
+    # JUMLAH SOAL YANG SUDAH DIJAWAB
+    # =====================================================
+    jawaban_count = sum(1 for value in jawaban_dict.values()if value)
+    semua_terjawab = (jawaban_count == total_soal)
+    context = {
+                'setting': setting,
+                'soal_list': soal_list,
+                'current_soal': current_soal,
+                'jawaban': {'Jawaban': jawaban_sekarang},
+                'jawaban_dict': jawaban_dict,
+                'jawaban_count': jawaban_count,
+                'semua_terjawab': semua_terjawab,
+                'total_soal': total_soal,
+            }
+
+    return render(request,'staff/ujicoba_soal.html', context)
 
 
 @login_required(login_url=settings.LOGIN_URL)
@@ -1166,14 +1256,38 @@ def ujicoba_selesai(request, pk):
     skor = int((benar / total) * 100) if total > 0 else 0
 
     # Hapus session setelah selesai
-    del request.session['ujicoba_jawaban']
-
-    return render(request, 'staff/ujicoba_selesai.html', {
+    request.session.pop('ujicoba_jawaban', None)
+    context ={
         'setting': setting,
         'skor': skor,
         'total': total,
         'benar': benar,
-    })
+    }
+
+    return render(request, 'staff/ujicoba_selesai.html', context)
+
+
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+def tutup_ujicoba(request):
+    # Hapus semua jawaban sementara ujicoba
+    request.session.pop('ujicoba_jawaban', None)
+
+    # Jika ada session sementara lainnya, bisa dihapus juga di sini
+    # request.session.pop('ujicoba_setting_id', None)
+
+    # Pastikan perubahan session disimpan
+    request.session.modified = True
+
+    return redirect('cbt:setting_soal')
+
+
+
+
+
 
 
 
@@ -1245,6 +1359,11 @@ def lihat_soal_siswa(request, pk):
 
 
 
+
+
+
+
+# total_dijawab
 
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
@@ -2257,8 +2376,8 @@ def arsip_soal (request):
             items_per_page = int(items_per_page)
         except (ValueError, TypeError):
             items_per_page = 30  # Default jika invalid
-
-    data_list = models.TahunPelajaran.objects.all().order_by("-Tahun_Pelajaran")
+    smt = models.SEMESTER.objects.filter(status=True).first()
+    data_list = models.TahunPelajaran.objects.filter(status=False, semester=False).order_by("-Tahun_Pelajaran")
     if cari:
         data_list = data_list.filter(Tahun_Pelajaran=cari)
     paginator = Paginator(data_list, items_per_page)
@@ -2882,155 +3001,3 @@ def salin_setingsoal(request, pk):
 
 
 
-
-
-    
-
-
-@login_required(login_url=settings.LOGIN_URL)
-@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
-@csrf_protect
-def backup_soal(request):
-    if request.method == 'POST':
-        form = forms.FormDownload(request.POST)
-
-        if form.is_valid():
-            password = form.cleaned_data['password']
-            user = authenticate(
-                username=request.user.username,
-                password=password
-            )
-
-            if user and user.is_staff:
-                filename = f"backup_soal-{now().date()}.json"
-                file_path = None
-                encrypted_path = None
-
-                try:
-                    # File sementara
-                    with tempfile.NamedTemporaryFile(delete=False, suffix='.json') as temp_file:
-                        file_path = temp_file.name
-
-                    # Dump HANYA model Soal_Siswa
-                    with open(file_path, 'w') as output_file:
-                        call_command(
-                        'dumpdata',
-                        'app_cbt.SetingSoal',
-                        'app_cbt.Soal_Siswa',
-                        "app_cbt.DaftarNilai",
-                        '--indent', '2',
-                        stdout=output_file
-                    )
-
-
-                    # Enkripsi
-                    encrypted_path = encrypt_file(file_path, password)
-
-                    return FileResponse(
-                        open(encrypted_path, 'rb'),
-                        as_attachment=True,
-                        filename=filename + '.aes'
-                    )
-
-                except Exception as e:
-                    messages.error(request, f"Gagal backup soal: {str(e)}")
-
-                finally:
-                    if file_path:
-                        cleanup_files(file_path, encrypted_path)
-            else:
-                messages.error(request, "Password salah atau bukan superuser.")
-    else:
-        form = forms.FormDownload()
-
-    context = {
-        "data": "Backup Soal",
-        "judul": "Backup Soal",
-        "NamaForm": "Form Backup Soal",
-        "link": reverse('cbt:backup_soal'),
-        "form": form,
-        "icon": "bi bi-download"
-    }
-    return render(request, 'staff/backup_soal.html', context)
-
-
-@login_required(login_url=settings.LOGIN_URL)
-@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
-@csrf_protect
-def restore_backup_soal(request):
-    if request.method == 'POST':
-        form = forms.UploadFormBackup(request.POST, request.FILES)
-
-        if form.is_valid():
-            backup_file = request.FILES.get('backup_file')
-            password = form.cleaned_data['password']
-
-            if not backup_file:
-                messages.error(request, "File backup belum dipilih.")
-                return redirect('cbt:restore_backup_soal')
-
-            if not backup_file.name.endswith('.aes'):
-                messages.error(request, "File harus berformat .aes")
-                return redirect('cbt:restore_backup_soal')
-
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.aes') as temp_file:
-                for chunk in backup_file.chunks():
-                    temp_file.write(chunk)
-                temp_path = temp_file.name
-
-            decrypted_path = None
-            try:
-                # Dekripsi
-                decrypted_path = decrypt_file(temp_path, password)
-
-                # Load data (abaikan field user)
-                call_command(
-                    'loaddata',
-                    decrypted_path,
-                    ignorenonexistent=True
-                )
-
-                # Set Nama_User otomatis ke user login
-                from app_cbt.models import Soal_Siswa
-                from django.db import transaction
-
-                with transaction.atomic():
-                    models.SetingSoal.objects.filter(
-                        Nama_User__isnull=True
-                    ).update(Nama_User=request.user)
-
-                    models.Soal_Siswa.objects.filter(
-                        Nama_User__isnull=True
-                    ).update(Nama_User=request.user)
-
-                messages.success(
-                    request,
-                    "Restore soal berhasil. Semua soal otomatis dimiliki user login."
-                )
-                return redirect('cbt:restore_backup_soal')
-
-            except Exception as e:
-                messages.error(request, f"Gagal restore soal: {str(e)}")
-                return redirect('cbt:restore_backup_soal')
-
-            finally:
-                if decrypted_path:
-                    cleanup_files(temp_path, decrypted_path)
-                else:
-                    cleanup_files(temp_path)
-        else:
-            messages.error(request, "Form tidak valid.")
-            return redirect('cbt:restore_backup_soal')
-
-    else:
-        form = forms.UploadFormBackup()
-
-    context = {
-        "data": "Restore Backup Soal",
-        "judul": "Restore Backup Soal",
-        "NamaForm": "Form Restore Backup Soal",
-        "link": reverse('cbt:restore_backup_soal'),
-        "form": form,
-        "icon": "bi bi-upload"
-    }
-    return render(request, 'staff/restore_backup_soal.html', context)

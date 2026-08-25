@@ -28,18 +28,6 @@
                                 style="font-size: 12px;" disabled>
                                 <i class="bi bi-trash me-1"></i> Hapus
                             </button>
-
-                            <!-- Backup Soal -->
-                            <a href="{% url 'cbt:backup_soal' %}" class="btn btn-success btn-sm"
-                                style="font-size: 12px;">
-                                <i class="bi bi-cloud-arrow-up me-1"></i> Backup Soal
-                            </a>
-
-                            <!-- Restore Soal -->
-                            <a href="{% url 'cbt:restore_backup_soal' %}" class="btn btn-warning btn-sm text-dark"
-                                style="font-size: 12px;">
-                                <i class="bi bi-cloud-arrow-down me-1"></i> Restore Soal
-                            </a>
                         </div>
                 </div>
             </div>
@@ -54,7 +42,7 @@
                         <th class="align-middle text-centertext-center" scope="col">
                             <input type="checkbox" id="select_all">
                         </th>
-                        <th class="align-middle text-center" scope="col">Kode Soal</th>
+                        <th class="align-middle text-center" scope="col">Token Ujian</th>
                         <th class="align-middle text-center" scope="col">Kelas</th>
                         <th class="align-middle text-center" scope="col">Mapel</th>
                         <th class="align-middle text-center" scope="col">Jenis Ujian</th>
@@ -114,14 +102,14 @@
                                 {% if data.aktif %}
                                 <a href="{% url 'cbt:aktifkan_soal' data.Kode_Soal %}"
                                     class="btn btn-sm btn-danger bi bi-x-lg" style="font-size: 12px;"
-                                    onclick="return confirm('Yakin ingin menonaktifkan soal ini?')">
+                                    onclick="return konfirmasiNonaktifkanSoal(event, this.href)">
                                     Stop
                                 </a>
 
                                 {% else %}
                                 <a href="{% url 'cbt:aktifkan_soal' data.Kode_Soal %}"
                                     class="btn btn-sm btn-primary bi bi-check-lg" style="font-size: 12px;"
-                                    onclick="return confirm('Yakin ingin mengaktifkan soal ini?')">
+                                    onclick="return konfirmasiAktifkanSoal(event, this.href)">
                                     Mulai
                                 </a>
                                 {% endif %}

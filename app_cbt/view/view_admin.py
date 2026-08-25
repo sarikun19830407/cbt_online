@@ -577,6 +577,8 @@ def tambah_lembaga(request):
     if request.method == "POST":
         if form.is_valid():
             form.instance.Nama_User = request.user
+            lembaga = models.KurikulumLembaga.objects.filter(status=True).first()
+            form.instance.kurikulum_lebaga=lembaga
             form.instance.status = True
             form.save()
             messages.add_message(request, messages.INFO, f'Data telah berhasil Tambahkan')
@@ -1121,7 +1123,7 @@ def tambah_user_staff(request):
             form.instance.Nama_Lembaga = lembaga_aktif
             form.instance.is_staff = True
             form.save()
-            messages.add_message(request, messages.INFO, 'Data telah berhasil Tambahkan')
+            messages.success(request, 'Data telah berhasil Tambahkan')
             return redirect(reverse('cbt:user_staff'))
         else:
             messages.error(request, 'Data Masih Salah.')
@@ -1161,7 +1163,7 @@ def hapus_user_staff (request, pk):
 
     if request.method == "POST":
         Data.delete()
-        messages.add_message(request, messages.INFO, 'Data telah berhasil Hapus')
+        messages.success(request, 'Data telah berhasil Hapus')
         return redirect (reverse('cbt:user_staff'))
     context = {
         "data" : f"Hapus {Data}",
@@ -1199,7 +1201,7 @@ def Ubah_user_staff (request, pk):
     if request.method == "POST":
         if form.is_valid():
             form.save()
-            messages.add_message(request, messages.INFO, 'Data telah berhasil diubah')
+            messages.success(request, 'Data telah berhasil diubah')
             return redirect(reverse('cbt:user_staff'))
         else:
             messages.error(request, 'Data Masih Salah.')
@@ -1241,6 +1243,10 @@ def active_user_staff(request, pk):
     # Toggle status aktif
     user_target.is_active = not user_target.is_active
     user_target.save()
+    if user_target.is_active:
+        messages.success(request, "Akun berhasil diaktifkan.")
+    else:
+        messages.success(request, "Akun berhasil dinonaktifkan.")
 
     return redirect(reverse("cbt:user_staff"))
 
@@ -1325,6 +1331,10 @@ def active_user_siswa(request, pk):
     # Toggle status aktif
     user_target.is_active = not user_target.is_active
     user_target.save()
+    if user_target.is_active:
+        messages.success(request, "Akun berhasil diaktifkan.")
+    else:
+        messages.success(request, "Akun berhasil dinonaktifkan.")
 
     return redirect(reverse("cbt:user_siswa"))
 
@@ -1364,7 +1374,7 @@ def tambah_user_siswa(request):
             # 🔹 Simpan user
             form.save()
 
-            messages.success(request, f"User siswa berhasil dibuat. Password: {auto_password}")
+            messages.success(request, f"User siswa berhasil dibuat. Password")
             return redirect(reverse('cbt:user_siswa'))
         else:
             messages.error(request, 'Data Masih Salah.')
@@ -1453,7 +1463,7 @@ def Ubah_user_siswa(request, pk):
     if request.method == "POST":
         if form.is_valid():
             form.save()
-            messages.add_message(request, messages.INFO, 'Data telah berhasil diubah')
+            messages.success(request, 'Data telah berhasil diubah')
             return redirect(reverse('cbt:user_siswa'))
         else:
             messages.error(request, 'Data Masih Salah.')
@@ -1761,6 +1771,78 @@ def cetak_semua_kartu_pdf(request):
 
 
 
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+def generate_ulang_password_siswa(request):
+
+    siswa_count = models.Pengguna.objects.filter(is_siswa=True,Nama_User=request.user).count()
+    context =   {
+        'judul':"Generet password siswa",
+        'data':"Generet password siswa",
+        'siswa_count': siswa_count,
+        'generet': reverse ('cbt:proses_generate_password_siswa'),
+        "link": reverse('cbt:user_siswa'),
+        "icon":"bi bi-arrow-repeat"
+    }
+    return render(request,'super_admin/generate_ulang_password_siswa.html', context)
+
+
+
+
+
+
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+@csrf_protect
+def proses_generate_password_siswa(request):
+
+    if request.method == 'POST':
+
+        # Karakter yang diperbolehkan
+        allowed_chars = ''.join([
+            ch for ch in (string.ascii_uppercase + string.digits)
+            if ch not in ['O', 'I', '0', '1']
+        ])
+
+        # Hanya siswa dari lembaga user yang sedang login
+        siswa_list = models.Pengguna.objects.filter(
+            is_siswa=True,
+            Nama_User=request.user,
+        )
+
+        jumlah = 0
+
+        for siswa in siswa_list:
+
+            # Generate password tepat 8 karakter
+            auto_password = ''.join(
+                random.choice(allowed_chars)
+                for _ in range(8)
+            )
+
+            # Password di-hash oleh Django
+            siswa.set_password(auto_password)
+
+            # Simpan password asli untuk ditampilkan/admin
+            siswa.auto_password = auto_password
+
+            siswa.save(update_fields=[
+                'password',
+                'auto_password',
+            ])
+
+            jumlah += 1
+
+        messages.success(
+            request,
+            f'Berhasil generate ulang password {jumlah} siswa.'
+        )
+
+        return redirect(reverse('cbt:user_siswa'))
+
+    return redirect(reverse('cbt:user_siswa'))
+
+
 
 
 
@@ -1811,7 +1893,7 @@ def backup_database(request):
                         cleanup_files(file_path)
 
             else:
-                messages.error(request, "Password salah atau bukan superuser.")
+                messages.error(request, "Password salah !!!!!")
 
     else:
         form = forms.FormDownload()
