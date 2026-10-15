@@ -1,0 +1,454 @@
+/* Seluruh style khusus halaman login CBT */
+.cbt-login-page,
+.cbt-login-page * {
+    box-sizing: border-box;
+}
+
+.cbt-login-page {
+    min-height: 100vh;
+    margin: 0;
+    padding: 30px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(circle at 10% 10%, #dce9ff, transparent 32%),
+        radial-gradient(circle at 90% 90%, #d9e4ff, transparent 35%),
+        linear-gradient(135deg, #f4f7ff, #e8efff);
+    font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+.cbt-login-page .cbt-card {
+    width: 100%;
+    max-width: 1050px;
+    min-height: 600px;
+    display: grid;
+    grid-template-columns: 1fr 0.9fr;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, .8);
+    border-radius: 25px;
+    background: #fff;
+    box-shadow: 0 25px 70px rgba(36, 66, 130, .14);
+}
+
+/* Panel informasi */
+.cbt-login-page .cbt-info {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 42px 38px 28px;
+    overflow: hidden;
+    background: linear-gradient(145deg, #1746a2, #2563d9 60%, #4385f5);
+    color: #fff;
+}
+
+.cbt-login-page .cbt-info::before {
+    content: "";
+    position: absolute;
+    width: 310px;
+    height: 310px;
+    top: 150px;
+    right: -130px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .07);
+    pointer-events: none;
+}
+
+.cbt-login-page .cbt-info::after {
+    content: "";
+    position: absolute;
+    width: 210px;
+    height: 210px;
+    bottom: -100px;
+    left: -70px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .07);
+    pointer-events: none;
+}
+
+.cbt-login-page .cbt-brand {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.cbt-login-page .cbt-brand-icon {
+    width: 53px;
+    height: 53px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    /* border: 1px solid rgba(255, 255, 255, .3);
+    border-radius: 16px; */
+    /* background: rgba(255, 255, 255, .15); */
+    font-size: 25px;
+    font-weight: 800;
+}
+
+.cbt-login-page .cbt-brand h2 {
+    margin: 0;
+    color: #fff;
+    font-size: 27px;
+    font-weight: 800;
+    letter-spacing: .5px;
+}
+
+.cbt-login-page .cbt-brand p {
+    margin: 4px 0 0;
+    color: #dbeafe;
+    font-size: 12px;
+}
+
+.cbt-login-page .cbt-info-content {
+    position: relative;
+    z-index: 1;
+    margin-top: 35px;
+}
+
+.cbt-login-page .cbt-label {
+    display: inline-block;
+    margin-bottom: 17px;
+    padding: 7px 12px;
+    border: 1px solid rgba(255, 255, 255, .25);
+    border-radius: 30px;
+    background: rgba(255, 255, 255, .12);
+    color: #eff6ff;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .4px;
+}
+
+.cbt-login-page .cbt-info-content h3 {
+    max-width: 400px;
+    margin: 0 0 15px;
+    color: #fff;
+    font-size: 34px;
+    line-height: 1.3;
+    font-weight: 800;
+}
+
+.cbt-login-page .cbt-info-content p {
+    max-width: 380px;
+    margin: 0;
+    color: #e0ebff;
+    font-size: 14px;
+    line-height: 1.9;
+}
+
+.cbt-login-page .cbt-illustration {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    max-height: 230px;
+    margin: 15px auto;
+    object-fit: contain;
+    filter: drop-shadow(0 12px 18px rgba(10, 35, 100, .12));
+}
+
+.cbt-login-page .cbt-info-footer {
+    position: relative;
+    z-index: 1;
+    padding-top: 19px;
+    border-top: 1px solid rgba(255, 255, 255, .2);
+    color: #dbeafe;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+/* Panel login */
+.cbt-login-page .cbt-form-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 45px;
+    background: #fff;
+}
+
+.cbt-login-page .cbt-form-inner {
+    width: 100%;
+    max-width: 370px;
+}
+
+.cbt-login-page .cbt-heading {
+    margin-bottom: 32px;
+}
+
+.cbt-login-page .cbt-heading h1 {
+    margin: 0 0 11px;
+    color: #172f59;
+    font-size: 31px;
+    font-weight: 800;
+    letter-spacing: -.7px;
+}
+
+.cbt-login-page .cbt-heading p {
+    margin: 0;
+    color: #8290a7;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.cbt-login-page .cbt-messages {
+    margin-bottom: 20px;
+}
+
+.cbt-login-page .cbt-message {
+    margin: 0 0 8px;
+    padding: 12px 14px;
+    border: 1px solid #f5c2c7;
+    border-radius: 10px;
+    background: #fff1f2;
+    color: #a52834;
+    font-size: 13px;
+    line-height: 1.6;
+    list-style: none;
+}
+
+.cbt-login-page .cbt-field {
+    margin-bottom: 22px;
+}
+
+.cbt-login-page .cbt-field label {
+    display: block;
+    margin-bottom: 9px;
+    color: #354761;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.cbt-login-page .cbt-field input {
+    display: block;
+    width: 100%;
+    min-height: 51px;
+    padding: 13px 15px;
+    border: 1px solid #dce4f0;
+    border-radius: 12px;
+    background: #f8faff;
+    color: #243b53;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+}
+
+.cbt-login-page .cbt-field input::placeholder {
+    color: #a3aec0;
+}
+
+.cbt-login-page .cbt-field input:focus {
+    border-color: #3978ed;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(57, 120, 237, .12);
+}
+
+.cbt-login-page .cbt-password-options {
+    margin: -1px 0 25px;
+}
+
+.cbt-login-page .cbt-show-password {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: #64758b;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.cbt-login-page .cbt-show-password input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: #2866db;
+    cursor: pointer;
+}
+
+.cbt-login-page .cbt-submit {
+    width: 100%;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 0;
+    border-radius: 12px;
+    background: linear-gradient(100deg, #3479ee, #2156c7);
+    color: #fff;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    box-shadow: 0 9px 20px rgba(37, 91, 201, .22);
+    transition: transform .2s, box-shadow .2s, opacity .2s;
+    cursor: pointer;
+}
+
+.cbt-login-page .cbt-submit:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 13px 25px rgba(37, 91, 201, .3);
+}
+
+.cbt-login-page .cbt-submit:disabled {
+    opacity: .7;
+    cursor: wait;
+}
+
+.cbt-login-page .cbt-submit:focus-visible {
+    outline: 3px solid #a9c6ff;
+    outline-offset: 3px;
+}
+
+.cbt-login-page .cbt-loading {
+    display: none;
+    padding: 20px 0 0;
+    color: #64758b;
+    font-size: 13px;
+    text-align: center;
+}
+
+.cbt-login-page .cbt-loader {
+    width: 30px;
+    height: 30px;
+    margin: 0 auto 10px;
+    border: 3px solid #dce7fb;
+    border-top-color: #2866db;
+    border-radius: 50%;
+    animation: cbt-spin .8s linear infinite;
+}
+
+@keyframes cbt-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.cbt-login-page .cbt-footer {
+    margin-top: 30px;
+    padding-top: 19px;
+    border-top: 1px solid #edf1f7;
+    color: #94a0b1;
+    font-size: 12px;
+    line-height: 1.8;
+    text-align: center;
+}
+
+/* Tablet */
+@media (max-width: 850px) {
+    .cbt-login-page .cbt-card {
+        max-width: 490px;
+        min-height: auto;
+        grid-template-columns: 1fr;
+    }
+
+    .cbt-login-page .cbt-info {
+        padding: 27px 28px 22px;
+    }
+
+    .cbt-login-page .cbt-info-content {
+        margin-top: 25px;
+    }
+
+    .cbt-login-page .cbt-info-content h3 {
+        font-size: 26px;
+    }
+
+    .cbt-login-page .cbt-illustration {
+        display: none;
+    }
+
+    .cbt-login-page .cbt-info-footer {
+        margin-top: 22px;
+    }
+
+    .cbt-login-page .cbt-form-panel {
+        padding: 32px 28px;
+    }
+
+    .cbt-login-page .cbt-heading h1 {
+        font-size: 27px;
+    }
+}
+
+/* HP */
+@media (max-width: 480px) {
+    .cbt-login-page {
+        padding: 12px;
+    }
+
+    .cbt-login-page .cbt-card {
+        border-radius: 18px;
+    }
+
+    .cbt-login-page .cbt-info {
+        padding: 22px 19px;
+    }
+
+    .cbt-login-page .cbt-brand-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 13px;
+        font-size: 22px;
+    }
+
+    .cbt-login-page .cbt-brand h2 {
+        font-size: 23px;
+    }
+
+    .cbt-login-page .cbt-brand p {
+        font-size: 11px;
+    }
+
+    .cbt-login-page .cbt-info-content {
+        margin-top: 22px;
+    }
+
+    .cbt-login-page .cbt-info-content h3 {
+        font-size: 23px;
+    }
+
+    .cbt-login-page .cbt-info-content p {
+        font-size: 13px;
+    }
+
+    .cbt-login-page .cbt-form-panel {
+        padding: 28px 20px;
+    }
+
+    .cbt-login-page .cbt-heading {
+        margin-bottom: 25px;
+    }
+
+    .cbt-login-page .cbt-heading h1 {
+        font-size: 25px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .cbt-login-page *,
+    .cbt-login-page *::before,
+    .cbt-login-page *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+    }
+}
+
+/* Sembunyikan panel biru dan ilustrasi di HP */
+@media (max-width: 850px) {
+    .cbt-login-page .cbt-info {
+        display: none;
+    }
+
+    .cbt-login-page .cbt-card {
+        max-width: 450px;
+        min-height: auto;
+        grid-template-columns: 1fr;
+    }
+
+    .cbt-login-page .cbt-form-panel {
+        padding: 35px 28px;
+    }
+}
