@@ -1,7 +1,6 @@
 {% load static %}
 
 <script src="{% static 'poper.js' %}"></script>
-<script src="{% static 'jquery.js' %}"></script>
 <script src="{% static 'pesan.js' %}"></script>
 <script src="{% static 'ckeditor/ckeditor-init.js' %}"></script>
 <script src="{% static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
@@ -141,24 +140,13 @@ function konfirmasiNonaktifkanSoal(event, url) {
         // 2️⃣ Sidebar menu aktif (vanilla JS)
         // ===============================
         const sidebarMenuItems = document.querySelectorAll('#sidebarMenu .nav-link');
-        const savedActiveMenu = localStorage.getItem('activeMenu');
 
         sidebarMenuItems.forEach(item => {
             item.addEventListener('click', function () {
                 sidebarMenuItems.forEach(link => link.classList.remove('active'));
                 this.classList.add('active');
-                localStorage.setItem('activeMenu', this.getAttribute('href'));
             });
-
-            if (savedActiveMenu && item.getAttribute('href') === savedActiveMenu) {
-                item.classList.add('active');
-            }
         });
-
-        if (!savedActiveMenu && sidebarMenuItems.length > 0) {
-            sidebarMenuItems[0].classList.add('active');
-            localStorage.setItem('activeMenu', sidebarMenuItems[0].getAttribute('href'));
-        }
 
         // Baris tabel aktif saat diklik (satu baris saja)
         document.addEventListener('click', function (event) {
@@ -285,56 +273,88 @@ function konfirmasiNonaktifkanSoal(event, url) {
     });
 
     // ===============================
-    // 4️⃣ Accordion Menu (pakai jQuery)
-    // Pastikan jQuery sudah dimuat dulu
+    // 4️⃣ Menu sidebar aktif
     // ===============================
-    $(document).ready(function () {
-        // Tampilkan submenu tanpa animasi panah saat pemulihan state
-        function showRestored($pagenav) {
-            const $icon = $pagenav.children('.utama').find('i');
-            $icon.css('transition', 'none');
-            $pagenav.addClass('open').children('ul').show();
-            requestAnimationFrame(function () {
-                requestAnimationFrame(function () {
-                    $icon.css('transition', '');
+    document.addEventListener('DOMContentLoaded', function () {
+        // Sorot menu aktif berdasarkan URL yang sedang dibuka
+        function findActiveLinks() {
+            const current = (window.location.pathname || '/').replace(/\/+$/, '') || '/';
+            const links = Array.prototype.slice.call(document.querySelectorAll(
+                '.sidebar .nav-link, .offcanvas .nav-link'
+            ));
+
+            function targetOf(link) {
+                const href = link.getAttribute('href') || '';
+                if (!href || href.charAt(0) === '#') return '';
+                return href.split('?')[0].split('#')[0].replace(/\/+$/, '') || '/';
+            }
+
+            let matches = links.filter(link => targetOf(link) === current);
+            if (!matches.length) {
+                const parts = current.split('/').filter(part => part && !/^\d+$/.test(part));
+                const tail = (parts.pop() || '').toLowerCase();
+                matches = links.filter(link => {
+                    const target = targetOf(link);
+                    if (!target) return false;
+                    const segment = target.split('/').pop().toLowerCase();
+                    return segment.length > 2 && tail.indexOf(segment) !== -1;
                 });
+            }
+            return { links: links, matches: matches };
+        }
+
+        function highlightActiveMenu() {
+            const found = findActiveLinks();
+            found.links.forEach(link => link.classList.remove('active'));
+            found.matches.forEach(link => link.classList.add('active'));
+        }
+
+        highlightActiveMenu();
+
+        // Terapkan ulang setelah handler menu lain selesai berjalan
+        window.addEventListener('load', highlightActiveMenu);
+    });
+</script>
+
+<script>
+    // Pertahankan posisi gulir menu agar tidak meloncat ke atas setelah pindah halaman
+    (function () {
+        const boxes = {
+            sidebarMenuScroll: document.querySelector('.sidebar .nav'),
+            offcanvasMenuScroll: document.querySelector('#offcanvasScrolling .offcanvas-body')
+        };
+
+        function restore() {
+            Object.keys(boxes).forEach(function (key) {
+                const el = boxes[key];
+                if (!el) return;
+                const saved = parseInt(sessionStorage.getItem(key) || '0', 10);
+                if (saved > 0) el.scrollTop = saved;
             });
         }
 
-        // Buka otomatis menu yang punya current_page_item
-        $('.pagenav li').each(function (i, el) {
-            if ($(el).hasClass('current_page_item')) {
-                showRestored($(el).parent().parent());
-            }
-        });
+        restore();
+        window.addEventListener('load', restore);
 
-        // Pulihkan state accordion dari localStorage
-        $('.accordion .pagenav').each(function (index) {
-            const isOpen = localStorage.getItem('accordion_' + index);
-            if (isOpen === 'true') {
-                showRestored($(this));
-            }
-        });
-
-        // Klik toggle accordion
-        $('.accordion .utama').click(function () {
-            const $parent = $(this).parent('.pagenav');
-            const willOpen = !$parent.hasClass('open');
-
-            // Tutup menu lain dulu supaya status panah selalu sesuai isi menu
-            $('.accordion .pagenav').not($parent).each(function () {
-                $(this).removeClass('open').children('ul').stop(true, true).hide(200);
+        document.addEventListener('click', function (event) {
+            const link = event.target.closest ? event.target.closest('a') : null;
+            if (!link) return;
+            Object.keys(boxes).forEach(function (key) {
+                const el = boxes[key];
+                if (el && el.contains(link)) {
+                    sessionStorage.setItem(key, String(el.scrollTop));
+                }
             });
+        }, true);
 
-            $parent.toggleClass('open', willOpen);
-            $(this).nextAll('ul').stop(true, true)[willOpen ? 'slideDown' : 'slideUp'](200);
-
-            $('.accordion .pagenav').each(function (i) {
-                localStorage.setItem('accordion_' + i, $(this).hasClass('open') ? 'true' : 'false');
-            });
+        document.addEventListener('shown.bs.offcanvas', function () {
+            const el = boxes.offcanvasMenuScroll;
+            const saved = parseInt(sessionStorage.getItem('offcanvasMenuScroll') || '0', 10);
+            if (el && saved > 0) el.scrollTop = saved;
         });
-    });
+    })();
 </script>
+
 <script>
     flatpickr(
         "input[name='tanggal_penetapan'], \

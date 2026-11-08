@@ -425,10 +425,6 @@ body.siswa-page .card-header {
     box-shadow: inset 0 0 0 1px #bbf7d0;
 }
 
-.siswa-finish .fa-5x {
-    font-size: 2.7rem;
-}
-
 .siswa-finish .card .card-header.bg-info {
     background:
         linear-gradient(120deg, #0e7490, #0891b2 60%, #22b8d4) !important;

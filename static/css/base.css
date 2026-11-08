@@ -1718,9 +1718,11 @@ body.modal-open {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
+    flex-wrap: nowrap;
     gap: .55rem;
     padding: .85rem .75rem 1rem;
     overflow-y: auto;
+    overflow-x: hidden;
     scrollbar-color: rgba(255, 255, 255, .2) transparent;
 }
 
@@ -1783,92 +1785,19 @@ body.modal-open {
     letter-spacing: .02em;
 }
 
-/* Sidebar accordion (menu superuser) */
-.sidebar .accordion,
-.offcanvas .accordion {
-    margin: .15rem 0;
-}
-
-.sidebar .accordion > ul,
-.offcanvas .accordion > ul {
-    margin: 0;
-    padding: 0;
-}
-
-.sidebar .pagenav,
-.offcanvas .pagenav {
-    position: relative;
-    margin-bottom: 0;
-}
-
-.sidebar .utama,
-.offcanvas .utama {
-    display: flex;
-    align-items: center;
-    gap: .55rem;
-    margin: .15rem 0;
-    padding: .6rem .85rem;
-    border-radius: 10px;
-    background: rgba(255, 255, 255, .04) !important;
-    color: #c7d2e3;
-    font-size: .85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color var(--transition), color var(--transition);
-}
-
-.sidebar .utama:hover,
-.offcanvas .utama:hover {
-    background: rgba(255, 255, 255, .08) !important;
-    color: #ffffff;
-}
-
-.sidebar .utama a,
-.offcanvas .utama a {
-    color: inherit;
-}
-
-.sidebar .utama i,
-.offcanvas .utama i {
-    transition: transform .25s ease;
-    font-size: .75rem;
-}
-
-.sidebar .pagenav.open .utama i,
-.offcanvas .pagenav.open .utama i {
-    transform: rotate(90deg);
-}
-
-.sidebar .pagenav ul,
-.offcanvas .pagenav ul {
-    display: none;
-    margin: 0;
-    padding: 0;
-}
-
-.sidebar .pagenav > ul,
-.offcanvas .pagenav > ul {
-    position: relative;
-}
-
-.sidebar .pagenav > ul::before,
-.offcanvas .pagenav > ul::before {
-    content: "";
-    position: absolute;
-    top: .45rem;
-    bottom: .45rem;
-    left: 1.45rem;
-    width: 1px;
-    background: rgba(255, 255, 255, .09);
-    pointer-events: none;
-}
-
-.sidebar .page_item .nav-link,
-.offcanvas .page_item .nav-link {
-    padding: .5rem .85rem .5rem 2.1rem;
-    font-size: .8rem;
-    font-weight: 500;
-    gap: .45rem;
+/* Judul kelompok menu sidebar (menu superuser) */
+.sidebar .nav-title,
+.offcanvas .nav-title {
+    list-style: none;
+    margin: .9rem 0 .2rem;
+    padding: .75rem .9rem 0;
+    border-top: 1px solid rgba(255, 255, 255, .08);
+    color: #7c8db0;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .09em;
+    line-height: 1.2;
+    text-transform: uppercase;
 }
 
 .sidebar .text-muted,
@@ -1880,6 +1809,7 @@ body.modal-open {
 .offcanvas .nav {
     display: flex;
     flex-direction: column;
+    flex-wrap: nowrap;
     gap: .55rem;
     padding: .25rem 0;
 }
