@@ -5,7 +5,8 @@
 
 <body>
     <div class="container-fluid">
-        <form method="POST" action="{% url 'cbt:hapus_soal_pilih' %}" id="delete_form">
+        <form method="POST" action="{% url 'cbt:hapus_soal_pilih' %}" id="delete_form"
+            data-hapus-nama="soal">
             {% csrf_token %}
             <div class="btn-group mb-2" role="group" aria-label="Basic mixed styles example">
                 <a class="btn btn-outline-primary btn-sm bi bi-arrow-counterclockwise" style="font-size: 12px;"

@@ -101,6 +101,7 @@
                                     class="btn btn-sm btn-warning bi bi-pencil-square">
                                 </a>
                                 <a class="btn btn-danger btn-sm bi bi-trash" style="font-size: 8;"
+                                    data-hapus-nama="Hapus Soal No : {{ soal }}"
                                     href="{% url 'cbt:hapus_soal' soal.id %}"></a>
                             </div>
                         </td>

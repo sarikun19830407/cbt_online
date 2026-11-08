@@ -98,6 +98,7 @@ urlpatterns =[
     path('upload_soal_excel/<pk>/', view_staff.upload_soal_excel, name='upload_soal_excel'),
     path('download_template_soal', view_staff.download_template_soal, name='download_template_soal'),
     path('lihat_soal_siswa/<pk>/', view_staff.lihat_soal_siswa, name='lihat_soal_siswa'),
+    path('cetak_naskah_soal/<int:pk>/', view_staff.cetak_naskah_soal, name='cetak_naskah_soal'),
     path('hapus_soal_pilih', view_staff.hapus_soal_pilih, name='hapus_soal_pilih'),
 
     path('ujicoba_soal/<int:pk>/', view_staff.ujicoba_soal, name='ujicoba_soal'),

@@ -228,14 +228,7 @@ def Hapus_kurikulum (request, pk):
         Data.delete()
         messages.add_message(request, messages.INFO, f'{Data} telah berhasil di hapus')
         return redirect (reverse('cbt:kurikulum_lembaga'))
-    context = {
-        "data" : "Hapus Kurikulum",
-        "judul":"CBT-Kurikulum",
-        "link":reverse("cbt:kurikulum_lembaga"),
-        "Data":f"Mapel {Data}",
-        'icon':"bi bi-trash3"
-        }
-    return render (request, 'super_admin/hapus.html', context)
+    return redirect (reverse('cbt:kurikulum_lembaga'))
 
 
 
@@ -463,14 +456,7 @@ def Hapus_Tahun_Pelajaran (request, pk):
         Data.delete()
         messages.add_message(request, messages.INFO, 'Data telah berhasil Hapus')
         return redirect (reverse('cbt:tahun_pelajaran'))
-    context = {
-        "data" : f"Hapus Tahun Pelajaran {Data}",
-        "judul":"CBT",
-        "link":reverse("cbt:tahun_pelajaran"),
-        "Data":f"tahun pelajaran {Data}",
-        "icon":"bi bi-trash3"
-        }
-    return render (request, 'super_admin/hapus.html', context)
+    return redirect (reverse('cbt:tahun_pelajaran'))
 
 
 
@@ -622,14 +608,7 @@ def Hapus_lembaga (request, pk):
         Data.delete()
         messages.add_message(request, messages.INFO, f'{Data} telah berhasil di hapus')
         return redirect (reverse('cbt:lembaga'))
-    context = {
-        "data" : f"Hapus lembaga {Data}",
-        "judul":"CBT-Lembaga",
-        "link":reverse("cbt:lembaga"),
-        "Data":f"lembaga {Data}",
-        'icon':"bi bi-trash3"
-        }
-    return render (request, 'super_admin/hapus.html', context)
+    return redirect (reverse('cbt:lembaga'))
 
 
 
@@ -754,14 +733,7 @@ def Hapus_mapel (request, pk):
         Data.delete()
         messages.add_message(request, messages.INFO, 'Data telah berhasil Hapus')
         return redirect (reverse('cbt:matapelajaran'))
-    context = {
-        "data" : "Hapus Mata Peklajaran",
-        "judul":"CBT-Mapel",
-        "link":reverse("cbt:matapelajaran"),
-        "Data":f"Mapel {Data}",
-        'icon':"bi bi-trash3"
-        }
-    return render (request, 'super_admin/hapus.html', context)
+    return redirect (reverse('cbt:matapelajaran'))
 
 
 
@@ -885,14 +857,7 @@ def hapus_kelas (request, pk):
         Data.delete()
         messages.add_message(request, messages.INFO, 'Data telah berhasil Hapus')
         return redirect (reverse('cbt:Kelas'))
-    context = {
-        "data" : f"Hapus Kelas {Data}",
-        "judul":"CBT-Kelas",
-        "link":reverse("cbt:Kelas"),
-        "Data":f'kelas {Data}',
-        "icon":"bi bi-trash3"
-        }
-    return render (request, 'super_admin/hapus.html', context)
+    return redirect (reverse('cbt:Kelas'))
 
 
 
@@ -1006,14 +971,7 @@ def hapus_rombel (request, pk):
         Data.delete()
         messages.add_message(request, messages.INFO, 'Data telah berhasil Hapus')
         return redirect (reverse('cbt:Rombel'))
-    context = {
-        "data" : f"Hapus Rombel {Data}",
-        "judul":"CBT-Rombel",
-        "link":reverse("cbt:Rombel"),
-        "Data":f'Rombel {Data}',
-        "icon":"bi bi-trash3"
-        }
-    return render (request, 'super_admin/hapus.html', context)
+    return redirect (reverse('cbt:Rombel'))
 
 
 
@@ -1165,14 +1123,7 @@ def hapus_user_staff (request, pk):
         Data.delete()
         messages.success(request, 'Data telah berhasil Hapus')
         return redirect (reverse('cbt:user_staff'))
-    context = {
-        "data" : f"Hapus {Data}",
-        "judul":"CBT-user staff",
-        "link":reverse("cbt:user_staff"),
-        "Data":Data,
-        "icon":"bi bi-trash"
-        }
-    return render (request, 'super_admin/hapus.html', context)
+    return redirect (reverse('cbt:user_staff'))
 
 
 
@@ -1414,19 +1365,9 @@ def hapus_user_siswa(request):
             Data.delete()  
             messages.success(request, 'Data telah berhasil dihapus.')
             return redirect(reverse('cbt:user_siswa')) 
-        
-        context = {
-            "data" : f"Hapus {Data.count()} siswa",
-            "NamaForm": "Form Hapus Madrsah",
-            "judul":"PPDB Hapus Madrsah",
-            "link":reverse("cbt:user_siswa"),
-            "hapus": reverse('cbt:hapus_user_siswa'),
-            "Data": Data,
-            "Hapus":f"{Data.count()} siswa",
-            "ket":"Madrasah",
-            "icon":"bi bi-trash3"
-        }
-        return render(request, 'super_admin/hapu_data.html', context)
+
+        messages.warning(request, 'Konfirmasi hapus diperlukan.')
+        return redirect(reverse('cbt:user_siswa'))
     
     return redirect(reverse('cbt:user_siswa'))
 

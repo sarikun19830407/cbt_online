@@ -16,7 +16,8 @@
                 </button>
                 <div class="collapse navbar-collapse gap-2" id="navbarSupportedContent">
                     {% include "pesan.html" %}
-                    <form method="POST" action="{% url 'cbt:hapus_arsip_daftar_nilai' %}" id="delete_form">
+                    <form method="POST" action="{% url 'cbt:hapus_arsip_daftar_nilai' %}" id="delete_form"
+                        data-hapus-nama="Daftar Nilai">
                         {% csrf_token %}
                         <div class="btn-group mb-2" role="group" aria-label="Basic mixed styles example">
                             </a>
@@ -52,24 +53,40 @@
                         <td class="align-middle text-center">{{data.Rombel}}</td>
                         <td class="align-middle ">{{data.Mapel}}</td>
                         <td class="align-middle text-center">
-                            <div class="btn-group" role="group" aria-label="Basic mixed styles example">
-                                <a class="btn btn-info btn-sm bi bi-graph-up" style="font-size: 11px;"
-                                    href="{% url 'cbt:arsip_jawaban_siswa' data.id %}">&nbsp; Analisis</a>
-                                <a class="btn btn-secondary btn-sm bi bi-card-list" style="font-size: 11px;"
-                                    href="{% url 'cbt:arsip_jawaban_siswa' data.id %}">&nbsp; Nilai</a>
-                                <a href="{% url 'cbt:export_jawaban_siswa' data.id %}"
-                                    class="btn btn-success btn-sm bi bi-file-earmark-excel"
-                                    style="font-size: 11px;">&nbsp;Analisis</a>
-                                <a href="{% url 'cbt:export_daftar_nilai' data.id %}"
-                                    class="btn btn-primary btn-sm bi bi-file-earmark-excel"
-                                    style="font-size: 11px;">&nbsp;
-                                    Nilai
-                                </a>
-                                <a class="btn btn-info btn-sm bi bi-printer" style="font-size: 11px;"
-                                    href="{% url 'cbt:export_daftar_nilai_pdf' data.id %}">&nbsp; PDF</a>
-                                <a class="btn btn-primary btn-sm bi bi-printer" style="font-size: 11px;"
-                                    href="{% url 'cbt:export_jawaban_siswa_pdf' data.id %}">&nbsp; Analisis PDF</a>
-
+                            <div class="aksi-dropdown">
+                                <button type="button" class="btn btn-sm btn-primary aksi-toggle"
+                                    aria-haspopup="true" aria-expanded="false">
+                                    <i class="bi bi-three-dots"></i> Aksi
+                                    <i class="bi bi-caret-down-fill aksi-caret"></i>
+                                </button>
+                                <div class="aksi-menu" role="menu">
+                                    <a class="aksi-item" role="menuitem"
+                                        href="{% url 'cbt:arsip_jawaban_siswa' data.id %}">
+                                        <i class="bi bi-graph-up text-info"></i> Analisis
+                                    </a>
+                                    <a class="aksi-item" role="menuitem"
+                                        href="{% url 'cbt:arsip_jawaban_siswa' data.id %}">
+                                        <i class="bi bi-card-list text-secondary"></i> Nilai
+                                    </a>
+                                    <div class="aksi-divider"></div>
+                                    <a class="aksi-item" role="menuitem"
+                                        href="{% url 'cbt:export_jawaban_siswa' data.id %}">
+                                        <i class="bi bi-file-earmark-excel text-success"></i> Analisis Excel
+                                    </a>
+                                    <a class="aksi-item" role="menuitem"
+                                        href="{% url 'cbt:export_daftar_nilai' data.id %}">
+                                        <i class="bi bi-file-earmark-excel text-primary"></i> Nilai Excel
+                                    </a>
+                                    <div class="aksi-divider"></div>
+                                    <a class="aksi-item" role="menuitem"
+                                        href="{% url 'cbt:export_daftar_nilai_pdf' data.id %}">
+                                        <i class="bi bi-printer text-info"></i> Nilai PDF
+                                    </a>
+                                    <a class="aksi-item" role="menuitem"
+                                        href="{% url 'cbt:export_jawaban_siswa_pdf' data.id %}">
+                                        <i class="bi bi-printer text-primary"></i> Analisis PDF
+                                    </a>
+                                </div>
                             </div>
                         </td>
                     </tr>

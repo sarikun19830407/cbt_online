@@ -48,6 +48,7 @@
                                 <a class="btn btn-warning btn-sm bi bi-pencil-square" style="font-size: 8;"
                                     href="{% url 'cbt:Ubah_lembaga' data.id %}">&nbsp;Ubah</a>
                                 <a class="btn btn-danger btn-sm bi bi-trash" style="font-size: 8;"
+                                    data-hapus-nama="lembaga {{ data }}"
                                     href="{% url 'cbt:Hapus_lembaga' data.id %}">&nbsp;Hapus</a>
                             </div>
                         </td>

@@ -1,0 +1,534 @@
+/* ==========================================================================
+   CBT — Tampilan halaman siswa
+   Dimuat khusus oleh home_siswa.html, mulai_ujian.html, selesai_ujian.html
+   ========================================================================== */
+
+body.siswa-page {
+    margin: 0;
+    background:
+        radial-gradient(900px 500px at 8% -8%, #dfe9ff 0%, transparent 60%),
+        radial-gradient(800px 480px at 100% 100%, #e3e9ff 0%, transparent 55%),
+        #f3f6fc !important;
+    color: var(--text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+}
+
+body.siswa-page .container,
+body.siswa-page .container-fluid {
+    position: relative;
+}
+
+body.siswa-page .card {
+    border: 1px solid rgba(226, 232, 240, .9);
+    border-radius: var(--radius-lg);
+    background: rgba(255, 255, 255, .92);
+    box-shadow: var(--shadow-md);
+    backdrop-filter: blur(6px);
+}
+
+body.siswa-page .card-header {
+    border-bottom: 1px solid rgba(226, 232, 240, .9);
+    font-weight: 700;
+    letter-spacing: -.01em;
+}
+
+/* --------------------------------------------------------------------------
+   Halaman input kode ujian
+   -------------------------------------------------------------------------- */
+.siswa-home {
+    padding: 2.5rem 1rem;
+}
+
+.siswa-home .user-profile-card {
+    padding: 1.1rem 1.25rem;
+    border: 1px solid rgba(226, 232, 240, .9);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, #ffffff, #f3f7ff);
+    box-shadow: var(--shadow-sm);
+}
+
+.siswa-home .user-profile-card h6 {
+    color: var(--text);
+    font-size: .98rem;
+}
+
+.siswa-home .user-profile-card .rounded-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    padding: 0 !important;
+    border: 1px solid #dbe7fb;
+    background: linear-gradient(135deg, #eef4ff, #dfe9ff) !important;
+}
+
+.siswa-home .user-profile-card .rounded-circle i {
+    font-size: 1.45rem;
+    color: var(--primary);
+}
+
+.siswa-home .exam-card {
+    overflow: hidden;
+    border: 1px solid rgba(226, 232, 240, .9);
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: var(--shadow-lg);
+}
+
+.siswa-home .exam-header {
+    padding: 1.6rem 1.5rem;
+    background:
+        radial-gradient(420px 180px at 90% 0%, rgba(255, 255, 255, .22), transparent 60%),
+        linear-gradient(120deg, #1e40af, #2563eb 55%, #3b82f6);
+    color: #ffffff;
+}
+
+.siswa-home .exam-header h4 {
+    color: #ffffff;
+    font-size: 1.18rem;
+    letter-spacing: -.01em;
+}
+
+.siswa-home .exam-card .card-body {
+    padding: 1.75rem 1.6rem 1.9rem;
+}
+
+.siswa-home .exam-card .form-label {
+    margin-bottom: .5rem;
+    color: #334155;
+    font-weight: 600;
+}
+
+.siswa-home .exam-card .input-group-text {
+    min-width: 3rem;
+    justify-content: center;
+    border-color: #cfe0fb;
+    background: #eef5ff;
+    color: var(--primary);
+    border-radius: 12px 0 0 12px;
+}
+
+.siswa-home .exam-card .form-control {
+    min-height: 3rem;
+    padding: .7rem .95rem;
+    border-color: #cfe0fb;
+    border-radius: 0 12px 12px 0;
+    font-size: .95rem;
+    letter-spacing: .03em;
+}
+
+.siswa-home .exam-card .form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, .12);
+}
+
+.siswa-home .exam-card .btn-primary {
+    min-height: 3rem;
+    border-radius: 12px;
+    font-size: .95rem;
+    letter-spacing: .01em;
+}
+
+.siswa-home .btn-success {
+    border-radius: var(--radius-pill);
+    padding: .55rem 1.15rem;
+}
+
+.siswa-home .text-muted {
+    color: var(--muted) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Halaman ujian
+   -------------------------------------------------------------------------- */
+.siswa-exam {
+    padding: 1.25rem 0 2rem;
+}
+
+.siswa-exam > .container-fluid {
+    max-width: 1440px;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+}
+
+.siswa-exam .question-card {
+    margin-bottom: 1.25rem;
+    border-radius: 18px;
+    border: 1px solid rgba(226, 232, 240, .9);
+    background: #ffffff;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.siswa-exam .question-card > .card-header {
+    padding: 1rem 1.25rem;
+    background:
+        radial-gradient(320px 120px at 100% 0%, rgba(255, 255, 255, .18), transparent 70%),
+        linear-gradient(115deg, #1e40af, #2563eb 60%, #3b82f6);
+    color: #ffffff;
+}
+
+.siswa-exam .question-card > .card-header h5 {
+    color: #ffffff;
+    font-size: 1rem;
+}
+
+.siswa-exam .question-card > .card-header .badge {
+    background: rgba(255, 255, 255, .92) !important;
+    color: var(--primary-dark) !important;
+    padding: .45em .8em;
+    font-weight: 700;
+}
+
+.siswa-exam .question-card .card-body {
+    padding: 1.4rem 1.35rem;
+}
+
+.siswa-exam .question-card .card .card-body {
+    padding: 1.25rem 1.1rem;
+}
+
+.siswa-exam .question-card .table {
+    margin-bottom: 0;
+}
+
+.siswa-exam .question-card .table > tbody > tr > td {
+    padding: .7rem .55rem;
+    border-bottom: 1px solid #eef3fa;
+    color: var(--text-soft);
+    font-size: .95rem;
+    line-height: 1.7;
+}
+
+.siswa-exam .question-card .table > tbody > tr:last-child > td {
+    border-bottom: 0;
+}
+
+.siswa-exam .question-card .table > tbody > tr:hover > td {
+    background: #f7faff;
+}
+
+.siswa-exam .question-card .table > tbody > tr > td:first-child {
+    border-radius: 10px 0 0 10px;
+}
+
+.siswa-exam .question-card .table > tbody > tr > td:last-child {
+    border-radius: 0 10px 10px 0;
+}
+
+.siswa-exam .form-check-input {
+    width: 1.15rem;
+    height: 1.15rem;
+    margin-top: .2rem;
+    border: 1.5px solid #b9c7da;
+    cursor: pointer;
+}
+
+.siswa-exam .form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+/* Navigasi nomor soal */
+.siswa-exam .question-nav {
+    max-height: calc(100vh - 320px);
+    overflow-y: auto;
+    padding-right: .25rem;
+}
+
+.siswa-exam .nav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    margin: 3px;
+    padding: 0;
+    border-radius: 11px;
+    font-size: .85rem;
+    font-weight: 700;
+    transition: transform var(--transition), box-shadow var(--transition),
+        background-color var(--transition), color var(--transition);
+}
+
+.siswa-exam .nav-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.siswa-exam .nav-btn.btn-outline-primary {
+    background: #ffffff;
+}
+
+.siswa-exam .nav-btn.btn-outline-primary:hover {
+    background: var(--primary);
+    color: #ffffff;
+}
+
+.siswa-exam .nav-btn.btn-success {
+    box-shadow: 0 6px 12px -6px rgba(5, 150, 105, .65);
+}
+
+.siswa-exam .nav-btn.menu_active.active {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* Timer */
+.siswa-exam .timer-container {
+    position: sticky;
+    top: .5rem;
+    z-index: 30;
+    margin-bottom: 1rem;
+    padding: 1rem .9rem;
+    border: 1px solid rgba(255, 255, 255, .14);
+    border-radius: 14px;
+    background:
+        radial-gradient(220px 110px at 85% 0%, rgba(96, 165, 250, .35), transparent 65%),
+        linear-gradient(135deg, #1e1b4b, #312e81 55%, #1d4ed8);
+    color: #ffffff;
+    text-align: center;
+    box-shadow: 0 18px 34px -18px rgba(30, 27, 75, .85);
+}
+
+.siswa-exam .timer-container h6 {
+    margin-bottom: .2rem;
+    color: #c7d2fe;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.siswa-exam .timer-container h4 {
+    margin: 0;
+    color: #ffffff;
+    font-family: var(--font-mono);
+    font-size: 1.55rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+}
+
+.siswa-exam .timer-container h4.text-danger {
+    color: #fecaca !important;
+    animation: timerPulse 1s ease-in-out infinite;
+}
+
+@keyframes timerPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .55; }
+}
+
+.siswa-exam .list-group-item {
+    color: var(--text-soft);
+    font-size: .82rem;
+}
+
+.siswa-exam .list-group-flush > .list-group-item {
+    padding-top: .55rem;
+    padding-bottom: .55rem;
+}
+
+.siswa-exam .list-group-item i {
+    color: var(--primary);
+}
+
+/* Opsi jawaban */
+.siswa-exam .option-label {
+    cursor: pointer;
+    transition: background-color var(--transition);
+}
+
+.siswa-exam .option-label:hover {
+    background-color: #f6f9ff;
+}
+
+/* Mobile accordion */
+.siswa-exam .mobile-accordion .accordion-item {
+    border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+}
+
+.siswa-exam .mobile-accordion .accordion-button {
+    padding: .9rem 1rem;
+    font-weight: 600;
+}
+
+.siswa-exam .mobile-accordion .accordion-button:not(.collapsed) {
+    background: linear-gradient(115deg, #1e40af, #2563eb);
+    color: #ffffff;
+}
+
+.siswa-exam .mobile-accordion .accordion-body {
+    padding: .9rem;
+}
+
+/* Halaman konfirmasi selesai */
+.siswa-exam .alert {
+    border-radius: 12px;
+}
+
+.siswa-exam .btn-secondary,
+.siswa-exam .btn-success,
+.siswa-exam .btn-danger,
+.siswa-exam .btn-warning,
+.siswa-exam .btn-primary {
+    min-height: 2.7rem;
+    border-radius: 11px;
+}
+
+/* --------------------------------------------------------------------------
+   Halaman selesai ujian
+   -------------------------------------------------------------------------- */
+.siswa-finish {
+    padding: 2.5rem 1rem;
+}
+
+.siswa-finish .card.shadow-lg {
+    border: 1px solid rgba(226, 232, 240, .9);
+    border-radius: 22px;
+    box-shadow: var(--shadow-lg) !important;
+    overflow: hidden;
+}
+
+.siswa-finish .card-header.bg-success {
+    padding: 1.35rem 1.25rem;
+    background:
+        radial-gradient(360px 140px at 15% 0%, rgba(255, 255, 255, .22), transparent 65%),
+        linear-gradient(120deg, #065f46, #059669 60%, #10b981) !important;
+}
+
+.siswa-finish .card-header h3 {
+    color: #ffffff;
+    font-size: 1.15rem;
+    letter-spacing: -.01em;
+}
+
+.siswa-finish .card-body.py-5 {
+    padding-top: 2.5rem !important;
+    padding-bottom: 2.5rem !important;
+}
+
+.siswa-finish .card-body > i.bi {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 82px;
+    height: 82px;
+    margin-bottom: 1.1rem !important;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    color: var(--success) !important;
+    font-size: 2.7rem;
+    box-shadow: inset 0 0 0 1px #bbf7d0;
+}
+
+.siswa-finish .fa-5x {
+    font-size: 2.7rem;
+}
+
+.siswa-finish .card .card-header.bg-info {
+    background:
+        linear-gradient(120deg, #0e7490, #0891b2 60%, #22b8d4) !important;
+    color: #ffffff;
+}
+
+.siswa-finish .card .card-header.bg-warning {
+    background:
+        linear-gradient(120deg, #b45309, #d97706 60%, #f59e0b) !important;
+    color: #ffffff;
+}
+
+.siswa-finish .card .card-body {
+    text-align: left;
+}
+
+.siswa-finish .card .card-body .d-flex {
+    padding: .35rem 0;
+    border-bottom: 1px dashed #e8eef6;
+}
+
+.siswa-finish .card .card-body .d-flex:last-child {
+    border-bottom: 0;
+}
+
+.siswa-finish .card .card-body .d-flex span {
+    color: var(--text-soft);
+    font-size: .85rem;
+}
+
+.siswa-finish .card .card-body .d-flex strong {
+    color: var(--text);
+    font-weight: 700;
+}
+
+.siswa-finish .btn-success {
+    min-height: 2.7rem;
+    border-radius: 11px;
+}
+
+.siswa-finish .lead {
+    color: var(--text-soft);
+    font-size: .98rem !important;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive halaman siswa
+   -------------------------------------------------------------------------- */
+@media (max-width: 991.98px) {
+    .siswa-exam .question-nav {
+        max-height: none;
+    }
+
+    .siswa-exam .nav-btn {
+        width: 36px;
+        height: 36px;
+        margin: 2px;
+        border-radius: 9px;
+        font-size: .78rem;
+    }
+
+    .siswa-exam .timer-container {
+        padding: .75rem .75rem;
+        margin-bottom: .75rem;
+    }
+
+    .siswa-exam .timer-container h4 {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .siswa-home,
+    .siswa-finish {
+        padding: 1.25rem .35rem;
+    }
+
+    .siswa-home .exam-card .card-body {
+        padding: 1.25rem 1.1rem 1.4rem;
+    }
+
+    .siswa-home .exam-header {
+        padding: 1.3rem 1.1rem;
+    }
+
+    .siswa-exam > .container-fluid {
+        padding-inline: .65rem;
+    }
+
+    .siswa-exam .question-card .card-body {
+        padding: 1rem .9rem;
+    }
+
+    .siswa-exam .question-card .table > tbody > tr > td {
+        padding: .6rem .35rem;
+        font-size: .88rem;
+    }
+
+    .siswa-finish .card-body.py-5 {
+        padding-top: 1.75rem !important;
+        padding-bottom: 1.75rem !important;
+    }
+}

@@ -7,6 +7,8 @@
 <script src="{% static 'ckeditor/ckeditor/ckeditor.js' %}"></script>
 <link rel="stylesheet" type="text/css" href="{% static 'flatpickr.css' %}">
 <script src="{% static 'flatpickr.js' %}"></script>
+<script src="{% static 'matematic/MathJax.js' %}?config=TeX-AMS_HTML"></script>
+
 
 
 
@@ -158,6 +160,115 @@ function konfirmasiNonaktifkanSoal(event, url) {
             localStorage.setItem('activeMenu', sidebarMenuItems[0].getAttribute('href'));
         }
 
+        // Baris tabel aktif saat diklik (satu baris saja)
+        document.addEventListener('click', function (event) {
+            const row = event.target.closest('table.table > tbody > tr');
+            if (!row) return;
+
+            document.querySelectorAll('table.table > tbody > tr.active').forEach(function (item) {
+                if (item !== row) item.classList.remove('active');
+            });
+            row.classList.add('active');
+        });
+
+        // Konfirmasi hapus langsung di halaman daftar
+        function konfirmasiAksi(pesan, onYa, warnaYa) {
+            Swal.fire({
+                title: pesan,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Ya",
+                cancelButtonText: "Batal",
+                confirmButtonColor: warnaYa || "#dc3545",
+                cancelButtonColor: "#6c757d",
+                backdrop: true,
+                allowOutsideClick: false,
+                position: "center",
+                didOpen: function (popup) {
+                    popup.style.top = "-15vh";
+                }
+            }).then(function (result) {
+                if (result.isConfirmed) onYa();
+            });
+        }
+
+        function konfirmasiHapus(pesan, onYa) {
+            konfirmasiAksi(pesan, onYa);
+        }
+
+        function konfirmasiGenerate(pesan, onYa) {
+            konfirmasiAksi(pesan, onYa, "#0d6efd");
+        }
+
+        function csrfToken() {
+            const input = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            return input ? input.value : "";
+        }
+
+        // Hapus massal: form dengan data-hapus-nama
+        document.addEventListener('submit', function (event) {
+            const form = event.target;
+            const label = form.getAttribute('data-hapus-nama');
+            if (!label || form.dataset.hapusTerkonfirmasi === '1') return;
+
+            const jumlah = document.querySelectorAll('input[name="selected_ids"]:checked').length;
+            if (!jumlah) return;
+
+            event.preventDefault();
+            konfirmasiHapus('Apakah Anda yakin ingin menghapus ' + jumlah + ' ' + label + '?', function () {
+                form.dataset.hapusTerkonfirmasi = '1';
+                let confirmInput = form.querySelector('input[name="confirm"]');
+                if (!confirmInput) {
+                    confirmInput = document.createElement('input');
+                    confirmInput.type = 'hidden';
+                    confirmInput.name = 'confirm';
+                    form.appendChild(confirmInput);
+                }
+                confirmInput.value = 'yes';
+                form.submit();
+            });
+        });
+
+        // Hapus satuan: tautan dengan data-hapus-nama
+        document.addEventListener('click', function (event) {
+            const link = event.target.closest('a[data-hapus-nama]');
+            if (!link) return;
+
+            event.preventDefault();
+            konfirmasiHapus('Apakah Anda yakin ingin menghapus ' + link.getAttribute('data-hapus-nama') + '?', function () {
+                kirimPost(link.href);
+            });
+        });
+
+        // Generate ulang password: tautan dengan data-generate-password
+        document.addEventListener('click', function (event) {
+            const link = event.target.closest('a[data-generate-password]');
+            if (!link) return;
+
+            event.preventDefault();
+            konfirmasiGenerate(link.getAttribute('data-generate-password'), function () {
+                kirimPost(link.href);
+            });
+        });
+
+        function kirimPost(url) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = url;
+
+            const token = csrfToken();
+            if (token) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'csrfmiddlewaretoken';
+                input.value = token;
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+
         // ===============================
         // 3️⃣ Loading saat submit form upload
         // ===============================
@@ -178,10 +289,22 @@ function konfirmasiNonaktifkanSoal(event, url) {
     // Pastikan jQuery sudah dimuat dulu
     // ===============================
     $(document).ready(function () {
+        // Tampilkan submenu tanpa animasi panah saat pemulihan state
+        function showRestored($pagenav) {
+            const $icon = $pagenav.children('.utama').find('i');
+            $icon.css('transition', 'none');
+            $pagenav.addClass('open').children('ul').show();
+            requestAnimationFrame(function () {
+                requestAnimationFrame(function () {
+                    $icon.css('transition', '');
+                });
+            });
+        }
+
         // Buka otomatis menu yang punya current_page_item
         $('.pagenav li').each(function (i, el) {
             if ($(el).hasClass('current_page_item')) {
-                $(el).parent().show().parent().addClass('open');
+                showRestored($(el).parent().parent());
             }
         });
 
@@ -189,27 +312,25 @@ function konfirmasiNonaktifkanSoal(event, url) {
         $('.accordion .pagenav').each(function (index) {
             const isOpen = localStorage.getItem('accordion_' + index);
             if (isOpen === 'true') {
-                $(this).addClass('open').children('ul').show();
+                showRestored($(this));
             }
         });
 
         // Klik toggle accordion
         $('.accordion .utama').click(function () {
             const $parent = $(this).parent('.pagenav');
-            const index = $('.accordion .pagenav').index($parent);
+            const willOpen = !$parent.hasClass('open');
 
-            $('.accordion > ul > li > ul:visible')
-                .not($(this).nextAll('ul'))
-                .stop().hide(200).parent().removeClass('open');
-
-            $('.accordion .pagenav').each(function (i) {
-                localStorage.setItem('accordion_' + i, 'false');
+            // Tutup menu lain dulu supaya status panah selalu sesuai isi menu
+            $('.accordion .pagenav').not($parent).each(function () {
+                $(this).removeClass('open').children('ul').stop(true, true).hide(200);
             });
 
-            $(this).nextAll('ul').slideToggle(200, function () {
-                const isOpen = $(this).is(':visible');
-                $parent.toggleClass('open', isOpen);
-                localStorage.setItem('accordion_' + index, isOpen);
+            $parent.toggleClass('open', willOpen);
+            $(this).nextAll('ul').stop(true, true)[willOpen ? 'slideDown' : 'slideUp'](200);
+
+            $('.accordion .pagenav').each(function (i) {
+                localStorage.setItem('accordion_' + i, $(this).hasClass('open') ? 'true' : 'false');
             });
         });
     });
@@ -226,6 +347,88 @@ function konfirmasiNonaktifkanSoal(event, url) {
             altFormat: "d-m-Y"
         }
     );
+</script>
+
+
+<script>
+    (function () {
+        function tutupAksi(except) {
+            document.querySelectorAll('.aksi-menu.show').forEach(function (menu) {
+                if (menu === except) return;
+                menu.classList.remove('show');
+                menu.style.top = '';
+                menu.style.left = '';
+                menu.style.visibility = '';
+                var toggle = menu.parentElement.querySelector('.aksi-toggle');
+                if (toggle) toggle.setAttribute('aria-expanded', 'false');
+            });
+        }
+
+        function posisiMenu(toggle, menu) {
+            var rect = toggle.getBoundingClientRect();
+            var gap = 6;
+            var pad = 8;
+
+            // Ukur tinggi menu sebelum diposisikan
+            menu.style.visibility = 'hidden';
+            menu.classList.add('show');
+            var tinggi = menu.offsetHeight;
+            var lebar = menu.offsetWidth;
+
+            // Buka ke atas bila ruang di bawah tidak cukup
+            var bukaKeAtas = rect.bottom + gap + tinggi > window.innerHeight - pad &&
+                rect.top - gap - tinggi > pad;
+
+            var top = bukaKeAtas ? rect.top - gap - tinggi : rect.bottom + gap;
+            top = Math.max(pad, Math.min(top, window.innerHeight - tinggi - pad));
+            // Ratakan kanan dengan tombol, lalu jaga tetap di dalam layar
+            var left = Math.max(pad, Math.min(rect.right - lebar, window.innerWidth - lebar - pad));
+
+            menu.style.top = top + 'px';
+            menu.style.left = left + 'px';
+            menu.style.visibility = '';
+        }
+
+        document.addEventListener('click', function (event) {
+            var toggle = event.target.closest('.aksi-toggle');
+
+            if (toggle) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                var menu = toggle.parentElement.querySelector('.aksi-menu');
+                if (!menu) return;
+
+                var sudahBuka = menu.classList.contains('show');
+                tutupAksi();
+
+                if (!sudahBuka) {
+                    posisiMenu(toggle, menu);
+                    toggle.setAttribute('aria-expanded', 'true');
+                }
+                return;
+            }
+
+            if (!event.target.closest('.aksi-menu')) tutupAksi();
+        });
+
+        // Tutup setelah item menu dipilih (termasuk tautan buka tab baru)
+        document.addEventListener('click', function (event) {
+            if (event.target.closest('.aksi-menu a')) tutupAksi();
+        });
+
+        window.addEventListener('scroll', function () {
+            tutupAksi();
+        }, true);
+
+        window.addEventListener('resize', function () {
+            tutupAksi();
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') tutupAksi();
+        });
+    })();
 </script>
 
 

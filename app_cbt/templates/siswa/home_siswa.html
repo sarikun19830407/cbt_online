@@ -8,69 +8,10 @@
     <title>Imput Kode Ujian</title>
     <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
     {% include "setting/css.html" %}
-    <style>
-        .login-container {
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        .user-profile-card {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        }
-
-        .exam-card {
-            border: none;
-            border-radius: 12px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        .exam-header {
-            background: linear-gradient(135deg, #3a7bd5 0%, #00d2ff 100%);
-            padding: 1.5rem;
-        }
-
-        .form-control {
-            padding: 12px 15px;
-            border-radius: 8px;
-            border: 1px solid #ced4da;
-            transition: all 0.3s;
-        }
-
-        .form-control:focus {
-            border-color: #86b7fe;
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #3a7bd5 0%, #00d2ff 100%);
-            border: none;
-            padding: 10px 24px;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .logout-btn {
-            color: #6c757d;
-            transition: all 0.3s;
-        }
-
-        .logout-btn:hover {
-            color: #0d6efd;
-            transform: translateX(-2px);
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/siswa.css' %}">
 </head>
 
-<body class="bg-light d-flex align-items-center min-vh-100">
+<body class="siswa-page siswa-home bg-light d-flex align-items-center min-vh-100">
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">

@@ -15,7 +15,8 @@
                 </button>
                 <div class="collapse navbar-collapse gap-2" id="navbarSupportedContent">
                     {% include "pesan.html" %}
-                    <form method="POST" action="{% url 'cbt:hapus_setting_soal' %}" id="delete_form">
+                    <form method="POST" action="{% url 'cbt:hapus_setting_soal' %}" id="delete_form"
+                        data-hapus-nama="Mapel">
                         {% csrf_token %}
                         <div class="btn-group mb-2" role="group" aria-label="Basic mixed styles example">
                             <a href="{% url 'cbt:buat_seting_soal' %}" class="btn btn-primary btn-sm"
@@ -98,34 +99,53 @@
                             {% endif %}
                         </td>
                         <td class="align-middle text-center">
-                            <div class="btn-group" role="group" aria-label="Basic mixed styles example">
-                                {% if data.aktif %}
-                                <a href="{% url 'cbt:aktifkan_soal' data.Kode_Soal %}"
-                                    class="btn btn-sm btn-danger bi bi-x-lg" style="font-size: 12px;"
-                                    onclick="return konfirmasiNonaktifkanSoal(event, this.href)">
-                                    Stop
-                                </a>
-
-                                {% else %}
-                                <a href="{% url 'cbt:aktifkan_soal' data.Kode_Soal %}"
-                                    class="btn btn-sm btn-primary bi bi-check-lg" style="font-size: 12px;"
-                                    onclick="return konfirmasiAktifkanSoal(event, this.href)">
-                                    Mulai
-                                </a>
-                                {% endif %}
-                                <a class="btn btn-warning btn-sm bi bi-pencil-square " style="font-size: 12px;"
-                                    href="{% url 'cbt:Ubah_setting_soal' data.id %}">&nbsp;&nbsp;Ubah</a>
-                                <a class="btn btn-success btn-sm bi bi-plus-square" style="font-size: 12px;"
-                                    href="{% url 'cbt:buat_soal_siswa' data.id %}">&nbsp;&nbsp;Buat</a>
-                                <a class="btn btn-primary bi-eye btn-sm" style="font-size: 12px;"
-                                    href="{% url 'cbt:lihat_soal_siswa' data.id %}">&nbsp;&nbsp;Lihat</a>
-                                <a href="{% url 'cbt:nilai_setingsoal' data.id %}"
-                                    class="btn btn-outline-secondary btn-sm bi bi-file-earmark-excel"
-                                    style="font-size: 11px;">&nbsp;
-                                    Nilai
-                                </a>
-                                <a class="btn btn-outline-info bi bi-caret-right btn-sm" style="font-size: 12px;"
-                                    href="{% url 'cbt:ujicoba_soal' data.id %}">&nbsp;&nbsp;Coba</a>
+                            <div class="aksi-dropdown">
+                                <button type="button" class="btn btn-sm btn-primary aksi-toggle"
+                                    aria-haspopup="true" aria-expanded="false">
+                                    <i class="bi bi-three-dots"></i> Aksi
+                                    <i class="bi bi-caret-down-fill aksi-caret"></i>
+                                </button>
+                                <div class="aksi-menu" role="menu">
+                                    {% if data.aktif %}
+                                    <a href="{% url 'cbt:aktifkan_soal' data.Kode_Soal %}" class="aksi-item"
+                                        role="menuitem"
+                                        onclick="return konfirmasiNonaktifkanSoal(event, this.href)">
+                                        <i class="bi bi-x-lg text-danger"></i> Stop
+                                    </a>
+                                    {% else %}
+                                    <a href="{% url 'cbt:aktifkan_soal' data.Kode_Soal %}" class="aksi-item"
+                                        role="menuitem"
+                                        onclick="return konfirmasiAktifkanSoal(event, this.href)">
+                                        <i class="bi bi-check-lg text-success"></i> Mulai
+                                    </a>
+                                    {% endif %}
+                                    <div class="aksi-divider"></div>
+                                    <a class="aksi-item" role="menuitem"
+                                        href="{% url 'cbt:Ubah_setting_soal' data.id %}">
+                                        <i class="bi bi-pencil-square text-warning"></i> Ubah
+                                    </a>
+                                    <a class="aksi-item" role="menuitem"
+                                        href="{% url 'cbt:buat_soal_siswa' data.id %}">
+                                        <i class="bi bi-plus-square text-success"></i> Buat Soal
+                                    </a>
+                                    <a class="aksi-item" role="menuitem"
+                                        href="{% url 'cbt:lihat_soal_siswa' data.id %}">
+                                        <i class="bi bi-eye text-primary"></i> Lihat Soal
+                                    </a>
+                                    <a class="aksi-item" role="menuitem"
+                                        href="{% url 'cbt:nilai_setingsoal' data.id %}">
+                                        <i class="bi bi-file-earmark-excel"></i> Nilai
+                                    </a>
+                                    <a class="aksi-item" role="menuitem"
+                                        href="{% url 'cbt:ujicoba_soal' data.id %}">
+                                        <i class="bi bi-caret-right text-info"></i> Coba
+                                    </a>
+                                    <div class="aksi-divider"></div>
+                                    <a class="aksi-item" role="menuitem" target="_blank" rel="noopener"
+                                        href="{% url 'cbt:cetak_naskah_soal' data.id %}">
+                                        <i class="bi bi-printer text-primary"></i> Cetak Naskah Soal
+                                    </a>
+                                </div>
                             </div>
                         </td>
                     </tr>

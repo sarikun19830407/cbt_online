@@ -414,18 +414,8 @@ def hapus_setting_soal(request):
             Data.delete()  
             messages.success(request, 'Data telah berhasil dihapus.')
             return redirect(reverse("cbt:setting_soal"))
-        context = {
-            "data" : f"Hapus {Data.count()} mapel",
-            "NamaForm": "Form Hapus Seting Soal",
-            "judul":"PPDB Hapus Seting Soal",
-            "link":reverse("cbt:setting_soal"),
-            "hapus": reverse('cbt:hapus_setting_soal'),
-            "Hapus": f"{Data.count()} Mapel",
-            "ket":"Madrasah",
-            "Data": Data,
-            "icon":"bi bi-trash3"
-            }
-        return render (request, 'staff/hapus_data.html', context)
+        messages.warning(request, 'Konfirmasi hapus diperlukan.')
+        return redirect(reverse("cbt:setting_soal"))
     return redirect(reverse("cbt:setting_soal"))
 
 
@@ -586,14 +576,7 @@ def hapus_soal (request, pk):
         Data.delete()
         messages.add_message(request, messages.INFO, 'Data telah berhasil Hapus')
         return redirect(reverse('cbt:buat_soal_siswa', kwargs={'pk': Data.Kode_Soal.pk}))
-    context = {
-        "data" : f"Hapus Soal No : {Data}",
-        "judul":"CBT-user staff",
-        "link": next_url,
-        "Data":f"Hapus Soal No : {Data}",
-        "icon": "bi bi-trash3"
-        }
-    return render (request, 'staff/hapus.html', context)
+    return redirect(next_url)
 
 
 
@@ -1081,18 +1064,8 @@ def hapus_soal_pilih(request):
             messages.success(request, 'Data telah berhasil dihapus.')
             return redirect(reverse('cbt:lihat_soal_siswa', kwargs={'pk': kode_soal_pk}))
 
-        context = {
-            "data": f"Hapus {Data.count()} soal",
-            "NamaForm": "Form Hapus Soal",
-            "judul": "CBT - Hapus Soal",
-            "link": reverse("cbt:lihat_soal_siswa", kwargs={"pk": kode_soal_pk}),  # tombol kembali
-            "hapus": reverse('cbt:hapus_soal_pilih'),
-            "Data": Data,
-            "Hapus": f"{Data.count()} soal",
-            "ket": "Soal",
-            "icon": "bi bi-trash3"
-        }
-        return render(request, 'staff/hapus_data.html', context)
+        messages.warning(request, 'Konfirmasi hapus diperlukan.')
+        return redirect(reverse('cbt:lihat_soal_siswa', kwargs={'pk': kode_soal_pk}))
 
     return redirect(reverse('cbt:lihat_soal_siswa', kwargs={'pk': kode_soal_pk}))
 
@@ -1357,6 +1330,27 @@ def lihat_soal_siswa(request, pk):
     return render(request, 'staff/list_soal_siswa.html', context)
 
 
+@login_required(login_url=settings.LOGIN_URL)
+@user_passes_test(lambda user: user.is_staff, login_url=settings.LOGIN_URL)
+@csrf_protect
+def cetak_naskah_soal(request, pk):
+    setting = get_object_or_404(models.SetingSoal, pk=pk)
+    soal_list = models.Soal_Siswa.objects.filter(Kode_Soal=setting).order_by('Nomor')
+
+    if not soal_list.exists():
+        messages.warning(request, "Belum ada soal pada setting ini.")
+        return redirect('cbt:setting_soal')
+
+    context = {
+        "judul": f"Naskah Soal {setting.Mapel} - Kelas {setting.Kelas}",
+        "setting": setting,
+        "lembaga": setting.Nama_Lembaga,
+        "soal_list": soal_list,
+    }
+
+    return render(request, 'staff/naskah_soal.html', context)
+
+
 
 
 
@@ -1541,18 +1535,8 @@ def hapus_daftar_nilai(request):
             messages.success(request, 'Data telah berhasil dihapus.')
             return redirect(reverse('cbt:daftar_nilai')) 
         
-        context = {
-            "data" : f"Hapus {Data.count()} Daftar Nilai",
-            "NamaForm": "Form Hapus Madrsah",
-            "judul":"PPDB Hapus Madrsah",
-            "link":reverse("cbt:daftar_nilai"),
-            "hapus": reverse('cbt:hapus_daftar_nilai'),
-            "Data": Data,
-            "Hapus":f"{Data.count()} Daftar Nilai",
-            "ket":"Madrasah",
-            "icon":"bi bi-trash3"
-        }
-        return render(request, 'super_admin/hapu_data.html', context)
+        messages.warning(request, 'Konfirmasi hapus diperlukan.')
+        return redirect(reverse('cbt:daftar_nilai'))
     
     return redirect(reverse('cbt:daftar_nilai'))
 
@@ -2587,19 +2571,8 @@ def hapus_arsip_daftar_nilai(request):
             messages.success(request, 'Data telah berhasil dihapus.')
             return redirect("cbt:arsip_daftar_nilai", pk=tahun_pelajaran_pk)
 
-        # Tampilkan halaman konfirmasi
-        context = {
-            "data": f"Hapus {data_queryset.count()} Daftar Nilai",
-            "NamaForm": "Konfirmasi Hapus Data Nilai",
-            "judul": "Hapus Daftar Nilai",
-            "link": reverse("cbt:arsip_daftar_nilai", kwargs={"pk": tahun_pelajaran_pk}),
-            "hapus": reverse('cbt:hapus_arsip_daftar_nilai'),
-            "Data": data_queryset,
-            "Hapus": f"{data_queryset.count()} Daftar Nilai",
-            "ket": "Daftar Nilai",
-            "icon": "bi bi-trash3"
-        }
-        return render(request, 'super_admin/hapu_data.html', context)
+        messages.warning(request, 'Konfirmasi hapus diperlukan.')
+        return redirect("cbt:arsip_daftar_nilai", pk=tahun_pelajaran_pk)
 
     return redirect("cbt:daftar_nilai")
 

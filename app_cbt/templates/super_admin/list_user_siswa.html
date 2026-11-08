@@ -14,10 +14,12 @@
                 </button>
                 <div class="collapse navbar-collapse gap-2" id="navbarSupportedContent">
                     {% include "pesan.html" %}
-                    <form method="POST" action="{% url 'cbt:hapus_user_siswa' %}" id="delete_form">
+                    <form method="POST" action="{% url 'cbt:hapus_user_siswa' %}" id="delete_form"
+                        data-hapus-nama="siswa">
                         {% csrf_token %}
                         <div class="btn-group mb-2" role="group" aria-label="Basic mixed styles example">
-                            <a href="{% url 'cbt:generate_ulang_password_siswa' %}" class="btn btn-primary btn-sm">
+                            <a href="{% url 'cbt:proses_generate_password_siswa' %}" class="btn btn-primary btn-sm"
+                                data-generate-password="Apakah Anda yakin ingin generate ulang password semua siswa?">
                                 <i class="bi bi-arrow-repeat fst-normal">&nbsp;Generate</i>
                             </a>
                             <a class="btn btn-warning btn-sm bi bi-arrow-down-square" style="font-size: 12px;"
@@ -79,7 +81,8 @@
                                     style="font-size: 12px;" href="{% url 'cbt:active_user_siswa' data.id %}">
                                     &nbsp;{% if data.is_active %}Nonaktifkan{% else %}Aktifkan{% endif %}</a>
                                 <a class="btn btn-primary btn-sm bi bi-pencil-square" style="font-size: 12px;"
-                                    href="{% url 'cbt:generate_ulang_password_per_siswa' data.id %}">&nbsp;Generet</a>
+                                    href="{% url 'cbt:generate_password_persiswa' data.id %}"
+                                    data-generate-password="Apakah Anda yakin ingin generate ulang password {{ data.Nama }}?">&nbsp;Generet</a>
                             </div>
                         </td>
                     </tr>

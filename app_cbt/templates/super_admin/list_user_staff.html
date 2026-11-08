@@ -40,6 +40,7 @@
                                 <a class="btn btn-warning btn-sm bi bi-pencil-square" style="font-size: 12px;"
                                     href="{% url 'cbt:Ubah_user_staff' data.id %}">&nbsp;Ubah</a>
                                 <a class="btn btn-danger btn-sm bi bi-trash" style="font-size: 12px;"
+                                    data-hapus-nama="{{ data }}"
                                     href="{% url 'cbt:hapus_user_staff' data.id %}">&nbsp;Hapus</a>
                                 <a class="btn btn-sm bi bi-person-check {% if data.is_active %}btn-info{% else %}btn-success{% endif %}"
                                     style="font-size: 12px;" href="{% url 'cbt:active_user_staff' data.id %}">

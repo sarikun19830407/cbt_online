@@ -10,100 +10,10 @@
     <title>Ujian Online</title>
     <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
     {% include "setting/css.html" %}
-    <style>
-        /* Desktop Styles */
-        .question-nav {
-            max-height: calc(100vh - 300px);
-            overflow-y: auto;
-        }
-
-        .question-card {
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-
-        .card-header {
-            border-radius: 10px 10px 0 0 !important;
-        }
-
-        .nav-btn {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 3px;
-            transition: all 0.3s ease;
-        }
-
-        .nav-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .timer-container {
-            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-            color: white;
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
-            margin-bottom: 15px;
-            position: sticky;
-            top: 10px;
-            z-index: 1000;
-        }
-
-        .timer-container h4 {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin: 0;
-            font-family: 'Courier New', monospace;
-        }
-
-        .option-label {
-            transition: background-color 0.2s;
-        }
-
-        .option-label:hover {
-            background-color: #f8f9fa;
-        }
-
-        /* Mobile Styles */
-        @media (max-width: 992px) {
-            .mobile-accordion .accordion-button {
-                padding: 1rem;
-                font-weight: 500;
-            }
-
-            .mobile-accordion .accordion-button:not(.collapsed) {
-                background-color: #0d6efd;
-                color: white;
-            }
-
-            .mobile-accordion .accordion-body {
-                padding: 1rem;
-            }
-
-            .mobile-accordion .nav-btn {
-                width: 36px;
-                height: 36px;
-                margin: 2px;
-                font-size: 0.9rem;
-            }
-
-            .timer-container {
-                padding: 8px;
-                margin-bottom: 10px;
-            }
-
-            .timer-container h4 {
-                font-size: 1.2rem;
-            }
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/siswa.css' %}">
 </head>
 
-<body class="bg-light">
+<body class="siswa-page siswa-exam bg-light">
     <div class="container-fluid mt-3">
         <div class="">
             {% for message in messages %}
@@ -356,7 +266,7 @@
                             {# === SEBELUMNYA === #}
                             {% if not is_finish_page and current_soal.Nomor > 1 %}
                                 <button type="submit" name="prev" class="btn btn-secondary px-4">
-                                    <i class="fas fa-arrow-left me-2"></i>Sebelumnya
+                                    <i class="bi bi-arrow-left me-2"></i>Sebelumnya
                                 </button>
                             {% else %}
                                 <div></div>
@@ -365,7 +275,7 @@
                             {# === KANAN === #}
                             {% if not is_finish_page %}
                                 <button type="submit" name="next" class="btn btn-primary px-4">
-                                    Selanjutnya <i class="fas fa-arrow-right ms-2"></i>
+                                    Selanjutnya <i class="bi bi-arrow-right ms-2"></i>
                                 </button>
                             {% else %}
                                 <div class="d-flex justify-content-between gap-3 container-fluid">

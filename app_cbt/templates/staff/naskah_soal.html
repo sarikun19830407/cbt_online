@@ -1,0 +1,424 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ judul }}</title>
+    <link rel="stylesheet" href="{% static 'icons/font/bootstrap-icons.min.css' %}">
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 1.5cm 1.6cm;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #eef2f7;
+            color: #111827;
+            font-family: "Liberation Serif", "Times New Roman", Times, serif;
+            font-size: 12pt;
+            line-height: 1.5;
+        }
+
+        /* Toolbar layar (tidak ikut tercetak) */
+        .toolbar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            border-bottom: 1px solid #dbe3ee;
+            background: #ffffff;
+            font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+        }
+
+        .toolbar .spacer {
+            flex: 1;
+        }
+
+        .toolbar .hint {
+            font-size: .78rem;
+            color: #64748b;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 16px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            font-size: .82rem;
+            font-weight: 600;
+            line-height: 1;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color .18s ease, border-color .18s ease;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-light {
+            border-color: #d7dfea;
+            background: #ffffff;
+            color: #334155;
+        }
+
+        .btn-light:hover {
+            background: #f1f5f9;
+        }
+
+        /* Lembar A4 di layar */
+        .kertas {
+            width: 21cm;
+            min-height: 29.7cm;
+            margin: 18px auto 40px;
+            padding: 1.5cm 1.6cm;
+            background: #ffffff;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, .12);
+        }
+
+        /* Kop lembaga */
+        .kop {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .kop td {
+            vertical-align: middle;
+        }
+
+        .kop-logo {
+            width: 70px;
+        }
+
+        .kop-logo img {
+            display: block;
+            width: 62px;
+            height: auto;
+        }
+
+        .kop-teks {
+            text-align: center;
+        }
+
+        .kop-lembaga {
+            font-size: 15pt;
+            font-weight: 700;
+            letter-spacing: .02em;
+            text-transform: uppercase;
+        }
+
+        .kop-alamat {
+            margin-top: 2px;
+            font-size: 10pt;
+            color: #374151;
+        }
+
+        .kop-garis {
+            margin: 8px 0 0;
+            border: 0;
+            border-top: 2.5px solid #111827;
+        }
+
+        .kop-garis-tipis {
+            margin: 2px 0 14px;
+            border: 0;
+            border-top: 1px solid #111827;
+        }
+
+        .judul {
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .judul h1 {
+            margin: 0;
+            font-size: 13.5pt;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+        }
+
+        .judul p {
+            margin: 2px 0 0;
+            font-size: 10.5pt;
+            color: #374151;
+        }
+
+        /* Informasi ujian */
+        .info {
+            width: 100%;
+            margin-bottom: 16px;
+            border-collapse: collapse;
+            font-size: 11pt;
+        }
+
+        .info td {
+            padding: 1px 4px 1px 0;
+            vertical-align: top;
+        }
+
+        .info .label {
+            width: 112px;
+            color: #374151;
+        }
+
+        .info .titik {
+            width: 10px;
+        }
+
+        .info .nilai {
+            font-weight: 600;
+        }
+
+        .info .celah {
+            width: 28px;
+        }
+
+        /* Tabel soal: kolom lebar tetap agar gambar tidak melewati batas */
+        .tabel-soal {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .tabel-soal > tbody > tr {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .tabel-soal > tbody > tr > td {
+            padding: 0 0 14px;
+            vertical-align: top;
+        }
+
+        .tabel-soal .nomor {
+            width: 30px;
+            font-weight: 700;
+        }
+
+        .isi-soal {
+            font-size: 12pt;
+            line-height: 1.55;
+            overflow-wrap: break-word;
+        }
+
+        /* Opsi jawaban memakai tabel agar huruf & gambar rata */
+        .opsi {
+            width: 100%;
+            margin-top: 6px;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .opsi td {
+            padding: 2px 0;
+            font-size: 11.5pt;
+            line-height: 1.45;
+            vertical-align: top;
+            overflow-wrap: break-word;
+        }
+
+        .opsi .huruf {
+            width: 26px;
+        }
+
+        /* Normalisasi konten CKEditor */
+        .isi-soal > :first-child {
+            margin-top: 0;
+        }
+
+        .isi-soal p,
+        .opsi p {
+            margin: 0 0 6px;
+        }
+
+        .isi-soal p:last-child,
+        .opsi p:last-child {
+            margin-bottom: 0;
+        }
+
+        .isi-soal ul,
+        .isi-soal ol {
+            margin: 4px 0 6px;
+            padding-left: 22px;
+        }
+
+        .isi-soal table,
+        .opsi table {
+            max-width: 100%;
+            border-collapse: collapse;
+        }
+
+        .isi-soal figure,
+        .opsi figure {
+            float: none !important;
+            max-width: 100% !important;
+            margin: 8px 0 !important;
+        }
+
+        .isi-soal img,
+        .isi-soal figure img,
+        .opsi img,
+        .opsi figure img {
+            max-width: 100% !important;
+            height: auto !important;
+        }
+
+        /* Batasi tinggi gambar agar satu soal tidak menghabiskan satu halaman */
+        .isi-soal img,
+        .isi-soal figure img {
+            max-height: 9cm !important;
+        }
+
+        .opsi img,
+        .opsi figure img {
+            max-height: 3.5cm !important;
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+            }
+
+            .toolbar {
+                display: none !important;
+            }
+
+            .kertas {
+                width: auto;
+                min-height: 0;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="toolbar">
+        <button type="button" class="btn btn-primary" onclick="window.print()">
+            <i class="bi bi-printer"></i> Cetak / Simpan PDF
+        </button>
+        <a class="btn btn-light" href="{% url 'cbt:setting_soal' %}">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
+        <div class="spacer"></div>
+        <span class="hint">Ukuran kertas A4</span>
+    </div>
+
+    <div class="kertas">
+        <table class="kop">
+            <tr>
+                <td class="kop-logo">
+                    <img src="{% static 'logo/img/KEMENAG.png' %}" alt="Logo Kementerian Agama">
+                </td>
+                <td class="kop-teks">
+                    <div class="kop-lembaga">{{ lembaga.Nama_Lembaga|upper }}</div>
+                    <div class="kop-alamat">
+                        {{ lembaga.Alamat }}{% if lembaga.kecamatan %} &middot; Kec. {{ lembaga.kecamatan }}{% endif %}{% if lembaga.kabupaten %} &middot; {{ lembaga.kabupaten }}{% endif %}
+                    </div>
+                    <div class="kop-alamat">Tahun Pelajaran {{ setting.Tahun_Pelajaran }}</div>
+                </td>
+                <td class="kop-logo"></td>
+            </tr>
+        </table>
+        <hr class="kop-garis">
+        <hr class="kop-garis-tipis">
+
+        <div class="judul">
+            <h1>Naskah Soal</h1>
+            <p>
+                {{ setting.jenis_ujian.get_Jenis_Ujian_display }}
+                {% if setting.jenis_ujian.Jenis_Ujian == 'UJIAN_AKHIR' %}
+                {% if lembaga.Tikatan_Satuan_Lembaga == 'SD/MI' %}(Khusus Kelas VI)
+                {% elif lembaga.Tikatan_Satuan_Lembaga == 'SMP/MTS' %}(Khusus Kelas IX)
+                {% elif lembaga.Tikatan_Satuan_Lembaga == 'SMA/MA' %}(Khusus Kelas XII)
+                {% endif %}
+                {% endif %}
+                &middot; Semester {{ setting.Semester }}
+            </p>
+        </div>
+
+        <table class="info">
+            <tr>
+                <td class="label">Mata Pelajaran</td>
+                <td class="titik">:</td>
+                <td class="nilai">{{ setting.Mapel }}</td>
+                <td class="celah"></td>
+                <td class="label">Kelas</td>
+                <td class="titik">:</td>
+                <td class="nilai">{{ setting.Kelas }}</td>
+            </tr>
+            <tr>
+                <td class="label">Hari/Tanggal</td>
+                <td class="titik">:</td>
+                <td class="nilai">{{ lembaga.tanggal_mulai_ujian|date:"l, j F Y"|default:"-" }}</td>
+                <td class="celah"></td>
+                <td class="label">Waktu</td>
+                <td class="titik">:</td>
+                <td class="nilai">{{ setting.durasi_menit }} menit</td>
+            </tr>
+            <tr>
+                <td class="label">Jumlah Soal</td>
+                <td class="titik">:</td>
+                <td class="nilai">{{ soal_list|length }} butir</td>
+                <td class="celah"></td>
+                <td class="label">Token</td>
+                <td class="titik">:</td>
+                <td class="nilai">{{ setting.Kode_Soal }}</td>
+            </tr>
+        </table>
+
+        <table class="tabel-soal">
+            <tbody>
+                {% for soal in soal_list %}
+                <tr>
+                    <td class="nomor">{{ soal.Nomor }}.</td>
+                    <td>
+                        <div class="isi-soal">{{ soal.Soal|safe }}</div>
+                        <table class="opsi">
+                            <tr>
+                                <td class="huruf">A.</td>
+                                <td>{{ soal.A|safe }}</td>
+                            </tr>
+                            <tr>
+                                <td class="huruf">B.</td>
+                                <td>{{ soal.B|safe }}</td>
+                            </tr>
+                            <tr>
+                                <td class="huruf">C.</td>
+                                <td>{{ soal.C|safe }}</td>
+                            </tr>
+                            <tr>
+                                <td class="huruf">D.</td>
+                                <td>{{ soal.D|safe }}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script src="{% static 'matematic/MathJax.js' %}?config=TeX-AMS_HTML"></script>
+</body>
+
+</html>

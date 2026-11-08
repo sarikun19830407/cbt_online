@@ -34,6 +34,7 @@
                                 <a class="btn btn-warning btn-sm bi bi-pencil-square" style="font-size: 8;"
                                     href="{% url 'cbt:Ubah_Mata_Pelajaran' data.id %}">&nbsp;Ubah</a>
                                 <a class="btn btn-danger btn-sm bi bi-trash" style="font-size: 8;"
+                                    data-hapus-nama="Mapel {{ data.Nama_Mapel }}"
                                     href="{% url 'cbt: Hapus_mapel' data.id %}">&nbsp;Hapus</a>
                             </div>
                         </td>

@@ -20,16 +20,6 @@
         document.getElementById('deactivate_button').disabled = !anyChecked;
     }
 
-    // Fungsi konfirmasi penghapusan
-    function confirmDeletion(event) {
-        event.preventDefault();
-        const userConfirmed = confirm("Apakah Anda yakin ingin menghapus data yang dipilih? Klik 'Ya' untuk menghapus atau 'Batal' untuk kembali.");
-        if (userConfirmed) {
-            document.getElementById('delete_form').submit();
-        } else {
-            window.location.href = "{% url 'cbt:user_staff' %}";
-        }
-    }
 </script>
 
 

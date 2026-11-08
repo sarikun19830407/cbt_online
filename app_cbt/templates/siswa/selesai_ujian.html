@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="id">
 
@@ -6,9 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ujian Selesai</title>
     {% include "setting/css.html" %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/siswa.css' %}">
 </head>
 
-<body>
+<body class="siswa-page siswa-finish">
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-lg-8 col-md-10">
@@ -17,7 +19,7 @@
                         <h3 class="mb-0 fw-semibold">Ujian Telah Diselesaikan</h3>
                     </div>
                     <div class="card-body text-center py-5">
-                        <i class="fas fa-check-circle fa-5x text-success mb-4"></i>
+                        <i class="bi bi-check-circle-fill text-success mb-4"></i>
                         <h4 class="mb-3">Selamat!</h4>
                         <p class="lead mb-4">Anda telah menyelesaikan ujian <strong>{{ seting_soal.Mapel }}</strong>.
                         </p>
@@ -53,7 +55,7 @@
                                         Informasi
                                     </div>
                                     <div class="card-body text-start">
-                                        <p><i class="fas fa-exclamation-triangle text-warning me-2"></i>Ujian ini hanya
+                                        <p><i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>Ujian ini hanya
                                             dapat dikerjakan sekali.</p>
                                         <p>Hasil resmi akan diumumkan oleh guru atau pengajar Anda.</p>
                                     </div>

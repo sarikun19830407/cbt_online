@@ -39,6 +39,7 @@
                                 <a class="btn btn-warning btn-sm bi bi-pencil-square" style="font-size: 8;"
                                     href="{% url 'cbt:Ubah_Tahun_Pelajaran' data.id %}">&nbsp;Ubah</a>
                                 <a class="btn btn-danger btn-sm bi bi-trash" style="font-size: 8;"
+                                    data-hapus-nama="tahun pelajaran {{ data }}"
                                     href="{% url 'cbt:Hapus_Tahun_Pelajaran' data.id %}">&nbsp;Hapus</a>
                             </div>
                         </td>
