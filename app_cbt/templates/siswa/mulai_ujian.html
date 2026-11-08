@@ -313,6 +313,74 @@
     {% include "setting/js.html" %}
 
     <script>
+        // Jaga posisi gulir saat pindah soal agar tidak meloncat ke atas
+        (function () {
+            const kodeSoal = '{{ seting_soal.Kode_Soal|escapejs }}';
+            const KEY = 'examScrollY_' + kodeSoal;
+            const isFinishPage = {{ is_finish_page|yesno:"true,false" }};
+            const examForm = document.querySelector('form[method="post"]');
+
+            function simpanPosisi() {
+                const sisa = document.documentElement.scrollHeight - window.innerHeight - window.scrollY;
+                sessionStorage.setItem(KEY, JSON.stringify({
+                    y: Math.round(window.scrollY),
+                    diBawah: sisa <= 24
+                }));
+            }
+
+            if (examForm) {
+                examForm.addEventListener('submit', simpanPosisi, true);
+            }
+
+            document.querySelectorAll('a.nav-btn').forEach(function (link) {
+                // Pilih nomor soal = lompat ke awal soal, bukan mengikuti posisi lama
+                link.addEventListener('click', function () {
+                    sessionStorage.removeItem(KEY);
+                });
+            });
+
+            if (isFinishPage) {
+                sessionStorage.removeItem(KEY);
+                return;
+            }
+
+            function pulihkanPosisi() {
+                let data;
+                try {
+                    data = JSON.parse(sessionStorage.getItem(KEY) || '{}');
+                } catch (e) {
+                    data = {};
+                }
+                if (!data.y && !data.diBawah) return;
+
+                const maks = document.documentElement.scrollHeight - window.innerHeight;
+                const y = data.diBawah ? maks : Math.min(data.y, maks);
+                if (y <= 0) return;
+
+                const root = document.documentElement;
+                const perilaku = root.style.scrollBehavior;
+                root.style.scrollBehavior = 'auto';
+                window.scrollTo(0, y);
+                root.style.scrollBehavior = perilaku;
+            }
+
+            let digeserSendiri = false;
+            ['wheel', 'touchmove', 'keydown'].forEach(function (jenis) {
+                window.addEventListener(jenis, function () { digeserSendiri = true; },
+                    { passive: true, once: true });
+            });
+
+            pulihkanPosisi();
+            window.addEventListener('load', pulihkanPosisi);
+            [400, 1200].forEach(function (jeda) {
+                setTimeout(function () {
+                    if (!digeserSendiri) pulihkanPosisi();
+                }, jeda);
+            });
+        })();
+    </script>
+
+    <script>
         // Timer Ujian Lengkap dengan Auto Logout
         document.addEventListener('DOMContentLoaded', function () {
             // Elemen UI
