@@ -622,11 +622,6 @@ class Form_siswa(forms.ModelForm):
             "rombel": forms.Select(attrs={'class': 'form-select mb-3'}),
         }
 
-    def __init__(self, *args, auto_username=False, **kwargs):
-        super().__init__(*args, **kwargs)
-        if auto_username:
-            self.fields.pop('username', None)
-
     def clean_username(self):
         username = (self.cleaned_data.get('username') or '').strip()
         if not (username.isascii() and username.isalnum()):
