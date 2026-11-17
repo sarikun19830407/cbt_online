@@ -27,7 +27,7 @@ from app_cbt import forms
 import csv
 from django.http import HttpResponse, Http404
 import time 
-from django.db.models import Count, Case, When, IntegerField
+from django.db.models import Count, Case, When, IntegerField, F
 from django.core.exceptions import ValidationError
 from django.template.loader import render_to_string
 from weasyprint import HTML
@@ -1224,7 +1224,7 @@ def user_siswa (request):
     data_list = models.Pengguna.objects.filter(
         is_superuser=False, 
         is_siswa=True, Nama_User=request.user
-        ).order_by("kelas__kelas", "rombel__Rombel", "Nama")
+        ).order_by(F('nomor_peserta').asc(nulls_last=True), 'Nama')
     if cari:
         data_list = data_list.filter(Nama__icontains=cari) | data_list.filter(username__icontains=cari)
 
@@ -1295,38 +1295,79 @@ def active_user_siswa(request, pk):
 
 
 
+def generate_username_siswa(lembaga):
+    """Username siswa = NPSN lembaga + nomor peserta terakhir + 1 (5 digit)."""
+    npsn = str(lembaga.NPSN or '').strip()
+    if not npsn:
+        raise ValueError("NPSN lembaga aktif belum diisi.")
+    if not (npsn.isascii() and npsn.isalnum()):
+        raise ValueError("NPSN lembaga aktif hanya boleh berisi huruf dan angka.")
+
+    nomor_terakhir = 0
+    for nomor in models.Pengguna.objects.filter(
+        is_siswa=True, Nama_Lembaga=lembaga
+    ).values_list('nomor_peserta', flat=True):
+        try:
+            nomor_terakhir = max(nomor_terakhir, int(nomor))
+        except (TypeError, ValueError):
+            continue
+
+    nomor_berikut = nomor_terakhir + 1
+    while True:
+        nomor_peserta = f"{nomor_berikut:05d}"
+        username = f"{npsn}{nomor_peserta}"
+        if len(username) > 20:
+            raise ValueError("Username otomatis melebihi 20 karakter.")
+        if not models.Pengguna.objects.filter(username__iexact=username).exists():
+            return username, nomor_peserta
+        nomor_berikut += 1
+
+
 @login_required(login_url=settings.LOGIN_URL)
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
 @csrf_protect
 def tambah_user_siswa(request):
-    form = forms.Form_siswa(request.POST or None)
+    form = forms.Form_siswa(request.POST or None, auto_username=True)
     if request.method == "POST":
         if form.is_valid():
-            form.instance.Nama_User = request.user
             lembaga_aktif = models.Lembaga.objects.filter(status=True).first()
-            form.instance.Nama_Lembaga = lembaga_aktif
-            form.instance.is_siswa = True
+            if not lembaga_aktif:
+                messages.error(request, 'Tidak ada lembaga dengan status aktif.')
+            else:
+                try:
+                    username, nomor_peserta = generate_username_siswa(lembaga_aktif)
+                except ValueError as e:
+                    messages.error(request, str(e))
+                else:
+                    form.instance.username = username
+                    form.instance.nomor_peserta = nomor_peserta
+                    form.instance.Nama_User = request.user
+                    form.instance.Nama_Lembaga = lembaga_aktif
+                    form.instance.is_siswa = True
 
-            # 🔹 Karakter allowed: hanya huruf kapital + angka, tanpa O, I, 0, 1
-            allowed_chars = ''.join([
-                ch for ch in (string.ascii_uppercase + string.digits)
-                if ch not in ['O', 'I', '0', '1']
-            ])
+                    # 🔹 Karakter allowed: hanya huruf kapital + angka, tanpa O, I, 0, 1
+                    allowed_chars = ''.join([
+                        ch for ch in (string.ascii_uppercase + string.digits)
+                        if ch not in ['O', 'I', '0', '1']
+                    ])
 
-            # 🔹 Generate password random huruf besar semua
-            auto_password = ''.join(random.choice(allowed_chars) for _ in range(8))
+                    # 🔹 Generate password random huruf besar semua
+                    auto_password = ''.join(random.choice(allowed_chars) for _ in range(8))
 
-            # 🔹 Simpan password plain untuk ditampilkan
-            form.instance.auto_password = auto_password
+                    # 🔹 Simpan password plain untuk ditampilkan
+                    form.instance.auto_password = auto_password
 
-            # 🔹 Set password Django (hash)
-            form.instance.set_password(auto_password)
+                    # 🔹 Set password Django (hash)
+                    form.instance.set_password(auto_password)
 
-            # 🔹 Simpan user
-            form.save()
+                    # 🔹 Simpan user
+                    form.save()
 
-            messages.success(request, f"User siswa berhasil dibuat. Password")
-            return redirect(reverse('cbt:user_siswa'))
+                    messages.success(
+                        request,
+                        f"User siswa berhasil dibuat. Username: {username}, Password: {auto_password}"
+                    )
+                    return redirect(reverse('cbt:user_siswa'))
         else:
             messages.error(request, 'Data Masih Salah.')
 
@@ -1444,7 +1485,6 @@ def clear_upload_session_data(request):
 def uploadUserSiswa(request):
     failed_rows = []
     success_count = 0
-    processed_usernames = set()
 
     if request.method == "POST":
         form = forms.UploadForm(request.POST, request.FILES)
@@ -1466,6 +1506,19 @@ def uploadUserSiswa(request):
                     "form": form,
                     "failed_rows": failed_rows,
                 })
+            npsn_lembaga = str(lembaga_aktif.NPSN or '').strip()
+            if not npsn_lembaga:
+                messages.error(request, "NPSN lembaga aktif belum diisi.")
+                return render(request, "super_admin/upload.html", {
+                    "form": form,
+                    "failed_rows": failed_rows,
+                })
+            if not (npsn_lembaga.isascii() and npsn_lembaga.isalnum()):
+                messages.error(request, "NPSN lembaga aktif hanya boleh berisi huruf dan angka.")
+                return render(request, "super_admin/upload.html", {
+                    "form": form,
+                    "failed_rows": failed_rows,
+                })
 
             try:
                 decoded_file = csv_file.read().decode("utf-8").splitlines()
@@ -1473,9 +1526,21 @@ def uploadUserSiswa(request):
 
                 # Cek header
                 try:
-                    header = next(reader)
-                    if len(header) < 4:  # sekarang tanpa kolom password
-                        messages.error(request, "Format header CSV tidak sesuai (minimal 4 kolom: username, nama, kelas, rombel).")
+                    header = [cell.strip().lower() for cell in next(reader)]
+                    # Format lama: NIK, Nama Siswa, Kelas, Rombel
+                    # Format baru: Nama Siswa, Kelas, Rombel (username otomatis)
+                    format_lama = len(header) >= 4 and header[0] in ('nik', 'nisn', 'nis', 'username')
+                    if format_lama:
+                        kolom_nama, kolom_kelas, kolom_rombel = 1, 2, 3
+                    else:
+                        kolom_nama, kolom_kelas, kolom_rombel = 0, 1, 2
+
+                    minimal_kolom = max(kolom_nama, kolom_kelas, kolom_rombel) + 1
+                    if len(header) < minimal_kolom:
+                        messages.error(
+                            request,
+                            "Format header CSV tidak sesuai (minimal 3 kolom: nama, kelas, rombel)."
+                        )
                         return render(request, "super_admin/upload.html", {
                             "form": form,
                             "failed_rows": failed_rows,
@@ -1489,7 +1554,7 @@ def uploadUserSiswa(request):
 
                 # Proses setiap baris CSV
                 for row in reader:
-                    if len(row) < 4:
+                    if len(row) < minimal_kolom:
                         failed_rows.append({
                             'Nama': '',
                             'Kelas': '',
@@ -1497,40 +1562,18 @@ def uploadUserSiswa(request):
                         })
                         continue
 
-                    username = row[0].strip()
-                    nama = row[1].strip()
-                    kelas_nama = row[2].strip()
-                    rombel_nama = row[3].strip()
+                    nama = row[kolom_nama].strip()
+                    kelas_nama = row[kolom_kelas].strip()
+                    rombel_nama = row[kolom_rombel].strip()
 
-                    # Validasi username (NISN 16 digit)
-                    if not (username.isdigit() and len(username) == 16):
+                    if not nama:
                         failed_rows.append({
-                            'Nama': nama,
+                            'Nama': '',
                             'Kelas': kelas_nama,
-                            'Error': 'NISN harus 16 digit angka'
+                            'Error': 'Nama siswa kosong'
                         })
                         continue
 
-                    # Cek duplikat di file
-                    if username in processed_usernames:
-                        failed_rows.append({
-                            'Nama': nama,
-                            'Kelas': kelas_nama,
-                            'Error': 'Username ganda dalam file'
-                        })
-                        continue
-                    processed_usernames.add(username)
-
-                    # Cek duplikat di database
-                    if models.Pengguna.objects.filter(username__iexact=username).exists():
-                        failed_rows.append({
-                            'Nama': nama,
-                            'Kelas': kelas_nama,
-                            'Error': 'Username sudah ada di database'
-                        })
-                        continue
-
-                    # Cek kelas
                     # Cek kelas
                     kelas = models.Kelas.objects.filter(kelas__iexact=kelas_nama).first()
                     if not kelas:
@@ -1555,9 +1598,8 @@ def uploadUserSiswa(request):
                         })
                         continue
 
-                    # Buat user
-                    
-
+                    # 🔹 Generate username otomatis: NPSN + nomor peserta berikutnya
+                    username, nomor_peserta = generate_username_siswa(lembaga_aktif)
 
                     # 🔹 Generate password otomatis
                     allowed_chars = ''.join([
@@ -1576,6 +1618,7 @@ def uploadUserSiswa(request):
                                 kelas=kelas,
                                 rombel=rombel_obj,
                                 Nama_Lembaga=lembaga_aktif,
+                                nomor_peserta=nomor_peserta,
                                 is_siswa=True,
                                 auto_password=auto_password
                             )
@@ -1633,16 +1676,15 @@ def downloadtempUserSiswa(request):
 
     writer = csv.writer(response)
 
-    # Header kolom
-    writer.writerow(['NIK',  'Nama Siswa', 'Kelas', 'Rombel'])
+    # Header kolom (username dibuat otomatis oleh sistem)
+    writer.writerow(['Nama Siswa', 'Kelas', 'Rombel'])
 
-    # Ambil semua Rombel_kelas
-    rombel_list = models.Kelas.objects.all()
+    # Ambil semua Kelas
+    kelas_list = models.Kelas.objects.all()
 
-    # Tulis satu baris contoh per rombel
-    for rombel in rombel_list:
-        kelas_nama = rombel.kelas
-        writer.writerow(['', '',kelas_nama, ""])  # Kosongkan NIK, Password, Nama
+    # Tulis satu baris contoh per kelas
+    for kelas in kelas_list:
+        writer.writerow(['', kelas.kelas, ''])
 
     return response
 
@@ -1658,17 +1700,12 @@ def downloadtempUserSiswa(request):
 def cetak_semua_kartu_pdf(request):
     user = request.user
 
-    # Ambil semua siswa, sertakan auto_password
+    # Ambil semua siswa, sertakan auto_password dan nomor peserta
     semua_siswa = list(
     models.Pengguna.objects.filter(is_siswa=True)
         .order_by('kelas__kelas', 'rombel__Rombel', 'Nama')
-        .only('username', 'Nama', 'kelas__kelas', 'rombel__Rombel', 'auto_password')
+        .only('username', 'Nama', 'kelas__kelas', 'rombel__Rombel', 'auto_password', 'nomor_peserta')
     )
-
-    # Tambahkan nomor peserta: mulai dari 0001 dan seterusnya
-    for i, siswa in enumerate(semua_siswa, start=1):
-        siswa.nomor_peserta = f"{i:04d}"  # contoh: 0001
-        # auto_password sudah ada di field siswa.auto_password
 
     # Ambil data pendukung
     semester = models.SEMESTER.objects.filter(Nama_User=user).last()

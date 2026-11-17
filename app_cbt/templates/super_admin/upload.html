@@ -19,14 +19,14 @@
                 <div class="row justify-content-center mt-3">
                     <div class="col-md-6">
 
-                        <ul>
+                        <ul class="mb-4">
                             <li class="text-center">
                                 <a class="btn btn-info" href="{{download}}">Download Template CSV</a>
                             </li>
                         </ul>
                         <form id="uploadForm" method="POST" action="" enctype="multipart/form-data">
-                            <div id="loading">
-                                <div class="loader"></div>
+                            <div id="loading" style="display: none;">
+                                <div class="loader mb-2"></div>
                                 <div class="text-center">Proses sedang berjalan...</div>
                             </div>
                             {% csrf_token %}

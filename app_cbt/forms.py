@@ -613,7 +613,7 @@ class Form_siswa(forms.ModelForm):
         }
         widgets = {
             'username': forms.TextInput(
-                attrs={'placeholder': "Masukan NIK Anda harus 16 digit", 'class': 'form-control mb-3'}
+                attrs={'placeholder': "Maksimal 20 karakter, boleh huruf dan angka", 'class': 'form-control mb-3'}
             ),
             "Nama": forms.TextInput(
                 attrs={'placeholder': "Nama Siswa", 'class': 'form-control mb-3'}
@@ -622,16 +622,17 @@ class Form_siswa(forms.ModelForm):
             "rombel": forms.Select(attrs={'class': 'form-select mb-3'}),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, auto_username=False, **kwargs):
         super().__init__(*args, **kwargs)
-
+        if auto_username:
+            self.fields.pop('username', None)
 
     def clean_username(self):
-        username = self.cleaned_data.get('username')
-        if not username.isdigit():
-            raise ValidationError("Username (NIK) hanya boleh berisi angka.")
-        if len(username) != 16:
-            raise ValidationError(f"Username (NIK) harus 16 digit, sekarang {len(username)}.")
+        username = (self.cleaned_data.get('username') or '').strip()
+        if not (username.isascii() and username.isalnum()):
+            raise ValidationError("Username hanya boleh berisi huruf dan angka.")
+        if len(username) > 20:
+            raise ValidationError(f"Username maksimal 20 karakter, sekarang {len(username)}.")
         return username
 
 

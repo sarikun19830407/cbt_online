@@ -207,6 +207,7 @@ class Pengguna (AbstractUser):
         )
     kelas= models.ForeignKey(Kelas,  on_delete = models.CASCADE, blank=True, null=True, db_index=True)
     rombel = models.ForeignKey(Rombel_kelas,on_delete = models.CASCADE, blank=True, null=True, db_index=True)
+    nomor_peserta = models.CharField(max_length=12, blank=True, null=True, db_index=True)
     auto_password = models.CharField(max_length=50, blank=True, null=True)
     is_siswa = models.BooleanField("Siswa",  default= False)
     
