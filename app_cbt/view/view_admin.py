@@ -25,6 +25,9 @@ from django.views.decorators.cache import never_cache
 from app_cbt import models
 from app_cbt import forms
 import csv
+import xlrd
+import xlwt
+from openpyxl import load_workbook as load_xlsx
 from django.http import HttpResponse, Http404
 import time 
 from django.db.models import Count, Case, When, IntegerField, F
@@ -1471,6 +1474,33 @@ def clear_upload_session_data(request):
         request.session.pop(key, None)
 
 
+def _cell_text(value):
+    if value is None:
+        return ''
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value).strip()
+
+
+def read_upload_rows(uploaded_file):
+    nama_file = uploaded_file.name.lower()
+    if nama_file.endswith('.csv'):
+        isi = uploaded_file.read().decode('utf-8-sig').splitlines()
+        return [[cell.strip() for cell in row] for row in csv.reader(isi)]
+    if nama_file.endswith(('.xlsx', '.xlsm')):
+        workbook = load_xlsx(uploaded_file, data_only=True)
+        sheet = workbook.active
+        return [[_cell_text(cell) for cell in row] for row in sheet.iter_rows(values_only=True)]
+    if nama_file.endswith('.xls'):
+        workbook = xlrd.open_workbook(file_contents=uploaded_file.read())
+        sheet = workbook.sheet_by_index(0)
+        return [
+            [_cell_text(sheet.cell_value(r, c)) for c in range(sheet.ncols)]
+            for r in range(sheet.nrows)
+        ]
+    raise ValueError("Format file harus CSV, XLS, atau XLSX.")
+
+
 
 
 
@@ -1489,11 +1519,11 @@ def uploadUserSiswa(request):
     if request.method == "POST":
         form = forms.UploadForm(request.POST, request.FILES)
         if form.is_valid():
-            csv_file = request.FILES["file"]
+            upload_file = request.FILES["file"]
 
             # Validasi format file
-            if not csv_file.name.endswith('.csv'):
-                messages.error(request, "File harus dalam format CSV.")
+            if not upload_file.name.lower().endswith(('.csv', '.xls', '.xlsx', '.xlsm')):
+                messages.error(request, "File harus berformat CSV, XLS, atau XLSX.")
                 return render(request, "super_admin/upload.html", {
                     "form": form,
                     "failed_rows": failed_rows,
@@ -1521,39 +1551,36 @@ def uploadUserSiswa(request):
                 })
 
             try:
-                decoded_file = csv_file.read().decode("utf-8").splitlines()
-                reader = csv.reader(decoded_file)
-
-                # Cek header
-                try:
-                    header = [cell.strip().lower() for cell in next(reader)]
-                    # Format lama: NIK, Nama Siswa, Kelas, Rombel
-                    # Format baru: Nama Siswa, Kelas, Rombel (username otomatis)
-                    format_lama = len(header) >= 4 and header[0] in ('nik', 'nisn', 'nis', 'username')
-                    if format_lama:
-                        kolom_nama, kolom_kelas, kolom_rombel = 1, 2, 3
-                    else:
-                        kolom_nama, kolom_kelas, kolom_rombel = 0, 1, 2
-
-                    minimal_kolom = max(kolom_nama, kolom_kelas, kolom_rombel) + 1
-                    if len(header) < minimal_kolom:
-                        messages.error(
-                            request,
-                            "Format header CSV tidak sesuai (minimal 3 kolom: nama, kelas, rombel)."
-                        )
-                        return render(request, "super_admin/upload.html", {
-                            "form": form,
-                            "failed_rows": failed_rows,
-                        })
-                except StopIteration:
-                    messages.error(request, "File CSV kosong.")
+                rows = read_upload_rows(upload_file)
+                if not rows:
+                    messages.error(request, "File kosong.")
                     return render(request, "super_admin/upload.html", {
                         "form": form,
                         "failed_rows": failed_rows,
                     })
 
-                # Proses setiap baris CSV
-                for row in reader:
+                header = [cell.strip().lower() for cell in rows[0]]
+                # Format lama: NIK, Nama Siswa, Kelas, Rombel
+                # Format baru: Nama Siswa, Kelas, Rombel (username otomatis)
+                format_lama = len(header) >= 4 and header[0] in ('nik', 'nisn', 'nis', 'username')
+                if format_lama:
+                    kolom_nama, kolom_kelas, kolom_rombel = 1, 2, 3
+                else:
+                    kolom_nama, kolom_kelas, kolom_rombel = 0, 1, 2
+
+                minimal_kolom = max(kolom_nama, kolom_kelas, kolom_rombel) + 1
+                if len(header) < minimal_kolom:
+                    messages.error(
+                        request,
+                        "Format header tidak sesuai (minimal 3 kolom: nama, kelas, rombel)."
+                    )
+                    return render(request, "super_admin/upload.html", {
+                        "form": form,
+                        "failed_rows": failed_rows,
+                    })
+
+                # Proses setiap baris
+                for row in rows[1:]:
                     if len(row) < minimal_kolom:
                         failed_rows.append({
                             'Nama': '',
@@ -1567,11 +1594,7 @@ def uploadUserSiswa(request):
                     rombel_nama = row[kolom_rombel].strip()
 
                     if not nama:
-                        failed_rows.append({
-                            'Nama': '',
-                            'Kelas': kelas_nama,
-                            'Error': 'Nama siswa kosong'
-                        })
+                        # Lewati baris kosong/baris contoh template yang belum diisi
                         continue
 
                     # Cek kelas
@@ -1671,21 +1694,28 @@ def uploadUserSiswa(request):
 @user_passes_test(lambda user: user.is_superuser, login_url=settings.LOGIN_URL)
 @csrf_protect
 def downloadtempUserSiswa(request):
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="template_user_siswa.csv"'
+    response = HttpResponse(content_type='application/vnd.ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="template_user_siswa.xls"'
 
-    writer = csv.writer(response)
+    workbook = xlwt.Workbook()
+    sheet = workbook.add_sheet('Data Siswa')
 
-    # Header kolom (username dibuat otomatis oleh sistem)
-    writer.writerow(['Nama Siswa', 'Kelas', 'Rombel'])
+    header_style = xlwt.easyxf('font: bold on; align: horiz center')
+    headers = ['Nama Siswa', 'Kelas', 'Rombel']
+    for kolom, judul in enumerate(headers):
+        sheet.write(0, kolom, judul, header_style)
 
-    # Ambil semua Kelas
-    kelas_list = models.Kelas.objects.all()
+    sheet.col(0).width = 9000
+    sheet.col(1).width = 4000
+    sheet.col(2).width = 4000
 
     # Tulis satu baris contoh per kelas
-    for kelas in kelas_list:
-        writer.writerow(['', kelas.kelas, ''])
+    for baris, kelas in enumerate(models.Kelas.objects.all(), start=1):
+        sheet.write(baris, 0, '')
+        sheet.write(baris, 1, kelas.kelas)
+        sheet.write(baris, 2, '')
 
+    workbook.save(response)
     return response
 
 
