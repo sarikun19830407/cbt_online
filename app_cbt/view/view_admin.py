@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect,get_object_or_404
 from multiprocessing import context
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.decorators import login_required,user_passes_test,  permission_required
 from django.views.decorators.csrf import csrf_protect
@@ -1298,14 +1299,7 @@ def active_user_siswa(request, pk):
 
 
 
-def generate_username_siswa(lembaga):
-    """Username siswa = NPSN lembaga + nomor peserta terakhir + 1 (5 digit)."""
-    npsn = str(lembaga.NPSN or '').strip()
-    if not npsn:
-        raise ValueError("NPSN lembaga aktif belum diisi.")
-    if not (npsn.isascii() and npsn.isalnum()):
-        raise ValueError("NPSN lembaga aktif hanya boleh berisi huruf dan angka.")
-
+def get_last_nomor_peserta(lembaga):
     nomor_terakhir = 0
     for nomor in models.Pengguna.objects.filter(
         is_siswa=True, Nama_Lembaga=lembaga
@@ -1314,8 +1308,18 @@ def generate_username_siswa(lembaga):
             nomor_terakhir = max(nomor_terakhir, int(nomor))
         except (TypeError, ValueError):
             continue
+    return nomor_terakhir
 
-    nomor_berikut = nomor_terakhir + 1
+
+def generate_username_siswa(lembaga):
+    """Username siswa = NPSN lembaga + nomor peserta terakhir + 1 (5 digit)."""
+    npsn = str(lembaga.NPSN or '').strip()
+    if not npsn:
+        raise ValueError("NPSN lembaga aktif belum diisi.")
+    if not (npsn.isascii() and npsn.isalnum()):
+        raise ValueError("NPSN lembaga aktif hanya boleh berisi huruf dan angka.")
+
+    nomor_berikut = get_last_nomor_peserta(lembaga) + 1
     while True:
         nomor_peserta = f"{nomor_berikut:05d}"
         username = f"{npsn}{nomor_peserta}"
@@ -1465,6 +1469,9 @@ def Ubah_user_siswa(request, pk):
 
 
 
+UPLOAD_BATCH_SIZE = 100
+
+
 def clear_upload_session_data(request):
     keys = [
         'duplicate_users',
@@ -1579,6 +1586,69 @@ def uploadUserSiswa(request):
                         "failed_rows": failed_rows,
                     })
 
+                # Preload kelas/rombel agar tidak query per baris
+                kelas_map = {}
+                for obj_kelas in models.Kelas.objects.all():
+                    kelas_map.setdefault(obj_kelas.kelas.lower(), obj_kelas)
+
+                rombel_map = {}
+                for obj_rombel in models.Rombel_kelas.objects.filter(Nama_Lembaga=lembaga_aktif):
+                    if obj_rombel.Rombel:
+                        rombel_map.setdefault(obj_rombel.Rombel.lower(), obj_rombel)
+
+                allowed_chars = ''.join([
+                    ch for ch in (string.ascii_uppercase + string.digits)
+                    if ch not in ['O', 'I', '0', '1']
+                ])
+
+                nomor_berikut = get_last_nomor_peserta(lembaga_aktif) + 1
+                used_usernames = {
+                    uname.lower()
+                    for uname in models.Pengguna.objects.filter(
+                        username__startswith=npsn_lembaga
+                    ).values_list('username', flat=True)
+                }
+
+                def buat_username_berikut():
+                    nonlocal nomor_berikut
+                    while True:
+                        nomor_peserta = f"{nomor_berikut:05d}"
+                        username = f"{npsn_lembaga}{nomor_peserta}"
+                        if len(username) > 20:
+                            raise ValueError("Username otomatis melebihi 20 karakter.")
+                        nomor_berikut += 1
+                        if username.lower() not in used_usernames:
+                            used_usernames.add(username.lower())
+                            return username, nomor_peserta
+
+                batch = []
+
+                def simpan_batch():
+                    nonlocal success_count
+                    if not batch:
+                        return
+                    objects = [item[0] for item in batch]
+                    try:
+                        with transaction.atomic():
+                            models.Pengguna.objects.bulk_create(
+                                objects, batch_size=UPLOAD_BATCH_SIZE
+                            )
+                        success_count += len(batch)
+                    except Exception:
+                        # Jika batch gagal, simpan per baris agar data lain tetap masuk
+                        for obj, info in batch:
+                            try:
+                                with transaction.atomic():
+                                    obj.save(force_insert=True)
+                                success_count += 1
+                            except Exception as e:
+                                failed_rows.append({
+                                    'Nama': info['nama'],
+                                    'Kelas': info['kelas'],
+                                    'Error': f'Gagal membuat user: {str(e)}'
+                                })
+                    batch.clear()
+
                 # Proses setiap baris
                 for row in rows[1:]:
                     if len(row) < minimal_kolom:
@@ -1597,8 +1667,8 @@ def uploadUserSiswa(request):
                         # Lewati baris kosong/baris contoh template yang belum diisi
                         continue
 
-                    # Cek kelas
-                    kelas = models.Kelas.objects.filter(kelas__iexact=kelas_nama).first()
+                    # Cek kelas dari data yang sudah di-preload
+                    kelas = kelas_map.get(kelas_nama.lower())
                     if not kelas:
                         failed_rows.append({
                             'Nama': nama,
@@ -1607,12 +1677,8 @@ def uploadUserSiswa(request):
                         })
                         continue
 
-                    # Cek rombel
-                    rombel_obj = models.Rombel_kelas.objects.filter(
-                        Rombel__iexact=rombel_nama,
-                        Nama_Lembaga=lembaga_aktif
-                    ).first()
-
+                    # Cek rombel dari data yang sudah di-preload
+                    rombel_obj = rombel_map.get(rombel_nama.lower())
                     if not rombel_obj:
                         failed_rows.append({
                             'Nama': nama,
@@ -1621,37 +1687,29 @@ def uploadUserSiswa(request):
                         })
                         continue
 
-                    # 🔹 Generate username otomatis: NPSN + nomor peserta berikutnya
-                    username, nomor_peserta = generate_username_siswa(lembaga_aktif)
-
-                    # 🔹 Generate password otomatis
-                    allowed_chars = ''.join([
-                        ch for ch in (string.ascii_uppercase + string.digits)
-                        if ch not in ['O', 'I', '0', '1']
-                    ])
+                    username, nomor_peserta = buat_username_berikut()
                     auto_password = ''.join(random.choice(allowed_chars) for _ in range(8))
 
-                    # 🔹 Buat user baru
-                    try:
-                        user_obj = models.Pengguna.objects.create_user(
-                                username=username,
-                                password=auto_password,
-                                Nama_User=request.user,
-                                Nama=nama,
-                                kelas=kelas,
-                                rombel=rombel_obj,
-                                Nama_Lembaga=lembaga_aktif,
-                                nomor_peserta=nomor_peserta,
-                                is_siswa=True,
-                                auto_password=auto_password
-                            )
-                        success_count += 1
-                    except Exception as e:
-                        failed_rows.append({
-                            'Nama': nama,
-                            'Kelas': kelas_nama,
-                            'Error': f'Gagal membuat user: {str(e)}'
-                        })
+                    batch.append((
+                        models.Pengguna(
+                            username=username,
+                            password=make_password(auto_password),
+                            Nama_User=request.user,
+                            Nama=nama,
+                            kelas=kelas,
+                            rombel=rombel_obj,
+                            Nama_Lembaga=lembaga_aktif,
+                            nomor_peserta=nomor_peserta,
+                            is_siswa=True,
+                            auto_password=auto_password,
+                        ),
+                        {'nama': nama, 'kelas': kelas_nama},
+                    ))
+
+                    if len(batch) >= UPLOAD_BATCH_SIZE:
+                        simpan_batch()
+
+                simpan_batch()
 
                 # Pesan hasil
                 if failed_rows:
